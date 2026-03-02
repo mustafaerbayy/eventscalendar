@@ -37,7 +37,38 @@ const Register = () => {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    
+    // Email'in zaten var olup olmadığını ve hangi identity'ler ile bağlı olduğunu kontrol et
+    try {
+      const { data: emailCheck, error: checkError } = await supabase
+        .rpc('check_email_identity', { p_email: email.toLowerCase() });
+      
+      if (emailCheck && emailCheck.length > 0) {
+        const emailData = emailCheck[0];
+        
+        // Eğer email var ve Google identity'si varsa
+        if (emailData.has_google_identity) {
+          setLoading(false);
+          toast.error("Bu e-posta adresi Google ile zaten kayıtlı. Lütfen 'Google ile Giriş Yap' butonunu kullanın.", {
+            duration: 5000,
+          });
+          return;
+        }
+        
+        // Eğer email var ve password identity'si de varsa
+        if (emailData.has_password_identity) {
+          setLoading(false);
+          toast.error("Bu e-posta adresi zaten kayıtlı. Lütfen giriş yapın veya şifrenizi sıfırlayın.", {
+            duration: 5000,
+          });
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn("Email kontrolü başarısız, kayıt devam ediyor:", err);
+    }
+    
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -45,7 +76,29 @@ const Register = () => {
         emailRedirectTo: window.location.origin,
       },
     });
+    
     setLoading(false);
+    
+    // Eğer kullanıcı oluşturuldu ve identities var ise kontrol et
+    if (data?.user && !error) {
+      const identities = data.user.identities || [];
+      const hasGoogleIdentity = identities.some(
+        (identity) => identity.provider === 'google'
+      );
+      
+      // Eğer Google identity varsa, bu email Google ile kayıtlı demektir
+      if (hasGoogleIdentity && identities.length > 1) {
+        toast.error("Bu e-posta adresi Google ile kayıtlı. Lütfen 'Google ile Giriş Yap' butonunu kullanın.", {
+          duration: 5000,
+        });
+        // Session varsa çıkış yap
+        if (data.session) {
+          await supabase.auth.signOut();
+        }
+        return;
+      }
+    }
+    
     if (error) {
       // Özel hata mesajları
       const errorMsg = error.message || "";
