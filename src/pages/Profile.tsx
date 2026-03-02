@@ -45,6 +45,10 @@ const Profile = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
 
+  // Check if user logged in with OAuth (Google)
+  const isOAuthUser = user?.app_metadata?.provider === 'google' || 
+    user?.identities?.some(identity => identity.provider === 'google');
+
   useEffect(() => {
     if (profile) {
       setReminders({
@@ -216,7 +220,48 @@ const Profile = () => {
             </Card>
           </motion.div>
 
-          {/* E-posta Güncelle */}
+          {/* Google OAuth Kullanıcısı Bilgilendirmesi */}
+          {isOAuthUser && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}>
+            <Card className="border-border/50 bg-card/70 backdrop-blur-sm shadow-lg shadow-primary/5">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <Mail className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <CardTitle className="font-display text-xl">E-posta Adresi</CardTitle>
+                    <CardDescription>Google hesabınızdan yönetilmektedir</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email-readonly">E-posta</Label>
+                  <Input 
+                    id="email-readonly" 
+                    type="email" 
+                    value={email} 
+                    readOnly 
+                    disabled
+                    className="bg-muted/50 cursor-not-allowed"
+                  />
+                </div>
+                <div className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">
+                  <p className="flex items-center gap-2">
+                    <svg className="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                    </svg>
+                    Google ile giriş yaptığınız için e-posta adresinizi ve şifrenizi buradan değiştiremezsiniz. Bu ayarları Google hesabınızdan yönetebilirsiniz.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+          )}
+
+          {/* E-posta Güncelle - Sadece email/password ile giriş yapanlar için */}
+          {!isOAuthUser && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}>
             <Card className="border-border/50 bg-card/70 backdrop-blur-sm shadow-lg shadow-primary/5">
               <CardHeader className="pb-4">
@@ -242,8 +287,10 @@ const Profile = () => {
               </CardContent>
             </Card>
           </motion.div>
+          )}
 
-          {/* Şifre Güncelle */}
+          {/* Şifre Güncelle - Sadece email/password ile giriş yapanlar için */}
+          {!isOAuthUser && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 }}>
             <Card className="border-border/50 bg-card/70 backdrop-blur-sm shadow-lg shadow-primary/5">
               <CardHeader className="pb-4">
@@ -277,6 +324,7 @@ const Profile = () => {
               </CardContent>
             </Card>
           </motion.div>
+          )}
 
             </>
           )}
