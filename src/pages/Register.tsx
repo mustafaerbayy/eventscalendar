@@ -79,26 +79,7 @@ const Register = () => {
     
     setLoading(false);
     
-    // Eğer kullanıcı oluşturuldu ve identities var ise kontrol et
-    if (data?.user && !error) {
-      const identities = data.user.identities || [];
-      const hasGoogleIdentity = identities.some(
-        (identity) => identity.provider === 'google'
-      );
-      
-      // Eğer Google identity varsa, bu email Google ile kayıtlı demektir
-      if (hasGoogleIdentity && identities.length > 1) {
-        toast.error("Bu e-posta adresi Google ile kayıtlı. Lütfen 'Google ile Giriş Yap' butonunu kullanın.", {
-          duration: 5000,
-        });
-        // Session varsa çıkış yap
-        if (data.session) {
-          await supabase.auth.signOut();
-        }
-        return;
-      }
-    }
-    
+    // Eğer herhangi bir hata varsa
     if (error) {
       // Özel hata mesajları
       const errorMsg = error.message || "";
@@ -109,10 +90,39 @@ const Register = () => {
       } else {
         toast.error(getErrorMessage(error));
       }
-    } else {
-      toast.success("Kayıt başarılı! E-postanızı doğrulayın.");
-      navigate("/giris");
+      return;
     }
+    
+    // Eğer kullanıcı oluşturuldu ama session yok = email zaten var = Google ile kayıtlı
+    if (data?.user && !data?.session) {
+      toast.error("Bu e-posta adresi Google ile zaten kayıtlı. Lütfen 'Google ile Giriş Yap' butonunu kullanın.", {
+        duration: 5000,
+      });
+      return;
+    }
+    
+    // Eğer kullanıcı oluşturuldu ve identities var ise kontrol et
+    if (data?.user) {
+      const identities = data.user.identities || [];
+      const hasGoogleIdentity = identities.some(
+        (identity) => identity.provider === 'google'
+      );
+      
+      // Eğer Google identity varsa, bu email Google ile kayıtlı demektir
+      if (hasGoogleIdentity) {
+        toast.error("Bu e-posta adresi Google ile zaten kayıtlı. Lütfen 'Google ile Giriş Yap' butonunu kullanın.", {
+          duration: 5000,
+        });
+        // Session varsa çıkış yap
+        if (data.session) {
+          await supabase.auth.signOut();
+        }
+        return;
+      }
+    }
+    
+    toast.success("Kayıt başarılı! E-postanızı doğrulayın.");
+    navigate("/giris");
   };
 
   const handleGoogleSignup = async () => {
