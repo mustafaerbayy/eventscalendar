@@ -1,0 +1,19 @@
+project_id = "wclytfjwutaebpmkxbgn"
+
+[functions.send-reminders]
+verify_jwt = false
+
+[functions.send-announcement]
+verify_jwt = false
+
+[functions.create-admin]
+verify_jwt = false
+
+[functions.send-password-reset]
+verify_jwt = false
+
+[functions.manage-users]
+verify_jwt = false
+
+[functions.manage-admin]
+verify_jwt = false

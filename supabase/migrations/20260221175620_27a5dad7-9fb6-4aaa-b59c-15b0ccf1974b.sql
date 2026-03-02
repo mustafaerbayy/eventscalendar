@@ -1,0 +1,3 @@
+
+ALTER TABLE public.events ALTER COLUMN city_id DROP NOT NULL;
+ALTER TABLE public.events ALTER COLUMN venue_id DROP NOT NULL;
