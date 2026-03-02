@@ -47,7 +47,15 @@ const Register = () => {
     });
     setLoading(false);
     if (error) {
-      toast.error(getErrorMessage(error));
+      // Özel hata mesajları
+      const errorMsg = error.message || "";
+      if (errorMsg.includes("already") || errorMsg.includes("duplicate") || errorMsg.includes("registered")) {
+        toast.error("Bu e-posta adresi zaten kullanımda. Google ile kayıt olduysan 'Google ile Giriş Yap' butonunu kullan.", {
+          duration: 5000,
+        });
+      } else {
+        toast.error(getErrorMessage(error));
+      }
     } else {
       toast.success("Kayıt başarılı! E-postanızı doğrulayın.");
       navigate("/giris");

@@ -25,7 +25,15 @@ const Login = () => {
     const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
     setLoading(false);
     if (error) {
-      toast.error(getErrorMessage(error));
+      const errorMsg = error.message || "";
+      // Eğer kullanıcı Google ile kayıtlıysa ama şifre ile giriş yapmaya çalışıyorsa
+      if (errorMsg.includes("Invalid login") || errorMsg.includes("invalid_grant")) {
+        toast.error("E-posta veya şifre hatalı. Google ile kayıt olduysanız 'Google ile Giriş Yap' butonunu kullanın.", {
+          duration: 5000,
+        });
+      } else {
+        toast.error(getErrorMessage(error));
+      }
     } else {
       toast.success("Hoş geldiniz!");
       navigate("/");

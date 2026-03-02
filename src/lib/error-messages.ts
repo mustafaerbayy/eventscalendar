@@ -15,7 +15,11 @@ export const getErrorMessage = (error: any): string => {
   }
 
   if (message.includes("User already registered")) {
-    return "Bu e-posta adresi zaten kayıtlı.";
+    return "Bu e-posta adresi zaten kullanımda. Google ile giriş yapmayı deneyin.";
+  }
+  
+  if (message.includes("already exists") || message.includes("duplicate")) {
+    return "Bu e-posta adresi başka bir yöntemle (Google vb.) kayıt edilmiş. Lütfen o yöntemle giriş yapın.";
   }
 
   if (message.includes("Password should be at least")) {
