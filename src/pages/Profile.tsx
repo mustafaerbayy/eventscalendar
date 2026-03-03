@@ -354,39 +354,6 @@ const Profile = () => {
           </motion.div>
           )}
 
-          {/* Hesabı Sil - Tehlikeli İşlemler */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.5 }}>
-            <Card className="border-destructive/50 bg-card/70 backdrop-blur-sm shadow-lg shadow-destructive/5">
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
-                    <AlertTriangle className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <CardTitle className="font-display text-xl text-destructive">Tehlikeli İşlemler</CardTitle>
-                    <CardDescription>Bu işlemlerin geri dönüşü yoktur</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="rounded-lg bg-destructive/10 p-4 text-sm text-destructive-foreground">
-                  <p className="flex items-start gap-2">
-                    <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                    <span>Hesabınızı sildiğinizde tüm verileriniz kalıcı olarak silinecektir. Bu işlem geri alınamaz.</span>
-                  </p>
-                </div>
-                <Button 
-                  onClick={() => setDeleteDialogOpen(true)} 
-                  variant="destructive" 
-                  className="w-full gap-2"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Hesabımı Sil
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-
             </>
           )}
 
@@ -442,6 +409,39 @@ const Profile = () => {
           </motion.div>
             </>
           )}
+
+          {/* Hesabı Sil - Her zaman görünür */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.5 }}>
+            <Card className="border-destructive/50 bg-card/70 backdrop-blur-sm shadow-lg shadow-destructive/5">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+                    <AlertTriangle className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <CardTitle className="font-display text-xl text-destructive">Tehlikeli İşlemler</CardTitle>
+                    <CardDescription>Bu işlemlerin geri dönüşü yoktur</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-lg bg-destructive/10 p-4 text-sm text-destructive-foreground">
+                  <p className="flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                    <span>Hesabınızı sildiğinizde tüm verileriniz kalıcı olarak silinecektir. Bu işlem geri alınamaz.</span>
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => setDeleteDialogOpen(true)} 
+                  variant="destructive" 
+                  className="w-full gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Hesabımı Sil
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
 
         </div>
       </div>
