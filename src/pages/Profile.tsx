@@ -354,8 +354,8 @@ const Profile = () => {
           </motion.div>
           )}
 
-          {/* Hesabı Sil */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.4 }}>
+          {/* Hesabı Sil - Tehlikeli İşlemler */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.5 }}>
             <Card className="border-destructive/50 bg-card/70 backdrop-blur-sm shadow-lg shadow-destructive/5">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3">
