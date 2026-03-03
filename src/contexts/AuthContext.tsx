@@ -48,6 +48,68 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setProfile(data);
   };
 
+  const updateProfileFromGoogleIfNeeded = async (userId: string, user: User) => {
+    try {
+      // Check if user has Google identity
+      const googleIdentity = user.identities?.find(i => i.provider === 'google');
+      
+      if (!googleIdentity) return;
+
+      // Get current profile
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      // If first_name and last_name are empty, extract from Google data
+      if (profile && (profile.first_name === '' || profile.last_name === '')) {
+        let firstName = profile.first_name || '';
+        let lastName = profile.last_name || '';
+
+        // Extract from Google OAuth metadata
+        const firstName_google = user.raw_user_meta_data?.given_name || '';
+        const lastName_google = user.raw_user_meta_data?.family_name || '';
+        const fullName = user.raw_user_meta_data?.name || '';
+
+        // Use Google data if we have it
+        if (!firstName && firstName_google) {
+          firstName = firstName_google;
+        }
+        if (!lastName && lastName_google) {
+          lastName = lastName_google;
+        }
+
+        // If names are still empty, try to split the full name
+        if ((!firstName || !lastName) && fullName) {
+          const nameParts = fullName.trim().split(' ');
+          if (!firstName && nameParts.length > 0) {
+            firstName = nameParts[0];
+          }
+          if (!lastName && nameParts.length > 1) {
+            lastName = nameParts.slice(1).join(' ');
+          }
+        }
+
+        // Update profile if we have names to update
+        if (firstName || lastName) {
+          await supabase
+            .from("profiles")
+            .update({
+              first_name: firstName,
+              last_name: lastName,
+            })
+            .eq("id", userId);
+
+          // Refresh profile to reflect changes
+          await fetchProfile(userId);
+        }
+      }
+    } catch (err) {
+      console.error("Error updating profile from Google:", err);
+    }
+  };
+
   const checkAdmin = async (userId: string) => {
     try {
       // Check if user email is admin@admin.com
@@ -89,6 +151,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (currentUser) {
           // Use setTimeout to avoid Supabase deadlock
           setTimeout(async () => {
+            // For Google users on first sign-in, update profile with Google data
+            if (event === 'SIGNED_IN') {
+              await updateProfileFromGoogleIfNeeded(currentUser.id, currentUser);
+            }
             await Promise.all([
               fetchProfile(currentUser.id),
               checkAdmin(currentUser.id),
@@ -108,6 +174,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
       if (currentUser) {
+        // For Google users, update profile with Google data if needed
+        await updateProfileFromGoogleIfNeeded(currentUser.id, currentUser);
         await Promise.all([
           fetchProfile(currentUser.id),
           checkAdmin(currentUser.id),
