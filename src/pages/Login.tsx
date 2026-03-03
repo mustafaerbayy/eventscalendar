@@ -41,7 +41,60 @@ const Login = () => {
   };
 
   const handleGoogleLogin = async () => {
+    // Eğer kullanıcı email girmediyse, Google giriş yap
+    if (!email.trim()) {
+      setGoogleLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+      setGoogleLoading(false);
+      if (error) {
+        toast.error(getErrorMessage(error));
+      }
+      return;
+    }
+
+    // Eğer email girildiyse, kontrol et - Google kayıtlı mı?
     setGoogleLoading(true);
+    
+    try {
+      // RPC function ile kontrol et
+      const { data: emailCheck, error: checkError } = await supabase
+        .rpc('check_email_identity', { p_email: email.toLowerCase().trim() });
+      
+      if (emailCheck && emailCheck.length > 0) {
+        const emailData = emailCheck[0];
+        
+        // Email var
+        if (emailData.exists) {
+          // Google identity yoksa
+          if (!emailData.has_google_identity) {
+            setGoogleLoading(false);
+            
+            // Email/password identity varsa
+            if (emailData.has_password_identity) {
+              toast.error("Bu e-posta adresi email/şifre ile kayıtlı. Lütfen şifre ile giriş yapın veya Google ile kayıt olun.", {
+                duration: 5000,
+              });
+              return;
+            } else {
+              // Sadece Google identity'si var ya da başka provider
+              toast.error("Bu e-posta adresi başka bir yöntemle kayıtlı. Lütfen o yöntemle giriş yapın.", {
+                duration: 5000,
+              });
+              return;
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Email kontrolü yapılamadı, devam ediliyor:", err);
+    }
+    
+    // Kontrol başarılı veya email'in Google identity'si var, devam et
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
