@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -7,13 +7,15 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Bell, Clock, CalendarDays, CalendarRange, CalendarClock, User, Save, Mail, Lock } from "lucide-react";
+import { Bell, Clock, CalendarDays, CalendarRange, CalendarClock, User, Save, Mail, Lock, Trash2, AlertTriangle } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { getErrorMessage } from "@/lib/error-messages";
 
 const Profile = () => {
+  const navigate = useNavigate();
   const { user, profile, loading, refreshProfile } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeSection, setActiveSection] = useState<"account" | "reminders">(
@@ -44,6 +46,10 @@ const Profile = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
+
+  // Delete Account
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Check if user logged in with OAuth (Google)
   const isOAuthUser = user?.app_metadata?.provider === 'google' || 
@@ -127,6 +133,28 @@ const Profile = () => {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    setDeleting(true);
+    try {
+      const { data, error } = await supabase.rpc("delete_my_account" as any);
+      if (error) {
+        const errorMsg = await getErrorMessage(error);
+        toast.error(errorMsg);
+        setDeleting(false);
+        return;
+      }
+      toast.success("Hesabınız başarıyla silindi.");
+      setDeleteDialogOpen(false);
+      // Kullanıcıyı çıkış yaptır ve ana sayfaya yönlendir
+      await supabase.auth.signOut();
+      navigate("/");
+    } catch (err: any) {
+      toast.error(getErrorMessage(err));
+      setDeleting(false);
     }
   };
 
@@ -326,6 +354,39 @@ const Profile = () => {
           </motion.div>
           )}
 
+          {/* Hesabı Sil */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.4 }}>
+            <Card className="border-destructive/50 bg-card/70 backdrop-blur-sm shadow-lg shadow-destructive/5">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+                    <AlertTriangle className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <CardTitle className="font-display text-xl text-destructive">Tehlikeli İşlemler</CardTitle>
+                    <CardDescription>Bu işlemlerin geri dönüşü yoktur</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-lg bg-destructive/10 p-4 text-sm text-destructive-foreground">
+                  <p className="flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                    <span>Hesabınızı sildiğinizde tüm verileriniz kalıcı olarak silinecektir. Bu işlem geri alınamaz.</span>
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => setDeleteDialogOpen(true)} 
+                  variant="destructive" 
+                  className="w-full gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Hesabımı Sil
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+
             </>
           )}
 
@@ -384,6 +445,73 @@ const Profile = () => {
 
         </div>
       </div>
+
+      {/* Delete Account Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+                <AlertTriangle className="h-6 w-6" />
+              </div>
+              <DialogTitle className="text-2xl">Hesabı Sil</DialogTitle>
+            </div>
+            <DialogDescription className="text-base pt-2">
+              Bu işlem <span className="font-semibold text-destructive">geri alınamaz</span>. Hesabınızı sildiğinizde:
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <span className="text-destructive mt-1">•</span>
+                <span>Tüm kişisel bilgileriniz kalıcı olarak silinecektir</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-destructive mt-1">•</span>
+                <span>Katıldığınız etkinlik kayıtları (RSVP) silinecektir</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-destructive mt-1">•</span>
+                <span>Hatırlatıcı tercihleriniz ve geçmişi silinecektir</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-destructive mt-1">•</span>
+                <span>Bu e-posta adresi ile yeniden kayıt olmak mümkün olabilir, ancak eski verileriniz geri gelmeyecektir</span>
+              </li>
+            </ul>
+            <div className="mt-6 rounded-lg bg-destructive/10 p-4 border border-destructive/20">
+              <p className="text-sm font-semibold text-destructive flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4" />
+                Bütün verileriniz silinecektir. Bu işlemin geri dönüşü yoktur.
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button 
+              variant="outline" 
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={deleting}
+            >
+              İptal
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteAccount}
+              disabled={deleting}
+              className="gap-2"
+            >
+              {deleting ? (
+                <>Siliniyor...</>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4" />
+                  Evet, Hesabımı Sil
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
