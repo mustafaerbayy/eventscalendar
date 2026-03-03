@@ -214,13 +214,32 @@ const Navbar = () => {
               )}
             </div>
           ) : (
-            <div className="ml-auto flex-shrink-0 flex gap-1">
-              <Button variant="ghost" size="sm" className="text-xs h-8 px-2" onClick={() => navigate("/giris")}>
-                Giriş
-              </Button>
-              <Button size="sm" className="text-xs h-8 px-2" onClick={() => navigate("/kayit")}>
-                Kayıt
-              </Button>
+            <div className="relative ml-auto flex-shrink-0" ref={mobileDropdownRef}>
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 via-primary to-emerald-600 text-white text-xs font-bold ring-2 ring-amber-400/30"
+              >
+                <User className="h-4 w-4" />
+              </button>
+              {dropdownOpen && (
+                <div className="absolute top-10 right-0 z-50 min-w-[160px] rounded-xl border border-border/60 bg-card/95 backdrop-blur-sm shadow-xl shadow-primary/20 py-2 overflow-hidden">
+                  <button
+                    onClick={() => { navigate("/giris"); setDropdownOpen(false); }}
+                    className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-foreground hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5"
+                  >
+                    <User className="h-4 w-4 text-primary/70" />
+                    <span>Giriş Yap</span>
+                  </button>
+                  <div className="my-1 h-px bg-border/30" />
+                  <button
+                    onClick={() => { navigate("/kayit"); setDropdownOpen(false); }}
+                    className="flex w-full items-center gap-2 px-3 py-2.5 text-sm font-semibold text-primary hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5"
+                  >
+                    <Calendar className="h-4 w-4 text-primary/70" />
+                    <span>Kayıt Ol</span>
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
