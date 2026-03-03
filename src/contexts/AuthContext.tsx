@@ -53,9 +53,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Check if user has Google identity
       const googleIdentity = user.identities?.find(i => i.provider === 'google');
       
-      if (!googleIdentity) return;
+      if (!googleIdentity) {
+        console.log("No Google identity found");
+        return;
+      }
 
-      console.log("Google identity found, metadata:", user.raw_user_meta_data);
+      console.log("Full user object:", user);
+      console.log("raw_user_meta_data:", user.raw_user_meta_data);
+      console.log("user_metadata:", user.user_metadata);
+      console.log("Google identity:", googleIdentity);
 
       // Get current profile
       const { data: profile } = await supabase
@@ -71,12 +77,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         let firstName = profile.first_name || '';
         let lastName = profile.last_name || '';
 
-        // Extract from Google OAuth metadata
-        const firstName_google = user.raw_user_meta_data?.given_name || '';
-        const lastName_google = user.raw_user_meta_data?.family_name || '';
-        const fullName = user.raw_user_meta_data?.name || '';
+        // Extract from Google OAuth metadata - try multiple locations
+        let firstName_google = '';
+        let lastName_google = '';
+        let fullName = '';
 
-        console.log("Google data - given_name:", firstName_google, "family_name:", lastName_google, "name:", fullName);
+        // Try raw_user_meta_data
+        if (user.raw_user_meta_data) {
+          firstName_google = user.raw_user_meta_data?.given_name || '';
+          lastName_google = user.raw_user_meta_data?.family_name || '';
+          fullName = user.raw_user_meta_data?.name || '';
+        }
+
+        // Try user_metadata
+        if (!firstName_google && user.user_metadata) {
+          firstName_google = user.user_metadata?.given_name || '';
+          lastName_google = user.user_metadata?.family_name || '';
+          fullName = user.user_metadata?.name || '';
+        }
+
+        // Try identity metadata
+        if (!firstName_google && googleIdentity.identity_data) {
+          firstName_google = googleIdentity.identity_data?.given_name || '';
+          lastName_google = googleIdentity.identity_data?.family_name || '';
+          fullName = googleIdentity.identity_data?.name || '';
+        }
+
+        console.log("Extracted Google data - given_name:", firstName_google, "family_name:", lastName_google, "name:", fullName);
 
         // Use Google data if we have it
         if (!firstName && firstName_google) {
