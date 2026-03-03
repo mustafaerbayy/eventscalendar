@@ -27,14 +27,15 @@ BEGIN
   SELECT
     u.id,
     u.email::TEXT,
-    COALESCE(u.raw_user_meta_data->>'first_name', '')::TEXT AS first_name,
-    COALESCE(u.raw_user_meta_data->>'last_name', '')::TEXT AS last_name,
+    COALESCE(p.first_name, '')::TEXT AS first_name,
+    COALESCE(p.last_name, '')::TEXT AS last_name,
     u.created_at,
     EXISTS(
       SELECT 1 FROM public.user_roles ur2
       WHERE ur2.user_id = u.id AND ur2.role::text = 'report_admin'
     ) AS has_report_role
   FROM auth.users u
+  LEFT JOIN public.profiles p ON p.id = u.id
   ORDER BY u.created_at DESC;
 END;
 $$;
@@ -66,8 +67,8 @@ BEGIN
   SELECT
     u.id,
     u.email::TEXT,
-    COALESCE(u.raw_user_meta_data->>'first_name', '')::TEXT AS first_name,
-    COALESCE(u.raw_user_meta_data->>'last_name', '')::TEXT AS last_name,
+    COALESCE(p.first_name, '')::TEXT AS first_name,
+    COALESCE(p.last_name, '')::TEXT AS last_name,
     EXISTS(
       SELECT 1 FROM public.user_roles ur2
       WHERE ur2.user_id = u.id AND ur2.role::text = 'announcement_admin'
@@ -78,6 +79,7 @@ BEGIN
     ) AS has_report_access
   FROM auth.users u
   INNER JOIN public.user_roles ur ON ur.user_id = u.id AND ur.role::text = 'admin'
+  LEFT JOIN public.profiles p ON p.id = u.id
   ORDER BY u.email;
 END;
 $$;
