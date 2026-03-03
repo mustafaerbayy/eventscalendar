@@ -55,12 +55,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (!googleIdentity) return;
 
+      console.log("Google identity found, metadata:", user.raw_user_meta_data);
+
       // Get current profile
       const { data: profile } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", userId)
         .single();
+
+      console.log("Current profile:", profile);
 
       // If first_name and last_name are empty, extract from Google data
       if (profile && (profile.first_name === '' || profile.last_name === '')) {
@@ -71,6 +75,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const firstName_google = user.raw_user_meta_data?.given_name || '';
         const lastName_google = user.raw_user_meta_data?.family_name || '';
         const fullName = user.raw_user_meta_data?.name || '';
+
+        console.log("Google data - given_name:", firstName_google, "family_name:", lastName_google, "name:", fullName);
 
         // Use Google data if we have it
         if (!firstName && firstName_google) {
@@ -91,9 +97,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         }
 
+        console.log("Final names to update - firstName:", firstName, "lastName:", lastName);
+
         // Update profile if we have names to update
         if (firstName || lastName) {
-          await supabase
+          const { error } = await supabase
             .from("profiles")
             .update({
               first_name: firstName,
@@ -101,9 +109,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             })
             .eq("id", userId);
 
-          // Refresh profile to reflect changes
-          await fetchProfile(userId);
+          if (error) {
+            console.error("Error updating profile:", error);
+          } else {
+            console.log("Profile updated successfully");
+            // Refresh profile to reflect changes
+            await fetchProfile(userId);
+          }
+        } else {
+          console.log("No names to update");
         }
+      } else {
+        console.log("Profile already has names or doesn't exist");
       }
     } catch (err) {
       console.error("Error updating profile from Google:", err);
