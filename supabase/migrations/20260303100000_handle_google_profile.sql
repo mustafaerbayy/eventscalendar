@@ -10,6 +10,8 @@ DECLARE
   v_last_name TEXT;
   v_raw_name TEXT;
   v_space_pos INT;
+  v_name_array TEXT[];
+  v_name_count INT;
 BEGIN
   -- First, try to get names from explicit first_name and last_name fields (from email/password signup)
   v_first_name := TRIM(COALESCE(NEW.raw_user_meta_data->>'first_name', ''));
@@ -29,21 +31,22 @@ BEGIN
     IF COALESCE(v_first_name, '') = '' OR COALESCE(v_last_name, '') = '' THEN
       v_raw_name := TRIM(COALESCE(NEW.raw_user_meta_data->>'name', ''));
       IF COALESCE(v_raw_name, '') != '' THEN
-        -- Find the first space to separate first and last name
-        v_space_pos := POSITION(' ' IN v_raw_name);
+        -- Split by spaces and filter out empty parts
+        v_name_array := ARRAY(SELECT unnest(string_to_array(v_raw_name, ' ')) WHERE trim(unnest) != '');
+        v_name_count := array_length(v_name_array, 1);
         
-        IF v_space_pos > 0 THEN
-          -- Split at first space
+        IF v_name_count >= 2 THEN
+          -- Strategy: Last part is surname, everything else is first name
           IF COALESCE(v_first_name, '') = '' THEN
-            v_first_name := TRIM(SUBSTRING(v_raw_name FROM 1 FOR v_space_pos - 1));
+            v_first_name := array_to_string(v_name_array[1:v_name_count-1], ' ');
           END IF;
           IF COALESCE(v_last_name, '') = '' THEN
-            v_last_name := TRIM(SUBSTRING(v_raw_name FROM v_space_pos + 1));
+            v_last_name := v_name_array[v_name_count];
           END IF;
-        ELSE
-          -- No space, entire name is first name
+        ELSIF v_name_count = 1 THEN
+          -- Only one word: treat as first name
           IF COALESCE(v_first_name, '') = '' THEN
-            v_first_name := v_raw_name;
+            v_first_name := v_name_array[1];
           END IF;
         END IF;
       END IF;

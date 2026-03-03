@@ -115,12 +115,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         // If names are still empty, try to split the full name
         if ((!firstName || !lastName) && fullName) {
-          const nameParts = fullName.trim().split(' ');
-          if (!firstName && nameParts.length > 0) {
-            firstName = nameParts[0];
-          }
-          if (!lastName && nameParts.length > 1) {
-            lastName = nameParts.slice(1).join(' ');
+          const nameParts = fullName.trim().split(' ').filter(part => part.length > 0);
+          
+          if (nameParts.length >= 2) {
+            // Strategy: Last part is surname, everything else is first name
+            if (!firstName) {
+              firstName = nameParts.slice(0, -1).join(' ');
+            }
+            if (!lastName) {
+              lastName = nameParts[nameParts.length - 1];
+            }
+          } else if (nameParts.length === 1) {
+            // Only one word: treat as first name
+            if (!firstName) {
+              firstName = nameParts[0];
+            }
           }
         }
 
