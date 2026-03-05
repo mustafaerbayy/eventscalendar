@@ -20,7 +20,8 @@ interface WeeklyReport {
   content: string | null;
   file_url: string | null;
   file_type: string | null;
-  created_by: string;
+  created_by: string | null;
+  creator_name: string;
   created_at: string;
 }
 
@@ -37,7 +38,6 @@ const WeeklyReports = () => {
   const [selectedReport, setSelectedReport] = useState<WeeklyReport | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "timeline">("timeline");
   const [searchTerm, setSearchTerm] = useState("");
-  const [creatorNames, setCreatorNames] = useState<Record<string, string>>({});
 
   const fetchReports = async () => {
     setLoading(true);
@@ -54,7 +54,7 @@ const WeeklyReports = () => {
     if (error) {
       console.error("Failed to fetch reports:", error);
     } else {
-      setReports(data || []);
+      setReports(data as WeeklyReport[] || []);
     }
     setLoading(false);
   };
@@ -64,7 +64,7 @@ const WeeklyReports = () => {
     try {
       const { data: isAdmin, error: adminError } = await supabase.rpc("has_role_text", { _user_id: user.id, _role: "admin" });
       if (isAdmin && !adminError) { setCanReport(true); return; }
-      
+
       const { data: isReportAdmin, error: reportError } = await supabase.rpc("has_role_text", { _user_id: user.id, _role: "report_admin" });
       if (reportError) {
         console.warn("Report admin check failed:", reportError);
@@ -83,36 +83,7 @@ const WeeklyReports = () => {
     checkPermission();
   }, [user?.id]);
 
-  const fetchCreatorNames = async () => {
-    const uniqueCreators = [...new Set(reports.map(r => r.created_by))];
-    const names: Record<string, string> = {};
-    
-    for (const userId of uniqueCreators) {
-      try {
-        const { data } = await supabase
-          .from('profiles')
-          .select('first_name, last_name')
-          .eq('id', userId)
-          .single();
-        
-        if (data?.first_name || data?.last_name) {
-          names[userId] = `${data?.first_name || ''} ${data?.last_name || ''}`.trim();
-        } else {
-          names[userId] = 'Bilinmeyen Kullanıcı';
-        }
-      } catch (err) {
-        names[userId] = 'Bilinmeyen Kullanıcı';
-      }
-    }
-    
-    setCreatorNames(prev => ({ ...prev, ...names }));
-  };
-
-  useEffect(() => {
-    if (reports.length > 0) {
-      fetchCreatorNames();
-    }
-  }, [reports]);
+  // Creator names are now stored directly in the weekly_reports table as creator_name.
 
   const openCreateDialog = () => {
     setEditingReport(null);
@@ -161,7 +132,12 @@ const WeeklyReports = () => {
         fileType = ext;
       }
 
-      const record = {
+      let creatorName = 'Bilinmeyen Kullanıcı';
+      if (profile) {
+        creatorName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || creatorName;
+      }
+
+      const record: any = {
         title: formData.title.trim(),
         week_start: formData.report_date,
         week_end: formData.report_date,
@@ -169,6 +145,7 @@ const WeeklyReports = () => {
         file_url: fileUrl,
         file_type: fileType,
         created_by: user!.id,
+        creator_name: creatorName,
       };
 
       if (editingReport) {
@@ -182,15 +159,6 @@ const WeeklyReports = () => {
       }
 
       setDialogOpen(false);
-      
-      // Oluşturan kullanıcı bilgisini hemen state'e ekle
-      if (profile && user?.id) {
-        const creatorName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
-        if (creatorName) {
-          setCreatorNames(prev => ({ ...prev, [user.id]: creatorName }));
-        }
-      }
-      
       fetchReports();
     } catch (err: any) {
       toast.error("Hata: " + err.message);
@@ -219,7 +187,7 @@ const WeeklyReports = () => {
   };
 
   const filteredReports = reports
-    .filter(report => 
+    .filter(report =>
       report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       report.content?.toLowerCase().includes(searchTerm.toLowerCase())
     )
@@ -267,7 +235,7 @@ const WeeklyReports = () => {
             transition={{ duration: 0.6 }}
           >
             <div className="flex items-center gap-4 mb-4">
-              <motion.div 
+              <motion.div
                 className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/35 to-primary/8 shadow-lg shadow-primary/25 border border-primary/20"
                 whileHover={{ scale: 1.15, rotate: 8 }}
                 transition={{ type: "spring", stiffness: 400 }}
@@ -298,8 +266,8 @@ const WeeklyReports = () => {
               <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
                 <div className="relative flex-1 max-w-md">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
-                  <Input 
-                    placeholder="Raporlarda ara..." 
+                  <Input
+                    placeholder="Raporlarda ara..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 h-11 bg-gradient-to-br from-card/70 to-card/50 border-border/40 focus:border-primary/60 focus:ring-primary/30 focus:ring-2 rounded-xl transition-all shadow-sm hover:shadow-md"
@@ -307,7 +275,7 @@ const WeeklyReports = () => {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button 
+                  <Button
                     variant={viewMode === "grid" ? "default" : "outline"}
                     size="sm"
                     onClick={() => setViewMode("grid")}
@@ -316,7 +284,7 @@ const WeeklyReports = () => {
                     <LayoutGrid className="h-4 w-4" />
                     <span className="hidden sm:inline">Kart</span>
                   </Button>
-                  <Button 
+                  <Button
                     variant={viewMode === "timeline" ? "default" : "outline"}
                     size="sm"
                     onClick={() => setViewMode("timeline")}
@@ -335,11 +303,11 @@ const WeeklyReports = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <Button 
+                    <Button
                       className="gap-2 shadow-lg hover:shadow-xl transition-shadow bg-gradient-to-r from-primary via-primary to-primary/80 hover:from-primary/90 hover:via-primary/85 hover:to-primary/70 text-primary-foreground font-semibold h-11 px-6 rounded-xl"
                       onClick={openCreateDialog}
                     >
-                      <Plus className="h-5 w-5" /> 
+                      <Plus className="h-5 w-5" />
                       Yeni Rapor Oluştur
                     </Button>
                   </motion.div>
@@ -354,7 +322,7 @@ const WeeklyReports = () => {
       <section className="relative py-12 px-4 pb-20">
         <div className="container mx-auto max-w-7xl">
           {loading ? (
-            <motion.div 
+            <motion.div
               className="flex flex-col items-center justify-center gap-4 py-24"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -368,7 +336,7 @@ const WeeklyReports = () => {
                   <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary border-r-primary" />
                 </div>
               </motion.div>
-              <motion.p 
+              <motion.p
                 className="text-lg text-muted-foreground font-medium"
                 animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 2, repeat: Infinity }}
@@ -383,7 +351,7 @@ const WeeklyReports = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <motion.div 
+              <motion.div
                 className="mx-auto flex h-28 w-28 items-center justify-center rounded-3xl bg-gradient-to-br from-primary/10 via-accent/5 to-primary/5 shadow-lg mb-6 border border-border/30"
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
@@ -394,15 +362,15 @@ const WeeklyReports = () => {
                 {searchTerm ? "Sonuç bulunamadı" : "Rapor bulunamadı"}
               </p>
               <p className="text-muted-foreground text-lg mb-6">
-                {searchTerm 
-                  ? "Aranılan kriterlere uygun raporlar mevcut değil." 
-                  : canReport 
-                    ? "İlk raporunuzu oluşturarak başlayın." 
+                {searchTerm
+                  ? "Aranılan kriterlere uygun raporlar mevcut değil."
+                  : canReport
+                    ? "İlk raporunuzu oluşturarak başlayın."
                     : "Rapor yayınlanmamış."}
               </p>
               {canReport && !searchTerm && (
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-                  <Button 
+                  <Button
                     onClick={openCreateDialog}
                     className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold gap-2 h-12 px-8 rounded-xl shadow-lg"
                   >
@@ -413,7 +381,7 @@ const WeeklyReports = () => {
               )}
             </motion.div>
           ) : viewMode === "grid" ? (
-            <motion.div 
+            <motion.div
               className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 auto-rows-max"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -422,7 +390,7 @@ const WeeklyReports = () => {
             >
               <AnimatePresence>
                 {filteredReports.map((report, i) => (
-                  <motion.div 
+                  <motion.div
                     key={report.id}
                     initial={{ opacity: 0, y: 20, scale: 0.95 }}
                     whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -433,11 +401,10 @@ const WeeklyReports = () => {
                     className="cursor-pointer h-full"
                   >
                     <Card
-                      className={`border-border/40 bg-gradient-to-br from-card/95 via-card/90 to-card/80 backdrop-blur-xl shadow-lg transition-all h-full duration-300 group hover:shadow-2xl hover:border-primary/40 ${
-                        selectedReport?.id === report.id 
-                          ? "ring-2 ring-primary/60 shadow-2xl shadow-primary/20 border-primary/50 scale-105" 
-                          : "hover:border-accent/40 hover:-translate-y-3"
-                      }`}
+                      className={`border-border/40 bg-gradient-to-br from-card/95 via-card/90 to-card/80 backdrop-blur-xl shadow-lg transition-all h-full duration-300 group hover:shadow-2xl hover:border-primary/40 ${selectedReport?.id === report.id
+                        ? "ring-2 ring-primary/60 shadow-2xl shadow-primary/20 border-primary/50 scale-105"
+                        : "hover:border-accent/40 hover:-translate-y-3"
+                        }`}
                     >
                       <CardHeader className="pb-4 border-b border-border/20">
                         <div className="flex items-start justify-between gap-3">
@@ -446,8 +413,8 @@ const WeeklyReports = () => {
                           </div>
                           <div className="flex items-center gap-2">
                             {report.file_url && (
-                              <motion.div 
-                                className="h-2 w-2 bg-accent rounded-full" 
+                              <motion.div
+                                className="h-2 w-2 bg-accent rounded-full"
                                 title="Dosya ekli"
                               />
                             )}
@@ -464,8 +431,8 @@ const WeeklyReports = () => {
                           <CardTitle className="font-display text-lg text-foreground line-clamp-2 group-hover:text-primary transition-colors font-semibold">{report.title}</CardTitle>
                           <motion.div className="text-sm text-muted-foreground/80 mt-3 flex items-center gap-2 font-medium">
                             <Calendar className="h-4 w-4 text-primary/70" />
-                            {new Date(report.week_start).toLocaleDateString("tr-TR", { 
-                              day: "numeric", 
+                            {new Date(report.week_start).toLocaleDateString("tr-TR", {
+                              day: "numeric",
                               month: "short",
                               year: "numeric"
                             })}
@@ -476,7 +443,7 @@ const WeeklyReports = () => {
                         <div className="space-y-3">
                           <div className="flex flex-wrap items-center gap-2">
                             {report.content && (
-                              <motion.button 
+                              <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -488,19 +455,18 @@ const WeeklyReports = () => {
                               </motion.button>
                             )}
                             {report.file_url && (
-                              <motion.span 
+                              <motion.span
                                 whileHover={{ scale: 1.05 }}
-                                className={`text-xs font-semibold px-3 py-1.5 rounded-full border shadow-sm ${
-                                  report.file_type === 'pdf' 
-                                    ? 'bg-red-500/15 text-red-600 border-red-200/50'
-                                    : 'bg-blue-500/15 text-blue-600 border-blue-200/50'
-                                }`}
+                                className={`text-xs font-semibold px-3 py-1.5 rounded-full border shadow-sm ${report.file_type === 'pdf'
+                                  ? 'bg-red-500/15 text-red-600 border-red-200/50'
+                                  : 'bg-blue-500/15 text-blue-600 border-blue-200/50'
+                                  }`}
                               >
                                 {report.file_type?.toUpperCase() || "DOSYA"}
                               </motion.span>
                             )}
                           </div>
-                          
+
                         </div>
                       </CardContent>
                     </Card>
@@ -509,7 +475,7 @@ const WeeklyReports = () => {
               </AnimatePresence>
             </motion.div>
           ) : (
-            <motion.div 
+            <motion.div
               className="space-y-4"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -518,7 +484,7 @@ const WeeklyReports = () => {
             >
               <AnimatePresence>
                 {filteredReports.map((report, i) => (
-                  <motion.div 
+                  <motion.div
                     key={report.id}
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
@@ -528,20 +494,19 @@ const WeeklyReports = () => {
                     onClick={() => setSelectedReport(report)}
                     className="cursor-pointer group"
                   >
-                    <div className={`flex gap-4 p-4 rounded-xl border transition-all duration-300 hover:shadow-lg ${
-                      selectedReport?.id === report.id 
-                        ? "bg-gradient-to-r from-primary/15 via-primary/10 to-accent/8 border-primary/40 shadow-lg shadow-primary/10" 
-                        : "bg-gradient-to-r from-card/60 to-card/40 border-border/30 hover:border-primary/30 hover:bg-gradient-to-r hover:from-card/70 hover:to-card/50"
-                    }`}>
+                    <div className={`flex gap-4 p-4 rounded-xl border transition-all duration-300 hover:shadow-lg ${selectedReport?.id === report.id
+                      ? "bg-gradient-to-r from-primary/15 via-primary/10 to-accent/8 border-primary/40 shadow-lg shadow-primary/10"
+                      : "bg-gradient-to-r from-card/60 to-card/40 border-border/30 hover:border-primary/30 hover:bg-gradient-to-r hover:from-card/70 hover:to-card/50"
+                      }`}>
                       <div className="flex-shrink-0">
-                        <motion.div 
+                        <motion.div
                           className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center shadow-md"
                           whileHover={{ scale: 1.1 }}
                         >
                           <FileText className="h-6 w-6 text-primary" />
                         </motion.div>
                       </div>
-                      
+
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1">{report.title}</h3>
@@ -549,13 +514,13 @@ const WeeklyReports = () => {
                             <motion.span className="inline-flex h-2 w-2 bg-primary rounded-full shadow-lg shadow-primary/50" layoutId="activeIndicator" />
                           )}
                         </div>
-                        
+
                         <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-2">
                           <span className="flex items-center gap-1">
                             <Calendar className="h-3.5 w-3.5 text-primary/60" />
-                            {new Date(report.week_start).toLocaleDateString("tr-TR", { 
+                            {new Date(report.week_start).toLocaleDateString("tr-TR", {
                               day: "numeric",
-                              month: "short", 
+                              month: "short",
                               year: "numeric"
                             })}
                           </span>
@@ -566,11 +531,10 @@ const WeeklyReports = () => {
                             </span>
                           )}
                           {report.file_url && (
-                            <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
-                              report.file_type === 'pdf'
-                                ? 'bg-red-500/15 text-red-600'
-                                : 'bg-blue-500/15 text-blue-600'
-                            }`}>
+                            <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${report.file_type === 'pdf'
+                              ? 'bg-red-500/15 text-red-600'
+                              : 'bg-blue-500/15 text-blue-600'
+                              }`}>
                               <Upload className="h-3 w-3" />
                               {report.file_type?.toUpperCase()}
                             </span>
@@ -586,9 +550,9 @@ const WeeklyReports = () => {
                         {canReport && (
                           <>
                             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
+                              <Button
+                                variant="ghost"
+                                size="icon"
                                 className="h-9 w-9 hover:bg-primary/10 hover:text-primary transition-all rounded-lg"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -600,9 +564,9 @@ const WeeklyReports = () => {
                               </Button>
                             </motion.div>
                             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
+                              <Button
+                                variant="ghost"
+                                size="icon"
                                 className="h-9 w-9 hover:bg-destructive/10 hover:text-destructive transition-all rounded-lg"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -625,7 +589,7 @@ const WeeklyReports = () => {
 
           {/* Stats Section - Bottom */}
           {!loading && reports.length > 0 && (
-            <motion.div 
+            <motion.div
               className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-16 pt-12 border-t border-border/20"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -651,7 +615,7 @@ const WeeklyReports = () => {
                             <p className="text-sm font-medium text-muted-foreground mb-1">{stat.label}</p>
                             <p className="text-3xl font-display font-bold text-foreground">{stat.value}</p>
                           </div>
-                          <motion.div 
+                          <motion.div
                             className={`h-12 w-12 rounded-full bg-gradient-to-br ${stat.color}/20 flex items-center justify-center`}
                             whileHover={{ scale: 1.2, rotate: 10 }}
                           >
@@ -692,7 +656,7 @@ const WeeklyReports = () => {
                 <CardHeader className="pb-6 border-b border-border/20 sticky top-0 bg-gradient-to-br from-card/99 via-card/97 to-card/93 backdrop-blur-xl z-10">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-4 flex-1">
-                      <motion.div 
+                      <motion.div
                         className="rounded-xl bg-gradient-to-br from-primary/25 to-primary/10 p-3 flex-shrink-0 shadow-lg border border-primary/20"
                         whileHover={{ scale: 1.1, rotate: 5 }}
                       >
@@ -703,9 +667,9 @@ const WeeklyReports = () => {
                         <div className="flex flex-col gap-2 mt-3 text-sm">
                           <div className="flex items-center gap-2 text-muted-foreground">
                             <Calendar className="h-4 w-4 text-primary/60" />
-                            {new Date(selectedReport.week_start).toLocaleDateString("tr-TR", { 
-                              day: "numeric", 
-                              month: "long", 
+                            {new Date(selectedReport.week_start).toLocaleDateString("tr-TR", {
+                              day: "numeric",
+                              month: "long",
                               year: "numeric",
                               weekday: "long"
                             })}
@@ -717,9 +681,9 @@ const WeeklyReports = () => {
                       {canReport && (
                         <>
                           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               className="h-10 w-10 hover:bg-primary/10 hover:text-primary transition-all rounded-lg"
                               onClick={() => {
                                 openEditDialog(selectedReport);
@@ -731,9 +695,9 @@ const WeeklyReports = () => {
                             </Button>
                           </motion.div>
                           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               className="h-10 w-10 hover:bg-destructive/10 hover:text-destructive transition-all rounded-lg"
                               onClick={() => {
                                 handleDelete(selectedReport);
@@ -746,8 +710,8 @@ const WeeklyReports = () => {
                           </motion.div>
                         </>
                       )}
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="icon"
                         className="h-10 w-10 hover:bg-muted/50"
                         onClick={() => setSelectedReport(null)}
@@ -775,7 +739,7 @@ const WeeklyReports = () => {
                       </div>
                       <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground/80">
                         <Clock className="h-4 w-4 text-primary/60" />
-                        <span>{creatorNames[selectedReport.created_by] || 'Yükleniyor...'} tarafından {new Date(selectedReport.created_at).toLocaleDateString("tr-TR")} tarihinde oluşturuldu</span>
+                        <span>{selectedReport.creator_name || 'Bilinmeyen Kullanıcı'} tarafından {new Date(selectedReport.created_at).toLocaleDateString("tr-TR")} tarihinde oluşturuldu</span>
                       </div>
                     </div>
                   </motion.div>
@@ -793,8 +757,8 @@ const WeeklyReports = () => {
                         Ekli Dosya
                       </h4>
                       <motion.div whileHover={{ x: 6 }} whileTap={{ scale: 0.98 }}>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           className="gap-3 w-full group hover:border-primary/60 hover:bg-primary/8 transition-all rounded-xl h-12 text-base font-semibold shadow-md hover:shadow-lg border-border/40"
                           asChild
                         >
@@ -830,7 +794,7 @@ const WeeklyReports = () => {
         <DialogContent className="sm:max-w-xl border-border/40 bg-gradient-to-br from-card/99 via-card/97 to-card/93 backdrop-blur-3xl shadow-2xl rounded-2xl border-primary/20">
           <DialogHeader>
             <DialogTitle className="font-display text-2xl flex items-center gap-3">
-              <motion.div 
+              <motion.div
                 className="rounded-lg bg-gradient-to-br from-primary/30 to-primary/10 p-2.5 shadow-lg border border-primary/20"
                 whileHover={{ scale: 1.1, rotate: 5 }}
               >
@@ -844,7 +808,7 @@ const WeeklyReports = () => {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-5 pt-4">
-            <motion.div 
+            <motion.div
               className="space-y-2"
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -852,15 +816,15 @@ const WeeklyReports = () => {
               transition={{ delay: 0.1 }}
             >
               <Label className="font-semibold text-foreground text-sm">Başlık *</Label>
-              <Input 
-                value={formData.title} 
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })} 
-                placeholder="Rapor başlığını girin..." 
+              <Input
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="Rapor başlığını girin..."
                 className="h-11 bg-gradient-to-br from-card/70 to-card/50 border-border/40 focus:border-primary/60 focus:ring-primary/30 focus:ring-2 rounded-lg transition-all placeholder:text-muted-foreground/50 shadow-sm"
               />
             </motion.div>
 
-            <motion.div 
+            <motion.div
               className="space-y-2"
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -868,15 +832,15 @@ const WeeklyReports = () => {
               transition={{ delay: 0.15 }}
             >
               <Label className="font-semibold text-foreground text-sm">Tarih *</Label>
-              <Input 
-                type="date" 
-                value={formData.report_date} 
-                onChange={(e) => setFormData({ ...formData, report_date: e.target.value })} 
+              <Input
+                type="date"
+                value={formData.report_date}
+                onChange={(e) => setFormData({ ...formData, report_date: e.target.value })}
                 className="h-11 bg-gradient-to-br from-card/70 to-card/50 border-border/40 focus:border-primary/60 focus:ring-primary/30 focus:ring-2 rounded-lg transition-all shadow-sm"
               />
             </motion.div>
 
-            <motion.div 
+            <motion.div
               className="space-y-2"
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -884,16 +848,16 @@ const WeeklyReports = () => {
               transition={{ delay: 0.2 }}
             >
               <Label className="font-semibold text-foreground text-sm">İçerik</Label>
-              <Textarea 
+              <Textarea
                 rows={5}
-                value={formData.content} 
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })} 
-                placeholder="Rapor içeriğini ayrıntılı olarak yazın..." 
+                value={formData.content}
+                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                placeholder="Rapor içeriğini ayrıntılı olarak yazın..."
                 className="bg-gradient-to-br from-card/70 to-card/50 border-border/40 focus:border-primary/60 focus:ring-primary/30 focus:ring-2 rounded-lg transition-all placeholder:text-muted-foreground/50 resize-none shadow-sm"
               />
             </motion.div>
 
-            <motion.div 
+            <motion.div
               className="space-y-2"
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -908,7 +872,7 @@ const WeeklyReports = () => {
                 className="h-11 bg-gradient-to-br from-card/70 to-card/50 border-border/40 focus:border-primary/60 focus:ring-primary/30 focus:ring-2 rounded-lg transition-all text-sm file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-primary/20 file:text-primary hover:file:bg-primary/25 cursor-pointer shadow-sm"
               />
               {file && (
-                <motion.p 
+                <motion.p
                   className="text-sm text-accent font-medium flex items-center gap-2"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -923,29 +887,29 @@ const WeeklyReports = () => {
               )}
             </motion.div>
 
-            <motion.div 
+            <motion.div
               className="flex gap-3 pt-4 border-t border-border/20"
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
             >
-              <Button 
+              <Button
                 onClick={() => setDialogOpen(false)}
-                variant="outline" 
+                variant="outline"
                 className="flex-1 h-11 rounded-lg border-border/50 hover:bg-card/50 transition-all font-semibold"
               >
                 İptal
               </Button>
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1">
-                <Button 
-                  onClick={handleSave} 
+                <Button
+                  onClick={handleSave}
                   className="w-full h-11 rounded-lg gap-2 shadow-lg hover:shadow-xl transition-all bg-gradient-to-r from-primary via-primary to-primary/80 hover:from-primary/90 hover:via-primary/85 hover:to-primary/70 text-primary-foreground font-semibold"
                   disabled={saving}
                 >
                   {saving ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" /> 
+                      <Loader2 className="h-4 w-4 animate-spin" />
                       Kaydediliyor...
                     </>
                   ) : editingReport ? (
