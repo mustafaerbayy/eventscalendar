@@ -392,7 +392,16 @@ const HeroSection = ({ onViewEvents }: HeroSectionProps) => {
               className="border-2 border-amber-400/50 bg-black/20 text-amber-100 hover:bg-emerald-900/30 px-8 py-6 text-base backdrop-blur-md rounded-xl transition-all duration-300 hover:-translate-y-1 font-semibold hover:border-amber-300/80"
               onClick={() => {
                 if (onViewEvents) onViewEvents();
-                else document.querySelector('#events-section')?.scrollIntoView({ behavior: 'smooth' });
+                else {
+                  // @ts-ignore
+                  const indexPage = require('@/pages/Index');
+                  if (indexPage && typeof indexPage.scrollToNearestEvent === 'function') {
+                    // @ts-ignore
+                    indexPage.scrollToNearestEvent(localStorage.getItem('viewMode') || 'list', window.__UPCOMING_EVENTS__ || []);
+                  } else {
+                    document.querySelector('#events-section')?.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }
               }}>
               Etkinlikleri Gör
             </Button>

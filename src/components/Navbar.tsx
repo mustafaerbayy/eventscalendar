@@ -48,10 +48,26 @@ const Navbar = () => {
           <button
             onClick={() => {
               if (window.location.pathname === '/') {
-                document.querySelector('#events-section')?.scrollIntoView({ behavior: 'smooth' });
+                // @ts-ignore
+                const indexPage = require('@/pages/Index');
+                if (indexPage && typeof indexPage.scrollToNearestEvent === 'function') {
+                  // @ts-ignore
+                  indexPage.scrollToNearestEvent(localStorage.getItem('viewMode') || 'list', window.__UPCOMING_EVENTS__ || []);
+                } else {
+                  document.querySelector('#events-section')?.scrollIntoView({ behavior: 'smooth' });
+                }
               } else {
                 navigate('/');
-                setTimeout(() => document.querySelector('#events-section')?.scrollIntoView({ behavior: 'smooth' }), 300);
+                setTimeout(() => {
+                  // @ts-ignore
+                  const indexPage = require('@/pages/Index');
+                  if (indexPage && typeof indexPage.scrollToNearestEvent === 'function') {
+                    // @ts-ignore
+                    indexPage.scrollToNearestEvent(localStorage.getItem('viewMode') || 'list', window.__UPCOMING_EVENTS__ || []);
+                  } else {
+                    document.querySelector('#events-section')?.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }, 300);
               }
             }}
             className="relative px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-300 rounded-lg hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5 group flex items-center gap-2"
@@ -143,7 +159,25 @@ const Navbar = () => {
         </div>
 
         {/* Mobile: hamburger menu */}
-        <div className="flex md:hidden items-center ml-auto">
+        <div className="flex md:hidden items-center ml-auto gap-2">
+          {/* Mobilde giriş yaptıysa raporlar butonu üstte */}
+          {user && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-300 rounded-lg"
+              onClick={() => navigate("/raporlar")}
+            >
+              <BarChart3 className="h-4 w-4 mr-1" /> Raporlar
+            </Button>
+          )}
+          {/* Giriş/Kayıt butonları hamburger yanında */}
+          {!user && (
+            <>
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-300 rounded-lg" onClick={() => navigate("/giris")}>Giriş Yap</Button>
+              <Button size="sm" className="rounded-lg" onClick={() => navigate("/kayit")}>Kayıt Ol</Button>
+            </>
+          )}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="flex h-10 w-10 items-center justify-center rounded-lg hover:bg-primary/10 transition-colors"
@@ -163,22 +197,31 @@ const Navbar = () => {
               onClick={() => {
                 setMobileOpen(false);
                 if (window.location.pathname === '/') {
-                  document.querySelector('#events-section')?.scrollIntoView({ behavior: 'smooth' });
+                  // @ts-ignore
+                  const indexPage = require('@/pages/Index');
+                  if (indexPage && typeof indexPage.scrollToNearestEvent === 'function') {
+                    // @ts-ignore
+                    indexPage.scrollToNearestEvent(localStorage.getItem('viewMode') || 'list', window.__UPCOMING_EVENTS__ || []);
+                  } else {
+                    document.querySelector('#events-section')?.scrollIntoView({ behavior: 'smooth' });
+                  }
                 } else {
                   navigate('/');
-                  setTimeout(() => document.querySelector('#events-section')?.scrollIntoView({ behavior: 'smooth' }), 300);
+                  setTimeout(() => {
+                    // @ts-ignore
+                    const indexPage = require('@/pages/Index');
+                    if (indexPage && typeof indexPage.scrollToNearestEvent === 'function') {
+                      // @ts-ignore
+                      indexPage.scrollToNearestEvent(localStorage.getItem('viewMode') || 'list', window.__UPCOMING_EVENTS__ || []);
+                    } else {
+                      document.querySelector('#events-section')?.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }, 300);
                 }
               }}
             >
               <Calendar className="h-4 w-4 text-primary/70" />
               Etkinlikler
-            </button>
-            <button
-              className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5 transition-all"
-              onClick={() => { navigate("/raporlar"); setMobileOpen(false); }}
-            >
-              <BarChart3 className="h-4 w-4 text-primary/70" />
-              Raporlar
             </button>
             <button
               className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5 transition-all"
@@ -227,24 +270,7 @@ const Navbar = () => {
                   Çıkış Yap
                 </button>
               </>
-            ) : (
-              <>
-                <button
-                  onClick={() => { navigate("/giris"); setMobileOpen(false); }}
-                  className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5 transition-all"
-                >
-                  <User className="h-4 w-4 text-primary/70" />
-                  Giriş Yap
-                </button>
-                <button
-                  onClick={() => { navigate("/kayit"); setMobileOpen(false); }}
-                  className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-primary hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5 transition-all"
-                >
-                  <Calendar className="h-4 w-4 text-primary/70" />
-                  Kayıt Ol
-                </button>
-              </>
-            )}
+            ) : null}
           </div>
         </div>
       )}

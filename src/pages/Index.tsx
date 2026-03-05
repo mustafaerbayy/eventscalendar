@@ -1,3 +1,27 @@
+// Scroll to nearest upcoming event (list view) or events section (calendar view)
+export function scrollToNearestEvent(viewMode: "list" | "calendar", upcomingEvents: any[]) {
+  if (viewMode === "calendar") {
+    // Takvim görünümündeyse takvim bölümüne kaydır (offset ile)
+    const calendarSection = document.querySelector('#calendar-section') || document.querySelector('#events-section');
+    if (calendarSection) {
+      const elementTop = calendarSection.getBoundingClientRect().top + window.scrollY;
+      const offset = 120; // Navbar yüksekliği
+      window.scrollTo({ top: elementTop - offset, behavior: "smooth" });
+    }
+    return;
+  }
+  const nearestUpcoming = upcomingEvents[0];
+  if (nearestUpcoming) {
+    const element = document.querySelector(`[data-event-id="${nearestUpcoming.id}"]`);
+    if (element) {
+      const elementTop = element.getBoundingClientRect().top + window.scrollY;
+      const offset = 120;
+      window.scrollTo({ top: elementTop - offset, behavior: "smooth" });
+    }
+    return;
+  }
+  document.querySelector("#events-section")?.scrollIntoView({ behavior: "smooth" });
+}
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -111,17 +135,7 @@ const Index = () => {
   const pastEvents = filteredEvents.filter((e) => e.date < today).reverse();
 
   const handleViewEvents = () => {
-    const nearestUpcoming = upcomingEvents[0];
-    if (nearestUpcoming) {
-      const element = document.querySelector(`[data-event-id="${nearestUpcoming.id}"]`);
-      if (element) {
-        const elementTop = element.getBoundingClientRect().top + window.scrollY;
-        const offset = 120; // Navbarın yüksekliği + padding
-        window.scrollTo({ top: elementTop - offset, behavior: "smooth" });
-      }
-      return;
-    }
-    document.querySelector("#events-section")?.scrollIntoView({ behavior: "smooth" });
+    scrollToNearestEvent(viewMode, upcomingEvents);
   };
 
   const getAttendeeCount = (rsvps: RsvpWithProfile[]) => {
@@ -551,7 +565,8 @@ const Index = () => {
               </motion.p>
             </motion.div>
           ) : viewMode === "calendar" ? (
-            <CalendarView
+            <div id="calendar-section">
+              <CalendarView
               events={[
                 ...upcomingEvents.map((event) => ({
                   id: event.id,
@@ -578,6 +593,7 @@ const Index = () => {
               ]}
               onEventClick={(eventId) => handleCardClick(eventId)}
             />
+            </div>
           ) : upcomingEvents.length === 0 ? (
             <motion.div
               className="mt-20 text-center py-20"
