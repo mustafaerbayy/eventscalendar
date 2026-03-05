@@ -419,7 +419,7 @@ const Profile = () => {
                     <AlertTriangle className="h-5 w-5" />
                   </div>
                   <div>
-                    <CardTitle className="font-display text-xl text-destructive">Tehlikeli İşlemler</CardTitle>
+                    <CardTitle className="font-display text-xl text-destructive">Hesabımı Sil</CardTitle>
                     <CardDescription>Bu işlemlerin geri dönüşü yoktur</CardDescription>
                   </div>
                 </div>
