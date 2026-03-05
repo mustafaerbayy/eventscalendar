@@ -1,3 +1,5 @@
+# Ignore secret environment file
+.env.secrets
 # Logs
 logs
 *.log
