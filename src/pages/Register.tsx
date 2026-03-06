@@ -22,33 +22,6 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  // 3D Tilt Effect
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  const mouseXSpring = useSpring(x);
-  const mouseYSpring = useSpring(y);
-
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["8deg", "-8deg"]);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-8deg", "8deg"]);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    const xPct = mouseX / width - 0.5;
-    const yPct = mouseY / height - 0.5;
-    x.set(xPct);
-    y.set(yPct);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (firstName.trim().length === 0 || lastName.trim().length === 0) {
@@ -175,36 +148,27 @@ const Register = () => {
       </div>
 
       <motion.div
-        className="relative w-full max-w-[480px] perspective-1000"
-        initial={{ opacity: 0, y: 40, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        whileHover={{ scale: 1.02 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        style={{
-          rotateX,
-          rotateY,
-          transformStyle: "preserve-3d",
-        }}
+        className="relative w-full max-w-[480px] z-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -5 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="relative group rounded-[2.5rem] p-px bg-gradient-to-b from-white/10 to-transparent border border-white/5 backdrop-blur-xl shadow-[0_32px_64px_-12px_rgba(0,0,0,0.7)] overflow-hidden">
+        <div className="relative group rounded-[2.5rem] p-px bg-gradient-to-b from-white/20 to-transparent border border-white/10 backdrop-blur-xl shadow-[0_32px_64px_-12px_rgba(0,0,0,0.7)]">
           <div className="rounded-[2.45rem] bg-black/40 p-8 md:p-10 backdrop-blur-sm border border-white/5 relative z-10">
-            {/* Ambient inner glow */}
-            <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
-            <div className="flex flex-col items-center mb-8" style={{ transform: "translateZ(40px)" }}>
+            <div className="flex flex-col items-center mb-8">
               <Link to="/" className="relative transition-transform duration-300 hover:scale-110">
                 <img src="/images/logo.png" alt="Logo" className="h-16 w-16 object-contain drop-shadow-[0_0_12px_rgba(var(--primary),0.4)]" />
               </Link>
             </div>
 
-            <div className="mb-8 text-center" style={{ transform: "translateZ(30px)" }}>
+            <div className="mb-8 text-center">
               <h1 className="font-display text-4xl font-bold tracking-tight text-white mb-2">Hesap Oluştur</h1>
               <p className="text-slate-400 font-medium">Ayrıcalıklı dünyaya adım atın</p>
             </div>
 
-            <form onSubmit={handleRegister} className="space-y-4" style={{ transform: "translateZ(20px)" }}>
+            <form onSubmit={handleRegister} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="firstName" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Ad</Label>
@@ -266,7 +230,7 @@ const Register = () => {
               </Button>
             </form>
 
-            <div className="relative my-7" style={{ transform: "translateZ(20px)" }}>
+            <div className="relative my-7">
               <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-white/5" /></div>
               <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest"><span className="bg-black/40 px-3 text-slate-600">veya</span></div>
             </div>
@@ -277,18 +241,17 @@ const Register = () => {
               className="w-full h-14 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold transition-all flex gap-3"
               onClick={handleGoogleSignup}
               disabled={loading || googleLoading}
-              style={{ transform: "translateZ(20px)" }}
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                <path fill="currentColor" opacity="0.8" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                <path fill="currentColor" opacity="0.6" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                <path fill="currentColor" opacity="0.9" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
               Google ile Katılın
             </Button>
 
-            <div className="mt-8 text-center" style={{ transform: "translateZ(20px)" }}>
+            <div className="mt-8 text-center">
               <p className="text-slate-400 font-medium text-sm">
                 Zaten hesabınız var mı? <Link to="/giris" className="text-primary hover:text-primary/80 font-bold ml-1 transition-colors">Giriş Yap</Link>
               </p>

@@ -17,33 +17,6 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  // 3D Tilt Effect
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  const mouseXSpring = useSpring(x);
-  const mouseYSpring = useSpring(y);
-
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    const xPct = mouseX / width - 0.5;
-    const yPct = mouseY / height - 0.5;
-    x.set(xPct);
-    y.set(yPct);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -187,33 +160,17 @@ const Login = () => {
       </div>
 
       <motion.div
-        className="relative w-full max-w-[440px] perspective-1000"
-        initial={{ opacity: 0, y: 40, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        whileHover={{ scale: 1.02 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        style={{
-          rotateX,
-          rotateY,
-          transformStyle: "preserve-3d",
-        }}
+        className="relative w-full max-w-[440px] z-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -5 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div
-          className="relative group rounded-[2.5rem] p-1 bg-gradient-to-b from-white/10 to-white/5 border border-white/10 backdrop-blur-xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)]"
-          style={{ transform: "translateZ(20px)" }}
-        >
+        <div className="relative group rounded-[2.5rem] p-px bg-gradient-to-b from-white/20 to-transparent border border-white/10 backdrop-blur-xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)]">
           {/* Inner glass layer */}
-          <div className="rounded-[2.25rem] bg-black/40 p-8 md:p-10 backdrop-blur-sm border border-white/5 relative overflow-hidden">
-            {/* Subtle light sweep effect */}
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full"
-              animate={{ translateX: ["100%", "-100%"] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-            />
+          <div className="rounded-[2.45rem] bg-black/40 p-8 md:p-10 backdrop-blur-md border border-white/5 relative">
 
-            <div className="flex flex-col items-center mb-10" style={{ transform: "translateZ(40px)" }}>
+            <div className="flex flex-col items-center mb-10">
               <Link to="/" className="relative group">
                 <div className="absolute -inset-4 bg-primary/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <img
@@ -224,19 +181,19 @@ const Login = () => {
               </Link>
             </div>
 
-            <div className="mb-8 text-center" style={{ transform: "translateZ(30px)" }}>
+            <div className="mb-8 text-center">
               <h1 className="font-display text-4xl font-bold tracking-tight text-white mb-2">
                 Hoş Geldiniz
               </h1>
               <p className="text-slate-400 font-medium">Lütfen bilgilerinizi girin</p>
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-5" style={{ transform: "translateZ(30px)" }}>
+            <form onSubmit={handleLogin} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-xs font-bold uppercase tracking-widest text-slate-500 ml-1">E-posta</Label>
                 <div className="relative group/input">
-                  <div className="absolute inset-0 bg-primary/5 rounded-2xl blur-md opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300" />
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within/input:text-primary transition-colors" />
+                  <div className="absolute inset-0 bg-primary/5 rounded-2xl blur-md opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within/input:text-primary transition-colors pointer-events-none" />
                   <Input
                     id="email"
                     type="text"
@@ -257,8 +214,8 @@ const Login = () => {
                   </Link>
                 </div>
                 <div className="relative group/input">
-                  <div className="absolute inset-0 bg-primary/5 rounded-2xl blur-md opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300" />
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within/input:text-primary transition-colors" />
+                  <div className="absolute inset-0 bg-primary/5 rounded-2xl blur-md opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within/input:text-primary transition-colors pointer-events-none" />
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
@@ -296,7 +253,7 @@ const Login = () => {
               </Button>
             </form>
 
-            <div className="relative my-8" style={{ transform: "translateZ(30px)" }}>
+            <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-white/10" />
               </div>
@@ -311,22 +268,21 @@ const Login = () => {
               className="w-full h-14 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold transition-all active:scale-[0.98] flex gap-3"
               onClick={handleGoogleLogin}
               disabled={loading || googleLoading}
-              style={{ transform: "translateZ(30px)" }}
             >
               {googleLoading ? (
                 <span className="h-5 w-5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
               ) : (
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
-                  <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="currentColor" opacity="0.8" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="currentColor" opacity="0.6" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                  <path fill="currentColor" opacity="0.9" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
               )}
               Google ile Devam Et
             </Button>
 
-            <div className="mt-10 text-center" style={{ transform: "translateZ(30px)" }}>
+            <div className="mt-10 text-center">
               <p className="text-slate-400 font-medium">
                 Henüz hesabınız yok mu?{" "}
                 <Link to="/kayit" className="text-primary hover:text-primary/80 font-bold transition-colors ml-1 underline-offset-4 hover:underline">

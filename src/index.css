@@ -16,6 +16,7 @@
   .bg-background {
     background-color: hsl(40 12% 97% / 0.85) !important;
   }
+
   :root {
     --background: 40 12% 97%;
     --foreground: 35 12% 12%;
@@ -109,7 +110,10 @@
     background-repeat: repeat;
   }
 
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     font-family: var(--font-display);
   }
 }
@@ -118,27 +122,29 @@
   .font-display {
     font-family: var(--font-display);
   }
+
   .font-body {
     font-family: var(--font-body);
   }
+
   .text-gradient {
     background: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(var(--gold-light)) 50%, hsl(var(--gold)) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+
   .glass {
     background: hsl(var(--card) / 0.7);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
   }
+
   .shimmer {
-    background: linear-gradient(
-      110deg,
-      transparent 33%,
-      hsl(var(--gold-light) / 0.15) 50%,
-      transparent 67%
-    );
+    background: linear-gradient(110deg,
+        transparent 33%,
+        hsl(var(--gold-light) / 0.15) 50%,
+        transparent 67%);
     background-size: 300% 100%;
     animation: shimmer 3s ease-in-out infinite;
   }
@@ -180,8 +186,8 @@
   }
 
   .transition-gpu {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-                opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: transform, opacity;
   }
 
@@ -233,31 +239,61 @@
 }
 
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 @keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 @keyframes float-up {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
 }
 
 @keyframes float-down {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(20px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(20px);
+  }
 }
 
 @keyframes pulse-glow {
-  0%, 100% { 
+
+  0%,
+  100% {
     opacity: 1;
     box-shadow: 0 0 0 0 hsl(var(--primary) / 0.7);
   }
+
   50% {
     box-shadow: 0 0 0 10px hsl(var(--primary) / 0);
   }
@@ -268,6 +304,7 @@
     opacity: 0;
     transform: translateX(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -279,6 +316,7 @@
     opacity: 0;
     transform: translateX(20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -289,6 +327,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
