@@ -93,7 +93,7 @@ Deno.serve(async (req: Request) => {
     for (const recipient of recipients) {
       try {
         await resend.sendEmail({
-          from: "Refik Keşif <noreply@refikkesifinsa.online>",
+          from: "Refik Keşif <noreply@refik.online>",
           to: [recipient.email],
           subject,
           html: `

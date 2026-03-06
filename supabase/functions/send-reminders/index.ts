@@ -114,7 +114,7 @@ serve(async (req) => {
 
           try {
             await resend.emails.send({
-              from: "Refik Keşif <noreply@refikkesifinsa.online>",
+              from: "Refik Keşif <noreply@refik.online>",
               to: [userData.user.email],
               subject: `Hatırlatma: ${event.title} - ${label} sonra`,
               html: `

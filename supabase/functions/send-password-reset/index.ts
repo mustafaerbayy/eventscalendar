@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
       type: "recovery",
       email,
       options: {
-        redirectTo: "https://refikkesifinsa.online/sifre-sifirla",
+        redirectTo: "https://refik.online/sifre-sifirla",
       },
     });
 
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
     });
 
     const { error: emailError } = await resend.emails.send({
-      from: "Refik Keşif <info@refikkesifinsa.online>",
+      from: "Refik Keşif <info@refik.online>",
       to: [email],
       subject: "Şifrenizi Sıfırlayın - Refik Keşif",
       html: `
@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
               </p>
               <hr style="border:none;border-top:1px solid hsl(40,15%,88%);margin:32px 0 16px;" />
               <p style="font-size:12px;color:hsl(220,10%,46%);">
-                Refik Keşif — refikkesifinsa.online
+                Refik Keşif — refik.online
               </p>
             </div>
           </body>
