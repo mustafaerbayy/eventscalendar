@@ -203,7 +203,8 @@ const Register = () => {
                 <div className="space-y-1.5">
                   <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Şifre</Label>
                   <div className="relative group/input">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within/input:text-primary transition-colors" />
+                    <div className="absolute inset-0 bg-primary/5 rounded-xl blur-md opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within/input:text-primary transition-colors pointer-events-none" />
                     <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="pl-11 pr-10 h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-white" />
                     <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
