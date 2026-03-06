@@ -52,7 +52,7 @@ const Profile = () => {
   const [deleting, setDeleting] = useState(false);
 
   // Check if user logged in with OAuth (Google)
-  const isOAuthUser = user?.app_metadata?.provider === 'google' || 
+  const isOAuthUser = user?.app_metadata?.provider === 'google' ||
     user?.identities?.some(identity => identity.provider === 'google');
 
   useEffect(() => {
@@ -169,7 +169,7 @@ const Profile = () => {
   if (loading) return null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-24 md:pt-28">
       <Navbar />
 
       {/* Header */}
@@ -215,198 +215,198 @@ const Profile = () => {
 
           {activeSection === "account" && (
             <>
-          {/* İsim Güncelle */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
-            <Card className="border-border/50 bg-card/70 backdrop-blur-sm shadow-lg shadow-primary/5">
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <User className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <CardTitle className="font-display text-xl">İsim Bilgileri</CardTitle>
-                    <CardDescription>Ad ve soyadınızı güncelleyin</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">Ad</Label>
-                    <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Adınız" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Soyad</Label>
-                    <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Soyadınız" />
-                  </div>
-                </div>
-                <Button onClick={handleSaveName} className="w-full gap-2" disabled={savingName}>
-                  <Save className="h-4 w-4" />
-                  {savingName ? "Kaydediliyor..." : "İsmi Güncelle"}
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
+              {/* İsim Güncelle */}
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
+                <Card className="border-border/50 bg-card/70 backdrop-blur-sm shadow-lg shadow-primary/5">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <User className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <CardTitle className="font-display text-xl">İsim Bilgileri</CardTitle>
+                        <CardDescription>Ad ve soyadınızı güncelleyin</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">Ad</Label>
+                        <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Adınız" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Soyad</Label>
+                        <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Soyadınız" />
+                      </div>
+                    </div>
+                    <Button onClick={handleSaveName} className="w-full gap-2" disabled={savingName}>
+                      <Save className="h-4 w-4" />
+                      {savingName ? "Kaydediliyor..." : "İsmi Güncelle"}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
 
-          {/* Google OAuth Kullanıcısı Bilgilendirmesi */}
-          {isOAuthUser && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}>
-            <Card className="border-border/50 bg-card/70 backdrop-blur-sm shadow-lg shadow-primary/5">
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Mail className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <CardTitle className="font-display text-xl">E-posta Adresi</CardTitle>
-                    <CardDescription>Google hesabınızdan yönetilmektedir</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email-readonly">E-posta</Label>
-                  <Input 
-                    id="email-readonly" 
-                    type="email" 
-                    value={email} 
-                    readOnly 
-                    disabled
-                    className="bg-muted/50 cursor-not-allowed"
-                  />
-                </div>
-                <div className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">
-                  <p className="flex items-center gap-2">
-                    <svg className="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24">
-                      <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-                    </svg>
-                    Google ile giriş yaptığınız için e-posta adresinizi ve şifrenizi buradan değiştiremezsiniz. Bu ayarları Google hesabınızdan yönetebilirsiniz.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-          )}
+              {/* Google OAuth Kullanıcısı Bilgilendirmesi */}
+              {isOAuthUser && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}>
+                  <Card className="border-border/50 bg-card/70 backdrop-blur-sm shadow-lg shadow-primary/5">
+                    <CardHeader className="pb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                          <Mail className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <CardTitle className="font-display text-xl">E-posta Adresi</CardTitle>
+                          <CardDescription>Google hesabınızdan yönetilmektedir</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="email-readonly">E-posta</Label>
+                        <Input
+                          id="email-readonly"
+                          type="email"
+                          value={email}
+                          readOnly
+                          disabled
+                          className="bg-muted/50 cursor-not-allowed"
+                        />
+                      </div>
+                      <div className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">
+                        <p className="flex items-center gap-2">
+                          <svg className="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                          </svg>
+                          Google ile giriş yaptığınız için e-posta adresinizi ve şifrenizi buradan değiştiremezsiniz. Bu ayarları Google hesabınızdan yönetebilirsiniz.
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
 
-          {/* E-posta Güncelle - Sadece email/password ile giriş yapanlar için */}
-          {!isOAuthUser && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}>
-            <Card className="border-border/50 bg-card/70 backdrop-blur-sm shadow-lg shadow-primary/5">
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Mail className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <CardTitle className="font-display text-xl">E-posta Adresi</CardTitle>
-                    <CardDescription>Yeni adrese doğrulama maili gönderilecektir</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">E-posta</Label>
-                  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ornek@email.com" />
-                </div>
-                <Button onClick={handleSaveEmail} className="w-full gap-2" disabled={savingEmail}>
-                  <Save className="h-4 w-4" />
-                  {savingEmail ? "Güncelleniyor..." : "E-postayı Güncelle"}
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-          )}
+              {/* E-posta Güncelle - Sadece email/password ile giriş yapanlar için */}
+              {!isOAuthUser && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}>
+                  <Card className="border-border/50 bg-card/70 backdrop-blur-sm shadow-lg shadow-primary/5">
+                    <CardHeader className="pb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                          <Mail className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <CardTitle className="font-display text-xl">E-posta Adresi</CardTitle>
+                          <CardDescription>Yeni adrese doğrulama maili gönderilecektir</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="email">E-posta</Label>
+                        <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ornek@email.com" />
+                      </div>
+                      <Button onClick={handleSaveEmail} className="w-full gap-2" disabled={savingEmail}>
+                        <Save className="h-4 w-4" />
+                        {savingEmail ? "Güncelleniyor..." : "E-postayı Güncelle"}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
 
-          {/* Şifre Güncelle - Sadece email/password ile giriş yapanlar için */}
-          {!isOAuthUser && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 }}>
-            <Card className="border-border/50 bg-card/70 backdrop-blur-sm shadow-lg shadow-primary/5">
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Lock className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <CardTitle className="font-display text-xl">Şifre Değiştir</CardTitle>
-                    <CardDescription>Güvenliğiniz için güçlü bir şifre seçin</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="currentPassword">Mevcut Şifre</Label>
-                  <Input id="currentPassword" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Mevcut şifreniz" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword">Yeni Şifre</Label>
-                  <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="En az 6 karakter" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Yeni Şifre (Tekrar)</Label>
-                  <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Yeni şifrenizi tekrar girin" />
-                </div>
-                <Button onClick={handleSavePassword} className="w-full gap-2" disabled={savingPassword}>
-                  <Save className="h-4 w-4" />
-                  {savingPassword ? "Güncelleniyor..." : "Şifreyi Güncelle"}
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-          )}
+              {/* Şifre Güncelle - Sadece email/password ile giriş yapanlar için */}
+              {!isOAuthUser && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 }}>
+                  <Card className="border-border/50 bg-card/70 backdrop-blur-sm shadow-lg shadow-primary/5">
+                    <CardHeader className="pb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                          <Lock className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <CardTitle className="font-display text-xl">Şifre Değiştir</CardTitle>
+                          <CardDescription>Güvenliğiniz için güçlü bir şifre seçin</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="currentPassword">Mevcut Şifre</Label>
+                        <Input id="currentPassword" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Mevcut şifreniz" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="newPassword">Yeni Şifre</Label>
+                        <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="En az 6 karakter" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="confirmPassword">Yeni Şifre (Tekrar)</Label>
+                        <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Yeni şifrenizi tekrar girin" />
+                      </div>
+                      <Button onClick={handleSavePassword} className="w-full gap-2" disabled={savingPassword}>
+                        <Save className="h-4 w-4" />
+                        {savingPassword ? "Güncelleniyor..." : "Şifreyi Güncelle"}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
 
             </>
           )}
 
           {activeSection === "reminders" && (
             <>
-          {/* Hatırlatıcılar */}
-          <motion.div id="reminders-section" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.4 }}>
-            <Card className="border-border/50 bg-card/70 backdrop-blur-sm shadow-lg shadow-primary/5 overflow-hidden">
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Bell className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <CardTitle className="font-display text-xl">Hatırlatıcı Tercihleri</CardTitle>
-                    <CardDescription className="mt-0.5">Katıldığınız etkinlikler için ne zaman e-posta hatırlatıcısı almak istediğinizi seçin.</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-1 pt-0">
-                {reminderOptions.map((opt, i) => (
-                  <motion.div
-                    key={opt.key}
-                    className="group flex items-center justify-between rounded-xl px-4 py-3.5 transition-colors hover:bg-muted/50"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 + i * 0.06, duration: 0.35 }}
-                  >
+              {/* Hatırlatıcılar */}
+              <motion.div id="reminders-section" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.4 }}>
+                <Card className="border-border/50 bg-card/70 backdrop-blur-sm shadow-lg shadow-primary/5 overflow-hidden">
+                  <CardHeader className="pb-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                        <opt.icon className="h-4 w-4" />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Bell className="h-5 w-5" />
                       </div>
                       <div>
-                        <Label htmlFor={opt.key} className="text-sm font-medium text-foreground cursor-pointer">{opt.label}</Label>
-                        <p className="text-xs text-muted-foreground mt-0.5">{opt.description}</p>
+                        <CardTitle className="font-display text-xl">Hatırlatıcı Tercihleri</CardTitle>
+                        <CardDescription className="mt-0.5">Katıldığınız etkinlikler için ne zaman e-posta hatırlatıcısı almak istediğinizi seçin.</CardDescription>
                       </div>
                     </div>
-                    <Switch
-                      id={opt.key}
-                      checked={reminders[opt.key]}
-                      onCheckedChange={(val) => setReminders((prev) => ({ ...prev, [opt.key]: val }))}
-                    />
-                  </motion.div>
-                ))}
-                <div className="pt-4 px-4">
-                  <Button onClick={handleSaveReminders} className="w-full gap-2 shadow-md shadow-primary/10" disabled={saving}>
-                    <Save className="h-4 w-4" />
-                    {saving ? "Kaydediliyor..." : "Tercihleri Kaydet"}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+                  </CardHeader>
+                  <CardContent className="space-y-1 pt-0">
+                    {reminderOptions.map((opt, i) => (
+                      <motion.div
+                        key={opt.key}
+                        className="group flex items-center justify-between rounded-xl px-4 py-3.5 transition-colors hover:bg-muted/50"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.4 + i * 0.06, duration: 0.35 }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                            <opt.icon className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <Label htmlFor={opt.key} className="text-sm font-medium text-foreground cursor-pointer">{opt.label}</Label>
+                            <p className="text-xs text-muted-foreground mt-0.5">{opt.description}</p>
+                          </div>
+                        </div>
+                        <Switch
+                          id={opt.key}
+                          checked={reminders[opt.key]}
+                          onCheckedChange={(val) => setReminders((prev) => ({ ...prev, [opt.key]: val }))}
+                        />
+                      </motion.div>
+                    ))}
+                    <div className="pt-4 px-4">
+                      <Button onClick={handleSaveReminders} className="w-full gap-2 shadow-md shadow-primary/10" disabled={saving}>
+                        <Save className="h-4 w-4" />
+                        {saving ? "Kaydediliyor..." : "Tercihleri Kaydet"}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
             </>
           )}
 
@@ -431,9 +431,9 @@ const Profile = () => {
                     <span>Hesabınızı sildiğinizde tüm verileriniz kalıcı olarak silinecektir. Bu işlem geri alınamaz.</span>
                   </p>
                 </div>
-                <Button 
-                  onClick={() => setDeleteDialogOpen(true)} 
-                  variant="destructive" 
+                <Button
+                  onClick={() => setDeleteDialogOpen(true)}
+                  variant="destructive"
                   className="w-full gap-2"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -487,15 +487,15 @@ const Profile = () => {
             </div>
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
               disabled={deleting}
             >
               İptal
             </Button>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={handleDeleteAccount}
               disabled={deleting}
               className="gap-2"

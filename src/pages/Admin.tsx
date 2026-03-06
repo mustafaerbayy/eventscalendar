@@ -237,10 +237,10 @@ const Admin = () => {
       if (error) { toast.error(getErrorMessage(error)); return; }
       if (data?.error) { toast.error(data.error); return; }
       toast.success("Kullanıcı silindi.");
-      
+
       // Silinen kullanıcıyı state'den hemen kaldır (UI güncelles)
       setAllUsers(prev => prev.filter(u => u.id !== userId));
-      
+
       fetchUsers();
       fetchAll();
     } catch (err: any) { toast.error(getErrorMessage(err)); }
@@ -267,10 +267,10 @@ const Admin = () => {
   };
 
   const handleEditUser = (user: ManagedUser) => {
-    setEditUserData({ 
-      id: user.id, 
-      email: user.email, 
-      first_name: user.first_name, 
+    setEditUserData({
+      id: user.id,
+      email: user.email,
+      first_name: user.first_name,
       last_name: user.last_name,
       new_password: "",
       confirm_password: ""
@@ -284,8 +284,8 @@ const Admin = () => {
     if (editUserData.new_password && editUserData.new_password !== editUserData.confirm_password) { toast.error("Şifreler eşleşmiyor."); return; }
     setUsersLoading(true);
     try {
-      const updatePayload: any = { 
-        action: "update", 
+      const updatePayload: any = {
+        action: "update",
         user_id: editUserData.id,
         email: editUserData.email.trim(),
         first_name: editUserData.first_name.trim(),
@@ -299,40 +299,40 @@ const Admin = () => {
       const { data, error } = await supabase.functions.invoke("manage-users", {
         body: updatePayload,
       });
-      
-      if (error) { 
+
+      if (error) {
         console.error("Function error:", error);
-        toast.error(getErrorMessage(error)); 
+        toast.error(getErrorMessage(error));
         setUsersLoading(false);
-        return; 
+        return;
       }
-      
+
       console.log("Function response:", data);
-      
+
       if (data?.success === false) {
         console.error("Update failed:", data);
         toast.error(data?.error || "Güncelleme başarısız oldu");
         setUsersLoading(false);
         return;
       }
-      
-      if (data?.error) { 
+
+      if (data?.error) {
         console.error("Update error:", data.error);
-        toast.error(data.error); 
+        toast.error(data.error);
         setUsersLoading(false);
-        return; 
+        return;
       }
-      
+
       toast.success(editUserData.new_password ? "Kullanıcı bilgileri ve şifre güncellendi." : "Kullanıcı bilgileri güncellendi.");
       setEditUserDialog(false);
       setEditUserData({ id: "", email: "", first_name: "", last_name: "", new_password: "", confirm_password: "" });
       fetchUsers();
       fetchAll();
-    } catch (err: any) { 
+    } catch (err: any) {
       console.error("Update user error:", err);
-      toast.error(getErrorMessage(err)); 
-    } finally { 
-      setUsersLoading(false); 
+      toast.error(getErrorMessage(err));
+    } finally {
+      setUsersLoading(false);
     }
   };
 
@@ -350,10 +350,10 @@ const Admin = () => {
 
   useEffect(() => {
     if (isAdmin && user && !loading) {
-      fetchAll(); 
-      fetchAdmins(); 
-      fetchUsers(); 
-    } 
+      fetchAll();
+      fetchAdmins();
+      fetchUsers();
+    }
   }, [isAdmin, user?.id, loading]);
 
   const openDialog = (type: typeof dialogType, item?: any) => {
@@ -370,15 +370,15 @@ const Admin = () => {
   };
 
   const handleSave = async () => {
-    let dataToSave = { ...formData };
-    
+    const dataToSave = { ...formData };
+
     if (dialogType === "event") {
       if (!formData.title || !formData.date || !formData.time || !formData.category_id) { toast.error("Lütfen başlık, tarih, saat ve kategori alanlarını doldurun."); return; }
       // Mekan bilgisi venue_name'e kaydedilecek
       if (!formData.venue_name?.trim()) { toast.error("Lütfen mekan adını girin."); return; }
       dataToSave.venue_id = null; // Artık venue_id kullanmayacağız
     }
-    
+
     if ((dialogType === "city" || dialogType === "category") && !formData.name?.trim()) { toast.error("Lütfen bir ad girin."); return; }
     if (dialogType === "venue" && !formData.city_id) { toast.error("Lütfen bir şehir seçin."); return; }
     const doSave = async (table: "cities" | "categories" | "venues" | "events") => {
@@ -452,12 +452,14 @@ const Admin = () => {
 
   const statCards = [
     { icon: Calendar, label: "Toplam Etkinlik", value: stats.totalEvents, color: "text-primary", bg: "bg-primary/10", clickable: false },
-    { icon: Users, label: "Aktif Kullanıcı", value: stats.totalUsers, color: "text-accent", bg: "bg-accent/10", clickable: user?.email === "admin@admin.com", onClick: () => {
-      setActiveTab("users");
-      setTimeout(() => {
-        tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-    } },
+    {
+      icon: Users, label: "Aktif Kullanıcı", value: stats.totalUsers, color: "text-accent", bg: "bg-accent/10", clickable: user?.email === "admin@admin.com", onClick: () => {
+        setActiveTab("users");
+        setTimeout(() => {
+          tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
+    },
   ];
 
   const reminderBars = [
@@ -501,7 +503,7 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-24 md:pt-28">
       <Navbar />
 
       {/* Header */}
@@ -530,10 +532,9 @@ const Admin = () => {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {statCards.map((s, i) => (
             <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08, duration: 0.4 }}>
-              <Card 
-                className={`border-border/50 bg-card/70 backdrop-blur-sm hover:shadow-lg hover:shadow-primary/5 transition-all ${
-                  s.clickable ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98]' : ''
-                }`}
+              <Card
+                className={`border-border/50 bg-card/70 backdrop-blur-sm hover:shadow-lg hover:shadow-primary/5 transition-all ${s.clickable ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98]' : ''
+                  }`}
                 onClick={s.clickable ? s.onClick : undefined}
               >
                 <CardContent className="p-5">
@@ -775,39 +776,39 @@ const Admin = () => {
                           {selectedUsers.length === profiles.length ? "Tümünü Kaldır" : "Tümünü Seç"}
                         </Button>
                       </div>
-                      
+
                       {/* Search Input */}
-                      <Input 
-                        placeholder="Kullanıcı adı veya soyadı ile ara..." 
-                        value={searchQuery} 
+                      <Input
+                        placeholder="Kullanıcı adı veya soyadı ile ara..."
+                        value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="text-sm"
                       />
-                      
+
                       <div className="max-h-48 overflow-y-auto rounded-xl border border-border/50 divide-y divide-border/30">
                         {profiles
-                          .filter(p => 
+                          .filter(p =>
                             `${p.first_name} ${p.last_name}`.toLowerCase().includes(searchQuery.toLowerCase())
                           )
                           .map((p) => (
-                          <label
-                            key={p.id}
-                            className="flex items-center gap-3 px-3 py-2.5 hover:bg-muted/30 cursor-pointer transition-colors"
-                          >
-                            <Checkbox
-                              checked={selectedUsers.includes(p.id)}
-                              onCheckedChange={() => toggleUser(p.id)}
-                            />
-                            <div className="flex items-center gap-2 min-w-0">
-                              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold shrink-0">
-                                {p.first_name?.[0] || "?"}
+                            <label
+                              key={p.id}
+                              className="flex items-center gap-3 px-3 py-2.5 hover:bg-muted/30 cursor-pointer transition-colors"
+                            >
+                              <Checkbox
+                                checked={selectedUsers.includes(p.id)}
+                                onCheckedChange={() => toggleUser(p.id)}
+                              />
+                              <div className="flex items-center gap-2 min-w-0">
+                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold shrink-0">
+                                  {p.first_name?.[0] || "?"}
+                                </div>
+                                <span className="text-sm font-medium text-foreground truncate">
+                                  {p.first_name} {p.last_name}
+                                </span>
                               </div>
-                              <span className="text-sm font-medium text-foreground truncate">
-                                {p.first_name} {p.last_name}
-                              </span>
-                            </div>
-                          </label>
-                        ))}
+                            </label>
+                          ))}
                         {profiles.filter(p => `${p.first_name} ${p.last_name}`.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
                           <p className="text-sm text-muted-foreground text-center py-4">
                             {searchQuery.trim() ? "Eşleşen kullanıcı bulunamadı" : "Henüz kayıtlı kullanıcı yok"}
@@ -850,7 +851,7 @@ const Admin = () => {
                                 </span>
                               </div>
                               <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{a.body}</p>
-                      <div className="flex items-center gap-3 mt-2.5">
+                              <div className="flex items-center gap-3 mt-2.5">
                                 <span className="inline-flex items-center gap-1 text-xs text-primary">
                                   <Users className="h-3 w-3" /> {a.recipient_count} alıcı
                                 </span>
@@ -897,17 +898,17 @@ const Admin = () => {
                       <UserPlus className="h-4 w-4" /> Yeni Kullanıcı
                     </Button>
                   </div>
-                  
+
                   {/* Search Input */}
                   <div className="mb-4">
-                    <Input 
-                      placeholder="Kullanıcı ara (ad, soyad veya e-posta)..." 
-                      value={userSearchQuery} 
+                    <Input
+                      placeholder="Kullanıcı ara (ad, soyad veya e-posta)..."
+                      value={userSearchQuery}
                       onChange={(e) => setUserSearchQuery(e.target.value)}
                       className="text-sm"
                     />
                   </div>
-                  
+
                   <div className="rounded-xl border border-border/50 overflow-hidden">
                     <Table>
                       <TableHeader>
@@ -922,127 +923,125 @@ const Admin = () => {
                       </TableHeader>
                       <TableBody>
                         {allUsers
-                          .filter(u => 
+                          .filter(u =>
                             u.email !== "admin@admin.com" &&
                             `${u.first_name} ${u.last_name} ${u.email}`.toLowerCase().includes(userSearchQuery.toLowerCase())
                           )
                           .map((u) => {
-                          const admin = admins.find(a => a.id === u.id);
-                          return (
-                          <TableRow key={u.id} className="hover:bg-muted/20">
-                            <TableCell className="font-medium">
-                              <div className="flex items-center gap-2">
-                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold shrink-0">
-                                  {u.first_name?.[0] || u.email?.[0]?.toUpperCase() || "?"}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span>{u.first_name} {u.last_name}</span>
-                                  {admin && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Admin</Badge>}
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-muted-foreground">{u.email}</TableCell>
-                            <TableCell className="text-muted-foreground text-sm">
-                              {new Date(u.created_at).toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" })}
-                            </TableCell>
-                            <TableCell className="text-center">
-                              {admin ? (
-                                u.email !== "admin@admin.com" ? (
-                                  <Button
-                                    size="sm"
-                                    className={`gap-1.5 text-xs ${
-                                      admin.has_announcement_access 
-                                        ? "bg-green-100 text-green-700 hover:bg-green-200" 
-                                        : "bg-red-100 text-red-700 hover:bg-red-200"
-                                    }`}
-                                    onClick={() => handleToggleAnnouncement(u.id)}
-                                    disabled={adminLoading}
-                                  >
-                                    <Megaphone className="h-3 w-3" />
-                                    {admin.has_announcement_access ? "Aktif" : "Pasif"}
-                                  </Button>
-                                ) : (
-                                  <span className="text-xs text-muted-foreground">Her zaman</span>
-                                )
-                              ) : (
-                                <span className="text-xs text-muted-foreground">-</span>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-center">
-                              {admin ? (
-                                u.email !== "admin@admin.com" ? (
-                                  <Button
-                                    size="sm"
-                                    className={`gap-1.5 text-xs ${
-                                      admin.has_report_access 
-                                        ? "bg-green-100 text-green-700 hover:bg-green-200" 
-                                        : "bg-red-100 text-red-700 hover:bg-red-200"
-                                    }`}
-                                    onClick={() => handleToggleReportAdmin(u.id)}
-                                    disabled={adminLoading}
-                                  >
-                                    <FileText className="h-3 w-3" />
-                                    {admin.has_report_access ? "Aktif" : "Pasif"}
-                                  </Button>
-                                ) : (
-                                  <span className="text-xs text-muted-foreground">Her zaman</span>
-                                )
-                              ) : (
-                                <span className="text-xs text-muted-foreground">-</span>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
-                                  onClick={() => handleEditUser(u)}
-                                  disabled={usersLoading}
-                                  title="Kullanıcı bilgilerini düzenle"
-                                >
-                                  <Pencil className="h-3.5 w-3.5" />
-                                </Button>
-                                {u.email !== "admin@admin.com" && (
-                                  <Button
-                                    size="sm"
-                                    className={`h-8 px-2 text-xs gap-1 ${
-                                      admin 
-                                        ? "bg-green-100 text-green-700 hover:bg-green-200" 
-                                        : "bg-red-100 text-red-700 hover:bg-red-200"
-                                    }`}
-                                    onClick={() => admin ? handleRemoveAdmin(u.id) : handleAddAdminById(u.id)}
-                                    disabled={adminLoading}
-                                    title={admin ? "Admin yetkisini kaldır" : "Admin yetkisi ver"}
-                                  >
-                                    <Shield className="h-3.5 w-3.5" />
-                                    {admin ? "Admin" : "Admin Yap"}
-                                  </Button>
-                                )}
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
-                                  onClick={() => handleDeleteUser(u.id)}
-                                  disabled={usersLoading || u.id === user?.id}
-                                  title={u.id === user?.id ? "Kendinizi silemezsiniz" : "Kullanıcıyı sil"}
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );})}
-                        {allUsers.filter(u => 
+                            const admin = admins.find(a => a.id === u.id);
+                            return (
+                              <TableRow key={u.id} className="hover:bg-muted/20">
+                                <TableCell className="font-medium">
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold shrink-0">
+                                      {u.first_name?.[0] || u.email?.[0]?.toUpperCase() || "?"}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <span>{u.first_name} {u.last_name}</span>
+                                      {admin && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Admin</Badge>}
+                                    </div>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-muted-foreground">{u.email}</TableCell>
+                                <TableCell className="text-muted-foreground text-sm">
+                                  {new Date(u.created_at).toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" })}
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  {admin ? (
+                                    u.email !== "admin@admin.com" ? (
+                                      <Button
+                                        size="sm"
+                                        className={`gap-1.5 text-xs ${admin.has_announcement_access
+                                            ? "bg-green-100 text-green-700 hover:bg-green-200"
+                                            : "bg-red-100 text-red-700 hover:bg-red-200"
+                                          }`}
+                                        onClick={() => handleToggleAnnouncement(u.id)}
+                                        disabled={adminLoading}
+                                      >
+                                        <Megaphone className="h-3 w-3" />
+                                        {admin.has_announcement_access ? "Aktif" : "Pasif"}
+                                      </Button>
+                                    ) : (
+                                      <span className="text-xs text-muted-foreground">Her zaman</span>
+                                    )
+                                  ) : (
+                                    <span className="text-xs text-muted-foreground">-</span>
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  {admin ? (
+                                    u.email !== "admin@admin.com" ? (
+                                      <Button
+                                        size="sm"
+                                        className={`gap-1.5 text-xs ${admin.has_report_access
+                                            ? "bg-green-100 text-green-700 hover:bg-green-200"
+                                            : "bg-red-100 text-red-700 hover:bg-red-200"
+                                          }`}
+                                        onClick={() => handleToggleReportAdmin(u.id)}
+                                        disabled={adminLoading}
+                                      >
+                                        <FileText className="h-3 w-3" />
+                                        {admin.has_report_access ? "Aktif" : "Pasif"}
+                                      </Button>
+                                    ) : (
+                                      <span className="text-xs text-muted-foreground">Her zaman</span>
+                                    )
+                                  ) : (
+                                    <span className="text-xs text-muted-foreground">-</span>
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex justify-end gap-1">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
+                                      onClick={() => handleEditUser(u)}
+                                      disabled={usersLoading}
+                                      title="Kullanıcı bilgilerini düzenle"
+                                    >
+                                      <Pencil className="h-3.5 w-3.5" />
+                                    </Button>
+                                    {u.email !== "admin@admin.com" && (
+                                      <Button
+                                        size="sm"
+                                        className={`h-8 px-2 text-xs gap-1 ${admin
+                                            ? "bg-green-100 text-green-700 hover:bg-green-200"
+                                            : "bg-red-100 text-red-700 hover:bg-red-200"
+                                          }`}
+                                        onClick={() => admin ? handleRemoveAdmin(u.id) : handleAddAdminById(u.id)}
+                                        disabled={adminLoading}
+                                        title={admin ? "Admin yetkisini kaldır" : "Admin yetkisi ver"}
+                                      >
+                                        <Shield className="h-3.5 w-3.5" />
+                                        {admin ? "Admin" : "Admin Yap"}
+                                      </Button>
+                                    )}
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
+                                      onClick={() => handleDeleteUser(u.id)}
+                                      disabled={usersLoading || u.id === user?.id}
+                                      title={u.id === user?.id ? "Kendinizi silemezsiniz" : "Kullanıcıyı sil"}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        {allUsers.filter(u =>
                           u.email !== "admin@admin.com" &&
                           `${u.first_name} ${u.last_name} ${u.email}`.toLowerCase().includes(userSearchQuery.toLowerCase())
                         ).length === 0 && (
-                          <TableRow>
-                            <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                              {usersLoading ? "Yükleniyor..." : userSearchQuery.trim() ? "Eşleşen kullanıcı bulunamadı" : "Henüz kullanıcı bulunmuyor"}
-                            </TableCell>
-                          </TableRow>
-                        )}
+                            <TableRow>
+                              <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                                {usersLoading ? "Yükleniyor..." : userSearchQuery.trim() ? "Eşleşen kullanıcı bulunamadı" : "Henüz kullanıcı bulunmuyor"}
+                              </TableCell>
+                            </TableRow>
+                          )}
                       </TableBody>
                     </Table>
                   </div>

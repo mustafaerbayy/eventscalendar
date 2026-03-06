@@ -15,7 +15,7 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-24 md:pt-28">
       <Navbar />
       <div className="flex min-h-[calc(100vh-7rem)] items-center justify-center px-4 relative overflow-hidden">
         {/* Decorative blobs */}

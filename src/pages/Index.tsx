@@ -22,6 +22,8 @@ export function scrollToNearestEvent(viewMode: "list" | "calendar", upcomingEven
   }
   document.querySelector("#events-section")?.scrollIntoView({ behavior: "smooth" });
 }
+
+import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -34,7 +36,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, CalendarDays, Loader, Clock, Plus, Calendar, MapPin, Users, UserCheck, UserX, List, LayoutGrid } from "lucide-react";
+import { Search, CalendarDays, Loader, Clock, Plus, Minus, Calendar, MapPin, Users, UserCheck, UserX, List, LayoutGrid, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { formatTurkishDate, formatTurkishTime } from "@/lib/date-utils";
@@ -68,6 +70,7 @@ interface RsvpWithProfile {
 }
 
 const Index = () => {
+  const navigate = useNavigate();
   const { isAdmin, user } = useAuth();
   const [events, setEvents] = useState<EventWithRelations[]>([]);
   const [cities, setCities] = useState<{ id: string; name: string }[]>([]);
@@ -84,13 +87,13 @@ const Index = () => {
     setViewModeState(mode);
     localStorage.setItem("viewMode", mode);
   };
-  
+
   // Event detail dialog
   const [selectedEvent, setSelectedEvent] = useState<EventWithRelations | null>(null);
   const [selectedEventRsvps, setSelectedEventRsvps] = useState<RsvpWithProfile[]>([]);
   const [myRsvp, setMyRsvp] = useState<{ status: string; guest_count: number } | null>(null);
   const [guestCount, setGuestCount] = useState(0);
-  
+
   // Event management dialog
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventWithRelations | null>(null);
@@ -145,13 +148,18 @@ const Index = () => {
   };
 
   const handleCardClick = async (eventId: string) => {
+    if (!user) {
+      toast.info("Detayları görmek için lütfen giriş yapın.");
+      navigate("/giris");
+      return;
+    }
     const event = events.find((e) => e.id === eventId);
     if (!event) return;
-    
+
     setSelectedEvent(event);
     const rsvpData = event.rsvps || [];
     setSelectedEventRsvps(rsvpData);
-    
+
     if (user) {
       const mine = rsvpData.find((r) => r.user_id === user.id);
       if (mine) {
@@ -191,7 +199,7 @@ const Index = () => {
     setMyRsvp({ status, guest_count: gc });
     if (status === "not_attending") setGuestCount(0);
     toast.success(status === "attending" ? "Katılım kaydedildi!" : "Katılmama kaydedildi.");
-    
+
     // Refresh event data
     const { data } = await supabase
       .from("events")
@@ -308,7 +316,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <HeroSection onViewEvents={handleViewEvents} />
-      
+
       {/* Events Section with background decoration */}
       <section id="events-section" className="relative py-20">
         {/* Decorative background elements */}
@@ -327,65 +335,93 @@ const Index = () => {
 
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="text-center mb-16"
           >
-            <div className="flex items-center gap-4 mb-3">
-              <motion.div 
-                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 shadow-lg shadow-primary/20"
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                transition={{ type: "spring", stiffness: 400 }}
-              >
-                <CalendarDays className="h-6 w-6 text-primary font-bold" />
-              </motion.div>
-              <h2 className="font-display text-4xl font-bold text-foreground md:text-5xl">
-                Yaklaşan Etkinlikler
-              </h2>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6 backdrop-blur-md">
+              <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+              <span className="text-xs font-bold tracking-widest uppercase text-primary/80">Keşfet & Katıl</span>
             </div>
-            <p className="text-muted-foreground mt-2 text-lg">Katılmak istediğiniz etkinlikleri keşfedin ve hatırlatıcı ekleyin</p>
+
+            <h2 className="font-display text-5xl md:text-7xl font-black mb-6 tracking-tighter flex flex-wrap justify-center gap-x-6">
+              {["Yaklaşan", "Etkinlikler"].map((word, i) => (
+                <span key={i} className="relative inline-block overflow-hidden text-transparent bg-clip-text bg-emerald-400 drop-shadow-[0_0_40px_rgba(16,185,129,0.3)]">
+                  {word}
+                  <motion.span
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/80 to-transparent bg-clip-text text-transparent"
+                    style={{ backgroundSize: '200% auto' }}
+                    animate={{ backgroundPosition: ['200% center', '-200% center'] }}
+                    transition={{
+                      duration: 8,
+                      repeat: Infinity,
+                      ease: 'linear',
+                      repeatDelay: 3
+                    }}
+                  >
+                    {word}
+                  </motion.span>
+                </span>
+              ))}
+            </h2>
+
+
           </motion.div>
 
           {/* Enhanced Filters */}
           <motion.div
-            className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center p-6 rounded-2xl bg-gradient-to-r from-card/60 to-card/40 backdrop-blur-md border border-border/30 shadow-lg"
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center p-4 rounded-[2rem] bg-card/40 backdrop-blur-2xl border border-white/10 shadow-2xl relative overflow-hidden group"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: 0.1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
           >
+            {/* Inner Glow */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-primary/60 group-hover:text-primary transition-colors" />
               <Input
-                placeholder="Etkinlik ara..."
+                placeholder="İlham verici bir etkinlik bulun..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-12 h-11 bg-card/80 backdrop-blur border-border/40 focus:border-primary/50 focus:ring-primary/20 rounded-xl transition-all"
+                className="pl-14 h-14 bg-white/5 border-white/5 focus:bg-white/10 focus:border-primary/30 rounded-2xl transition-all placeholder:text-muted-foreground/50 text-base shadow-inner"
               />
             </div>
-            <Select value={cityFilter} onValueChange={setCityFilter}>
-              <SelectTrigger className="w-full sm:w-[200px] h-11 bg-card/80 backdrop-blur border-border/40 focus:border-primary/50 focus:ring-primary/20 rounded-xl">
-                <SelectValue placeholder="Şehir Seç" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl">
-                <SelectItem value="all">Tüm Şehirler</SelectItem>
-                {cities.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-full sm:w-[200px] h-11 bg-card/80 backdrop-blur border-border/40 focus:border-primary/50 focus:ring-primary/20 rounded-xl">
-                <SelectValue placeholder="Kategori Seç" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl">
-                <SelectItem value="all">Tüm Kategoriler</SelectItem>
-                {categories.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Select value={cityFilter} onValueChange={setCityFilter}>
+                <SelectTrigger className="w-full sm:w-[180px] h-14 bg-white/5 border-white/5 focus:bg-white/10 focus:border-primary/30 rounded-2xl transition-all shadow-inner">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-primary/60" />
+                    <SelectValue placeholder="Şehir" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border-white/10 bg-card/95 backdrop-blur-xl">
+                  <SelectItem value="all">Tüm Şehirler</SelectItem>
+                  {cities.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-full sm:w-[180px] h-14 bg-white/5 border-white/5 focus:bg-white/10 focus:border-primary/30 rounded-2xl transition-all shadow-inner">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-primary/60" />
+                    <SelectValue placeholder="Kategori" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border-white/10 bg-card/95 backdrop-blur-xl">
+                  <SelectItem value="all">Tüm Kategoriler</SelectItem>
+                  {categories.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </motion.div>
 
           {/* View Mode Toggle */}
@@ -401,11 +437,10 @@ const Index = () => {
                 variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setViewMode("list")}
-                className={`gap-2 rounded-lg px-4 h-9 transition-all ${
-                  viewMode === "list"
-                    ? "bg-gradient-to-r from-emerald-600/90 to-emerald-500/80 text-white shadow-md shadow-emerald-600/25"
-                    : "hover:bg-emerald-500/10 text-muted-foreground"
-                }`}
+                className={`gap-2 rounded-lg px-4 h-9 transition-all ${viewMode === "list"
+                  ? "bg-gradient-to-r from-emerald-600/90 to-emerald-500/80 text-white shadow-md shadow-emerald-600/25"
+                  : "hover:bg-emerald-500/10 text-muted-foreground"
+                  }`}
               >
                 <List className="h-4 w-4" />
                 <span className="hidden sm:inline">Liste</span>
@@ -414,11 +449,10 @@ const Index = () => {
                 variant={viewMode === "calendar" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setViewMode("calendar")}
-                className={`gap-2 rounded-lg px-4 h-9 transition-all ${
-                  viewMode === "calendar"
-                    ? "bg-gradient-to-r from-emerald-600/90 to-emerald-500/80 text-white shadow-md shadow-emerald-600/25"
-                    : "hover:bg-emerald-500/10 text-muted-foreground"
-                }`}
+                className={`gap-2 rounded-lg px-4 h-9 transition-all ${viewMode === "calendar"
+                  ? "bg-gradient-to-r from-emerald-600/90 to-emerald-500/80 text-white shadow-md shadow-emerald-600/25"
+                  : "hover:bg-emerald-500/10 text-muted-foreground"
+                  }`}
               >
                 <LayoutGrid className="h-4 w-4" />
                 <span className="hidden sm:inline">Takvim</span>
@@ -468,45 +502,45 @@ const Index = () => {
               <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                 <div className="space-y-2">
                   <Label>Başlık *</Label>
-                  <Input 
-                    value={formData.title} 
-                    onChange={(e) => setFormData({...formData, title: e.target.value})} 
-                    placeholder="Etkinlik başlığı" 
+                  <Input
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="Etkinlik başlığı"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label>Açıklama</Label>
-                  <Textarea 
-                    value={formData.description} 
-                    onChange={(e) => setFormData({...formData, description: e.target.value})} 
-                    placeholder="Etkinlik açıklaması" 
-                    rows={3} 
+                  <Textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Etkinlik açıklaması"
+                    rows={3}
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Tarih *</Label>
-                    <Input 
-                      type="date" 
-                      value={formData.date} 
-                      onChange={(e) => setFormData({...formData, date: e.target.value})} 
+                    <Input
+                      type="date"
+                      value={formData.date}
+                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Saat *</Label>
-                    <Input 
-                      type="time" 
-                      value={formData.time} 
-                      onChange={(e) => setFormData({...formData, time: e.target.value})} 
+                    <Input
+                      type="time"
+                      value={formData.time}
+                      onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label>Şehir *</Label>
-                  <Select value={formData.city_id} onValueChange={(val) => setFormData({...formData, city_id: val})}>
+                  <Select value={formData.city_id} onValueChange={(val) => setFormData({ ...formData, city_id: val })}>
                     <SelectTrigger><SelectValue placeholder="Şehir seçiniz" /></SelectTrigger>
                     <SelectContent>
                       {cities.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
@@ -516,7 +550,7 @@ const Index = () => {
 
                 <div className="space-y-2">
                   <Label>Kategori *</Label>
-                  <Select value={formData.category_id} onValueChange={(val) => setFormData({...formData, category_id: val})}>
+                  <Select value={formData.category_id} onValueChange={(val) => setFormData({ ...formData, category_id: val })}>
                     <SelectTrigger><SelectValue placeholder="Kategori seçiniz" /></SelectTrigger>
                     <SelectContent>
                       {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
@@ -526,10 +560,10 @@ const Index = () => {
 
                 <div className="space-y-2">
                   <Label>Mekan</Label>
-                  <Input 
-                    value={formData.venue_name} 
-                    onChange={(e) => setFormData({...formData, venue_name: e.target.value})} 
-                    placeholder="Mekan adı" 
+                  <Input
+                    value={formData.venue_name}
+                    onChange={(e) => setFormData({ ...formData, venue_name: e.target.value })}
+                    placeholder="Mekan adı"
                   />
                 </div>
               </div>
@@ -556,7 +590,7 @@ const Index = () => {
               >
                 <Loader className="h-10 w-10 text-primary" />
               </motion.div>
-              <motion.p 
+              <motion.p
                 className="text-lg text-muted-foreground font-medium"
                 animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 2, repeat: Infinity }}
@@ -567,32 +601,33 @@ const Index = () => {
           ) : viewMode === "calendar" ? (
             <div id="calendar-section">
               <CalendarView
-              events={[
-                ...upcomingEvents.map((event) => ({
-                  id: event.id,
-                  title: event.title,
-                  date: event.date,
-                  time: event.time,
-                  cityName: event.cities?.name || "",
-                  venueName: event.venue_name || event.venues?.name || undefined,
-                  categoryName: event.categories?.name || "",
-                  attendeeCount: getAttendeeCount(event.rsvps || []),
-                  isPast: false,
-                })),
-                ...pastEvents.map((event) => ({
-                  id: event.id,
-                  title: event.title,
-                  date: event.date,
-                  time: event.time,
-                  cityName: event.cities?.name || "",
-                  venueName: event.venue_name || event.venues?.name || undefined,
-                  categoryName: event.categories?.name || "",
-                  attendeeCount: getAttendeeCount(event.rsvps || []),
-                  isPast: true,
-                })),
-              ]}
-              onEventClick={(eventId) => handleCardClick(eventId)}
-            />
+                events={[
+                  ...upcomingEvents.map((event) => ({
+                    id: event.id,
+                    title: event.title,
+                    date: event.date,
+                    time: event.time,
+                    cityName: event.cities?.name || "",
+                    venueName: event.venue_name || event.venues?.name || undefined,
+                    categoryName: event.categories?.name || "",
+                    attendeeCount: getAttendeeCount(event.rsvps || []),
+                    isPast: false,
+                  })),
+                  ...pastEvents.map((event) => ({
+                    id: event.id,
+                    title: event.title,
+                    date: event.date,
+                    time: event.time,
+                    cityName: event.cities?.name || "",
+                    venueName: event.venue_name || event.venues?.name || undefined,
+                    categoryName: event.categories?.name || "",
+                    attendeeCount: getAttendeeCount(event.rsvps || []),
+                    isPast: true,
+                  })),
+                ]}
+                onEventClick={(eventId) => handleCardClick(eventId)}
+                isAuthenticated={!!user}
+              />
             </div>
           ) : upcomingEvents.length === 0 ? (
             <motion.div
@@ -601,7 +636,7 @@ const Index = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4 }}
             >
-              <motion.div 
+              <motion.div
                 className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-muted/50 to-muted/30 shadow-lg mb-6"
                 whileHover={{ scale: 1.1 }}
                 transition={{ type: "spring", stiffness: 300 }}
@@ -612,7 +647,7 @@ const Index = () => {
               <p className="mt-2 text-muted-foreground text-lg">Yaklaşan etkinlikler burada görünecek.</p>
             </motion.div>
           ) : (
-            <motion.div 
+            <motion.div
               className="mt-12 grid gap-4 grid-cols-1"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -636,6 +671,7 @@ const Index = () => {
                     onEdit={(eventData) => openEditDialog(event)}
                     onDelete={handleDeleteEvent}
                     onClick={handleCardClick}
+                    isAuthenticated={!!user}
                   />
                 </div>
               ))}
@@ -668,7 +704,7 @@ const Index = () => {
               transition={{ duration: 0.5 }}
             >
               <div className="flex items-center gap-3 mb-2">
-                <motion.div 
+                <motion.div
                   className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 shadow-md shadow-muted/20"
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   transition={{ type: "spring", stiffness: 400 }}
@@ -683,7 +719,7 @@ const Index = () => {
             </motion.div>
 
             {/* Past Events Grid */}
-            <motion.div 
+            <motion.div
               className="mt-12 grid gap-4 grid-cols-1"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -724,7 +760,7 @@ const Index = () => {
           {selectedEvent && (
             <div className="space-y-4">
               <Badge>{selectedEvent.categories?.name}</Badge>
-              
+
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-primary" />
@@ -745,72 +781,111 @@ const Index = () => {
               )}
 
               {/* RSVP Section */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Katılım Durumu</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-4 text-sm mb-4">
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4 text-primary" />
-                      <span className="font-semibold">{selectedEventRsvps.filter(r => r.status === "attending").reduce((s: number, r) => s + 1 + r.guest_count, 0)}</span> toplam
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <UserCheck className="h-4 w-4 text-primary" />
-                      <span className="font-semibold">{selectedEventRsvps.filter(r => r.status === "attending").length}</span> katılıyor
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <UserX className="h-4 w-4 text-destructive" />
-                      <span className="font-semibold">{selectedEventRsvps.filter(r => r.status === "not_attending").length}</span> katılmıyor
+              {/* Enhanced RSVP Section */}
+              <div className="relative mt-8 rounded-3xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-2xl shadow-2xl">
+                <div className="px-6 py-5 bg-white/5 border-b border-white/10 flex items-center justify-between">
+                  <h4 className="font-display text-lg font-black text-foreground flex items-center gap-2">
+                    <UserCheck className="h-5 w-5 text-primary" />
+                    Katılım Durumu
+                  </h4>
+                  <div className="flex gap-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                      {selectedEventRsvps.filter(r => r.status === "attending").reduce((s: number, r) => s + 1 + r.guest_count, 0)} Toplam
                     </div>
                   </div>
+                </div>
 
-                  <div className="flex flex-wrap gap-2 mb-4">
+                <div className="p-6">
+                  <div className="grid grid-cols-2 gap-3 mb-6">
                     <Button
-                      size="sm"
-                      variant={myRsvp?.status === "attending" ? "default" : "outline"}
+                      variant="ghost"
                       onClick={() => handleRsvp("attending")}
+                      className={`h-16 rounded-2xl border-2 transition-all duration-300 flex flex-col gap-1 ${myRsvp?.status === "attending"
+                        ? "bg-primary/20 border-primary shadow-[0_0_20px_rgba(var(--primary-rgb),0.2)] text-primary"
+                        : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 text-muted-foreground"
+                        }`}
                     >
-                      Katılıyorum
+                      <UserCheck className="h-5 w-5" />
+                      <span className="text-xs font-black uppercase tracking-widest">Katılıyorum</span>
                     </Button>
                     <Button
-                      size="sm"
-                      variant={myRsvp?.status === "not_attending" ? "destructive" : "outline"}
+                      variant="ghost"
                       onClick={() => handleRsvp("not_attending")}
+                      className={`h-16 rounded-2xl border-2 transition-all duration-300 flex flex-col gap-1 ${myRsvp?.status === "not_attending"
+                        ? "bg-red-500/20 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)] text-red-500"
+                        : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 text-muted-foreground"
+                        }`}
                     >
-                      Katılmıyorum
+                      <UserX className="h-5 w-5" />
+                      <span className="text-xs font-black uppercase tracking-widest">Katılmıyorum</span>
                     </Button>
-                    {myRsvp?.status === "attending" && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">Misafir:</span>
-                        <Input
-                          type="number"
-                          min="0"
-                          max="10"
-                          value={guestCount}
-                          onChange={(e) => updateGuestCount(parseInt(e.target.value) || 0)}
-                          className="w-20 h-9"
-                        />
-                      </div>
-                    )}
                   </div>
 
-                  {/* Attendees List */}
+                  {myRsvp?.status === "attending" && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="space-y-4 pt-4 border-t border-white/10"
+                    >
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="space-y-1">
+                          <p className="text-sm font-bold text-foreground">Misafir Ekle</p>
+                          <p className="text-xs text-muted-foreground italic">
+                            Lütfen sizinle birlikte katılacak misafir sayısını belirtiniz
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-4 bg-white/10 p-2 rounded-2xl border border-white/10">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={guestCount <= 0}
+                            onClick={() => updateGuestCount(Math.max(0, guestCount - 1))}
+                            className="h-10 w-10 rounded-xl hover:bg-white/10 text-primary transition-all active:scale-95"
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <span className="text-xl font-black text-foreground min-w-[1.5rem] text-center">
+                            {guestCount}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={guestCount >= 10}
+                            onClick={() => updateGuestCount(Math.min(10, guestCount + 1))}
+                            className="h-10 w-10 rounded-xl hover:bg-white/10 text-primary transition-all active:scale-95"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Attendees List (Compact Glass Design) */}
                   {selectedEventRsvps.filter(r => r.status === "attending").length > 0 && (
-                    <div className="mt-4 border-t pt-4">
-                      <h4 className="text-xs font-semibold mb-2">Katılımcılar</h4>
-                      <div className="space-y-1 max-h-40 overflow-y-auto">
+                    <div className="mt-8 pt-6 border-t border-white/5">
+                      <h5 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                        <Users className="h-3 w-3" />
+                        Katılımcı Listesi
+                      </h5>
+                      <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
                         {selectedEventRsvps.filter(r => r.status === "attending").map((rsvp) => (
-                          <div key={rsvp.id} className="text-xs text-foreground/80">
-                            {rsvp.profiles?.first_name} {rsvp.profiles?.last_name}
-                            {rsvp.guest_count > 0 && <span className="text-muted-foreground"> (+{rsvp.guest_count})</span>}
+                          <div
+                            key={rsvp.id}
+                            className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-foreground/80 flex items-center gap-2 whitespace-nowrap"
+                          >
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                            {rsvp.profiles?.first_name} {rsvp.profiles?.last_name?.[0]}.
+                            {rsvp.guest_count > 0 && <span className="text-primary/70">+{rsvp.guest_count}</span>}
                           </div>
                         ))}
                       </div>
                     </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           )}
         </DialogContent>

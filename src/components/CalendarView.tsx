@@ -36,6 +36,7 @@ interface CalendarEvent {
 interface CalendarViewProps {
   events: CalendarEvent[];
   onEventClick?: (eventId: string) => void;
+  isAuthenticated?: boolean;
 }
 
 // Category dot colors for calendar cells
@@ -52,7 +53,7 @@ const getCategoryDotColor = (category: string) => {
   return categoryDotColors[category] || "bg-amber-500";
 };
 
-const CalendarView = ({ events, onEventClick }: CalendarViewProps) => {
+const CalendarView = ({ events, onEventClick, isAuthenticated = true }: CalendarViewProps) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
@@ -92,49 +93,61 @@ const CalendarView = ({ events, onEventClick }: CalendarViewProps) => {
   const weekDays = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
 
   return (
-    <div className="mt-12 space-y-6">
+    <div className="mt-12 space-y-10">
       {/* Calendar Card */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6 }}
       >
-        <Card className="overflow-hidden border border-border/50 bg-gradient-to-br from-card/95 via-card/90 to-amber-50/15 backdrop-blur-md shadow-xl rounded-2xl">
-          <CardContent className="p-0">
+        <Card className="overflow-hidden border border-white/20 bg-white/10 backdrop-blur-3xl shadow-[0_32px_64px_rgba(0,0,0,0.4)] rounded-[2.5rem] relative">
+          {/* Background Decorative Blur */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/10 blur-[100px] pointer-events-none" />
+
+          <CardContent className="p-0 relative z-10">
             {/* Calendar Header - Month Navigation */}
-            <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-primary/10 via-primary/5 to-amber-100/15 border-b border-border/30">
+            <div className="flex items-center justify-between px-10 py-8 border-b border-white/5 bg-white/5">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                className="h-10 w-10 rounded-xl hover:bg-primary/10 transition-colors"
+                className="h-12 w-12 rounded-2xl hover:bg-white/10 transition-all border border-white/5"
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-6 w-6" />
               </Button>
-              <motion.h3
-                key={format(currentMonth, "yyyy-MM")}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="font-display text-xl md:text-2xl font-bold text-foreground capitalize"
-              >
-                {format(currentMonth, "MMMM yyyy", { locale: tr })}
-              </motion.h3>
+
+              <div className="text-center">
+                <AnimatePresence mode="wait">
+                  <motion.h3
+                    key={format(currentMonth, "yyyy-MM")}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="font-display text-3xl md:text-4xl font-black text-foreground capitalize tracking-tight"
+                  >
+                    {format(currentMonth, "MMMM", { locale: tr })}
+                    <span className="text-primary/60 ml-2">{format(currentMonth, "yyyy")}</span>
+                  </motion.h3>
+                </AnimatePresence>
+              </div>
+
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                className="h-10 w-10 rounded-xl hover:bg-primary/10 transition-colors"
+                className="h-12 w-12 rounded-2xl hover:bg-white/10 transition-all border border-white/5"
               >
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-6 w-6" />
               </Button>
             </div>
 
             {/* Weekday Headers */}
-            <div className="grid grid-cols-7 border-b border-border/30">
+            <div className="grid grid-cols-7 border-b border-white/5 bg-white/5 px-2">
               {weekDays.map((day) => (
                 <div
                   key={day}
-                  className="py-3 text-center text-xs font-bold text-muted-foreground uppercase tracking-wider"
+                  className="py-4 text-center text-[10px] font-black text-primary/80 uppercase tracking-[0.2em]"
                 >
                   {day}
                 </div>
@@ -142,7 +155,7 @@ const CalendarView = ({ events, onEventClick }: CalendarViewProps) => {
             </div>
 
             {/* Calendar Grid */}
-            <div className="grid grid-cols-7">
+            <div className="grid grid-cols-7 p-2 gap-1 md:gap-2">
               {calendarDays.map((day, idx) => {
                 const dateKey = format(day, "yyyy-MM-dd");
                 const dayEvents = eventsByDate.get(dateKey) || [];
@@ -155,71 +168,62 @@ const CalendarView = ({ events, onEventClick }: CalendarViewProps) => {
                   <motion.button
                     key={idx}
                     onClick={() => setSelectedDate(isSelected ? null : day)}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.08)" }}
+                    whileTap={{ scale: 0.98 }}
                     className={`
-                      relative min-h-[70px] md:min-h-[90px] p-1.5 md:p-2 border-b border-r border-border/20 
-                      transition-all duration-200 text-left flex flex-col
-                      ${!isCurrentMonth ? "bg-muted/20 text-muted-foreground/40" : "hover:bg-primary/5"}
-                      ${isSelected ? "bg-primary/10 ring-2 ring-primary/30 ring-inset z-10" : ""}
-                      ${isTodayDate && !isSelected ? "bg-amber-50/40 dark:bg-amber-900/10" : ""}
+                      relative min-h-[80px] md:min-h-[120px] p-3 rounded-2xl border transition-all duration-300 text-left flex flex-col overflow-hidden
+                      ${!isCurrentMonth ? "opacity-20 pointer-events-none" : "bg-white/5"}
+                      ${isSelected ? "bg-primary/20 border-primary/40 shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)] z-10" : "border-transparent hover:border-white/10"}
+                      ${isTodayDate && !isSelected ? "bg-white/10 border-primary/50 shadow-[0_0_20px_rgba(var(--primary-rgb),0.2)]" : ""}
                     `}
                   >
-                    {/* Day Number */}
-                    <span
-                      className={`
-                        inline-flex items-center justify-center h-7 w-7 rounded-full text-sm font-medium
-                        ${isTodayDate ? "bg-primary text-primary-foreground font-bold shadow-md shadow-primary/30" : ""}
-                        ${isSelected && !isTodayDate ? "bg-primary/20 text-primary font-bold" : ""}
-                        ${!isCurrentMonth ? "text-muted-foreground/30" : ""}
-                      `}
-                    >
-                      {format(day, "d")}
-                    </span>
-
-                    {/* Event Dots/Labels */}
-                    {hasEvents && isCurrentMonth && (
-                      <div className="mt-0.5 flex flex-col gap-0.5 overflow-hidden flex-1">
-                        {dayEvents.slice(0, 2).map((event) => (
-                          <div
-                            key={event.id}
-                            className={`
-                              hidden md:flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium
-                              ${event.isPast 
-                                ? "bg-muted/40 text-muted-foreground/60" 
-                                : "bg-primary/15 text-primary hover:bg-primary/25 transition-colors"
-                              }
-                              truncate cursor-pointer
-                            `}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onEventClick?.(event.id);
-                            }}
-                            title={event.title}
-                          >
-                            <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${getCategoryDotColor(event.categoryName)}`} />
-                            <span className="truncate">{event.title}</span>
-                          </div>
-                        ))}
-                        {dayEvents.length > 2 && (
-                          <span className="hidden md:block text-[10px] text-muted-foreground font-medium pl-1">
-                            +{dayEvents.length - 2} daha
-                          </span>
-                        )}
-                        {/* Mobile: just dots */}
-                        <div className="flex md:hidden gap-1 mt-0.5 flex-wrap">
-                          {dayEvents.slice(0, 3).map((event) => (
-                            <span
-                              key={event.id}
-                              className={`h-2 w-2 rounded-full ${event.isPast ? "bg-muted-foreground/30" : getCategoryDotColor(event.categoryName)}`}
-                            />
-                          ))}
-                          {dayEvents.length > 3 && (
-                            <span className="text-[9px] text-muted-foreground">+{dayEvents.length - 3}</span>
-                          )}
-                        </div>
-                      </div>
+                    {/* Today Glow Background */}
+                    {isTodayDate && (
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent pointer-events-none" />
                     )}
+
+                    {/* Day Number */}
+                    <div className="flex justify-between items-start mb-2 relative z-10">
+                      <span
+                        className={`
+                          text-lg font-black leading-none
+                          ${isTodayDate ? "text-primary drop-shadow-[0_0_8px_rgba(var(--primary-rgb),0.6)]" : "text-foreground/80"}
+                          ${isSelected ? "text-primary text-xl" : ""}
+                        `}
+                      >
+                        {format(day, "d")}
+                      </span>
+                      {hasEvents && isCurrentMonth && (
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-primary blur-[4px] opacity-60 animate-pulse" />
+                          <div className="h-2 w-2 rounded-full bg-primary relative z-10 shadow-[0_0_10px_rgba(var(--primary-rgb),0.8)]" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Event Preview (Desktop) */}
+                    <div className="hidden md:flex flex-col gap-1.5 overflow-hidden flex-1">
+                      {dayEvents.slice(0, 2).map((event) => (
+                        <div
+                          key={event.id}
+                          className={`text-[10px] font-bold text-foreground truncate rounded-md px-2 py-1 border-l-2 ${getCategoryDotColor(event.categoryName)} bg-white/10 backdrop-blur-sm shadow-sm hover:bg-white/20 transition-all`}
+                        >
+                          {event.title}
+                        </div>
+                      ))}
+                      {dayEvents.length > 2 && (
+                        <span className="text-[9px] font-black text-primary/80 pl-1 uppercase tracking-tighter">
+                          +{dayEvents.length - 2} DAHA
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Mobile Dots */}
+                    <div className="md:hidden flex gap-1 mt-auto">
+                      {dayEvents.slice(0, 3).map((e) => (
+                        <div key={e.id} className="h-1 w-1 rounded-full bg-primary" />
+                      ))}
+                    </div>
                   </motion.button>
                 );
               })}
@@ -233,91 +237,97 @@ const CalendarView = ({ events, onEventClick }: CalendarViewProps) => {
         {selectedDate && (
           <motion.div
             key={format(selectedDate, "yyyy-MM-dd")}
-            initial={{ opacity: 0, y: 20, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: "auto" }}
-            exit={{ opacity: 0, y: -10, height: 0 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0, y: 30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 200, damping: 20 }}
           >
-            <Card className="overflow-hidden border border-border/50 bg-gradient-to-r from-card/95 via-card/90 to-amber-50/10 backdrop-blur-md shadow-lg rounded-2xl">
-              <CardContent className="p-5">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/25 to-primary/10 shadow-md">
-                    <Calendar className="h-5 w-5 text-primary" />
+            <Card className="overflow-hidden border border-white/10 bg-white/5 backdrop-blur-3xl shadow-2xl rounded-[2.5rem]">
+              <CardContent className="p-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 pb-8 border-b border-white/5">
+                  <div className="flex items-center gap-6">
+                    <div className="bg-primary/20 backdrop-blur-xl border border-primary/30 rounded-3xl p-5 shadow-2xl">
+                      <Calendar className="h-8 w-8 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-display text-3xl font-black text-foreground capitalize tracking-tight">
+                        {format(selectedDate, "d MMMM", { locale: tr })}
+                      </h3>
+                      <p className="text-muted-foreground font-bold uppercase tracking-[0.2em] text-xs">
+                        {format(selectedDate, "EEEE", { locale: tr })}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-display text-lg font-bold text-foreground capitalize">
-                      {format(selectedDate, "d MMMM yyyy, EEEE", { locale: tr })}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {selectedDateEvents.length > 0
-                        ? `${selectedDateEvents.length} etkinlik`
-                        : "Bu tarihte etkinlik yok"}
-                    </p>
+
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/5 border border-white/10">
+                    <span className="h-2 w-2 rounded-full bg-primary" />
+                    <span className="text-sm font-black text-foreground uppercase tracking-wider">
+                      {selectedDateEvents.length} ETKİNLİK
+                    </span>
                   </div>
                 </div>
 
                 {selectedDateEvents.length > 0 ? (
-                  <div className="space-y-3">
+                  <div className="grid gap-4">
                     {selectedDateEvents.map((event, idx) => (
                       <motion.div
                         key={event.id}
-                        initial={{ opacity: 0, x: -10 }}
+                        initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: idx * 0.05 }}
+                        transition={{ delay: idx * 0.1 }}
                         onClick={() => onEventClick?.(event.id)}
                         className={`
-                          group flex items-start gap-4 p-4 rounded-xl border border-border/40 
-                          bg-gradient-to-r from-card/80 to-amber-50/8 cursor-pointer
-                          hover:shadow-md hover:border-amber-300/30 transition-all duration-200
-                          ${event.isPast ? "opacity-60" : ""}
+                          group flex flex-col md:flex-row md:items-center gap-4 p-6 rounded-[2rem] 
+                          border border-white/10 bg-white/10 cursor-pointer
+                          hover:bg-white/15 hover:border-primary/30 transition-all duration-300
+                          shadow-[0_8px_30px_rgb(0,0,0,0.12)] relative overflow-hidden
+                          ${event.isPast ? "opacity-50" : ""}
                         `}
                       >
-                        {/* Time Column */}
-                        <div className="flex flex-col items-center min-w-[52px]">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/10">
-                            <Clock className="h-4 w-4 text-primary" />
+                        {/* Side Glow Effect */}
+                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${getCategoryDotColor(event.categoryName)} opacity-80`} />
+                        <div className="flex items-center gap-4 flex-1">
+                          <div className="bg-white/10 p-3 rounded-2xl">
+                            <Clock className="h-5 w-5 text-primary" />
                           </div>
-                          <span className="mt-1 text-sm font-bold text-foreground">
-                            {formatTurkishTime(event.time)}
-                          </span>
-                        </div>
-
-                        {/* Event Details */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-start justify-between gap-2 min-w-0">
-                            <h4 className="font-display text-base font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors min-w-0 flex-1">
+                          <div>
+                            {isAuthenticated ? (
+                              <>
+                                <div className="flex items-center gap-3 mb-1">
+                                  <Badge className="bg-primary/20 text-primary border-primary/20 text-[10px] font-black uppercase">
+                                    {event.categoryName}
+                                  </Badge>
+                                  <span className="text-sm font-black text-foreground">{formatTurkishTime(event.time)}</span>
+                                </div>
+                              </>
+                            ) : (
+                              <div className="text-[10px] font-black text-primary/60 italic mb-1">GİRİŞ YAPIN</div>
+                            )}
+                            <h4 className="font-display text-xl font-black text-foreground group-hover:text-primary transition-colors tracking-tight">
                               {event.title}
                             </h4>
-                            <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] font-semibold max-w-full w-fit truncate">
-                              <Sparkles className="h-2.5 w-2.5 mr-0.5" />
-                              {event.categoryName}
-                            </Badge>
-                          </div>
-                          <div className="mt-1.5 flex flex-wrap items-center gap-3 text-sm text-muted-foreground min-w-0">
-                            {(event.venueName || event.cityName) && (
-                              <span className="flex items-center gap-1 min-w-0 max-w-full">
-                                <MapPin className="h-3.5 w-3.5 text-primary/70" />
-                                <span className="font-medium truncate">{event.venueName}</span>
-                                {event.cityName && (
-                                  <span className="text-muted-foreground/60">• {event.cityName}</span>
-                                )}
-                              </span>
-                            )}
-                            <span className="flex items-center gap-1">
-                              <Users className="h-3.5 w-3.5 text-primary/70" />
-                              <span>
-                                <span className="font-bold text-primary">{event.attendeeCount}</span> kişi
-                              </span>
-                            </span>
                           </div>
                         </div>
+
+                        {isAuthenticated && (
+                          <div className="flex flex-wrap items-center gap-6 pl-12 md:pl-0">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <MapPin className="h-4 w-4 text-primary" />
+                              <span className="text-sm font-bold truncate max-w-[150px]">{event.venueName || event.cityName}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Users className="h-4 w-4 text-primary" />
+                              <span className="text-sm font-black text-foreground">{event.attendeeCount}</span>
+                            </div>
+                          </div>
+                        )}
                       </motion.div>
                     ))}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-                    <Calendar className="h-10 w-10 mb-2 opacity-30" />
-                    <p className="text-sm">Bu tarihte planlanmış etkinlik bulunmuyor.</p>
+                  <div className="flex flex-col items-center justify-center py-16 text-muted-foreground bg-white/5 rounded-[2rem] border border-dashed border-white/10">
+                    <Calendar className="h-16 w-16 mb-6 opacity-10" />
+                    <p className="text-lg font-black uppercase tracking-widest opacity-40">Müsait Gün</p>
                   </div>
                 )}
               </CardContent>

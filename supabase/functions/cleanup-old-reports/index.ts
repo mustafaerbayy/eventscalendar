@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
     );
 
     const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - 90);
+    cutoffDate.setDate(cutoffDate.getDate() - 365); // Changed from 90 to 365 days
     const cutoff = cutoffDate.toISOString().split("T")[0];
 
     // Get old reports
