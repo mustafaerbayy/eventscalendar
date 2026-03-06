@@ -38,9 +38,10 @@ const Register = () => {
     }
     setLoading(true);
 
+    let emailData: any = null;
     try {
       const { data: emailCheckDatas, error: checkError } = await (supabase.rpc as any)('check_email_identity', { p_email: email.toLowerCase() });
-      const emailData = emailCheckDatas?.[0];
+      emailData = emailCheckDatas?.[0];
 
       if (emailData && emailData.exists) {
         if (emailData.has_google_identity && !emailData.has_password_identity) {
@@ -75,17 +76,22 @@ const Register = () => {
     setLoading(false);
 
     if (error) {
+      console.error("Signup error completely:", error, error.message, error.name, error.status);
+
+      // Check if it's the "User already registered" error returning from Supabase even for new users
+      if (error.message?.includes("User already registered")) {
+        // If our check_email_identity said it DOES NOT exist, then it's a bug in Supabase email delivery
+        if (emailData && !emailData.exists) {
+          toast.error("Kaydınız oluşturuldu ancak doğrulama maili gönderilirken bir sorun oluştu. Lütfen şifrenizi sıfırlamayı veya Google ile giriş yapmayı deneyin.");
+          return;
+        }
+      }
+
       toast.error(getErrorMessage(error));
       return;
     }
 
-    if (data?.user && !data?.session) {
-      toast.info("Bu hesap zaten mevcut olabilir veya onay bekliyor. Lütfen e-postanızı kontrol edin veya giriş yapmayı deneyin.");
-      navigate("/giris");
-      return;
-    }
-
-    toast.success("Kayıt başarılı! Lütfen e-postanızı doğrulayın.");
+    toast.success("Kayıt başarılı! Lütfen e-postanıza gönderilen bağlantıya tıklayarak hesabınızı doğrulayın.");
     navigate("/giris");
   };
 
