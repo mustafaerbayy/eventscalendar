@@ -227,7 +227,7 @@ const WeeklyReports = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] contrast-150 brightness-150" />
       </div>
 
-      <main className="relative z-10 max-w-[1600px] mx-auto px-4 md:px-8 pt-28 pb-12 flex flex-col h-screen max-h-screen overflow-hidden">
+      <main className="relative z-10 max-w-[1600px] mx-auto px-4 md:px-8 pt-28 pb-12 lg:pb-24 flex flex-col h-full min-h-[calc(100dvh-2rem)] lg:h-screen lg:max-h-screen lg:overflow-hidden">
 
         {/* Sleek Header Section */}
         <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6 shrink-0">
@@ -253,7 +253,7 @@ const WeeklyReports = () => {
                 placeholder="Raporlarda ara..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full md:w-[320px] h-14 bg-white/[0.03] border border-white/10 rounded-2xl pl-12 pr-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 focus:bg-white/[0.05] transition-all backdrop-blur-xl"
+                className="w-full lg:w-[320px] h-14 bg-white/[0.03] border border-white/10 rounded-2xl pl-12 pr-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 focus:bg-white/[0.05] transition-all backdrop-blur-xl"
               />
             </div>
             {canReport && (
@@ -275,8 +275,8 @@ const WeeklyReports = () => {
 
           {/* List Sidebar */}
           <div className={`
-            w-full lg:w-[420px] flex flex-col gap-4 transition-all duration-500 shrink-0
-            ${isMobileDetailOpen ? 'translate-x-full absolute lg:relative lg:translate-x-0' : 'translate-x-0 relative'}
+            w-full lg:w-[420px] flex flex-col gap-4 transition-all duration-500 shrink-0 z-10
+            ${isMobileDetailOpen ? 'opacity-0 lg:opacity-100 pointer-events-none lg:pointer-events-auto' : 'opacity-100'}
           `}>
             <div className="flex items-center justify-between px-2">
               <div className="flex items-center gap-2">
@@ -305,7 +305,7 @@ const WeeklyReports = () => {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto pr-2 space-y-3 scrollbar-hide lg:scrollbar-default pb-24 lg:pb-0">
+            <div className="flex-1 overflow-y-auto pr-2 space-y-3 scrollbar-hide lg:scrollbar-default pb-32 lg:pb-0">
               {loading ? (
                 Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="h-28 bg-white/5 rounded-[2rem] border border-white/5 animate-pulse" />
@@ -391,8 +391,10 @@ const WeeklyReports = () => {
 
           {/* Detailed Content View */}
           <div className={`
-            flex-1 h-full bg-white/[0.02] rounded-[3rem] border border-white/5 backdrop-blur-3xl overflow-hidden relative shadow-2xl flex flex-col z-20 transition-all duration-500
-            ${isMobileDetailOpen ? 'translate-x-0 pointer-events-auto bg-black lg:bg-white/[0.02]' : 'translate-x-full lg:translate-x-0 pointer-events-none lg:pointer-events-auto absolute lg:relative inset-0 lg:inset-auto'}
+            flex-1 h-full bg-[#050505] lg:bg-white/[0.02] lg:rounded-[3rem] border-white/5 backdrop-blur-3xl overflow-hidden shadow-2xl flex flex-col transition-all duration-500
+            ${isMobileDetailOpen
+              ? 'translate-x-0 pointer-events-auto fixed lg:relative inset-0 lg:inset-auto z-[200] lg:z-20'
+              : 'translate-x-full lg:translate-x-0 pointer-events-none lg:pointer-events-auto absolute lg:relative inset-0 lg:inset-auto'}
           `}>
             <AnimatePresence mode="wait">
               {selectedReport ? (
@@ -405,7 +407,7 @@ const WeeklyReports = () => {
                   className="flex flex-col h-full"
                 >
                   {/* Detail Header */}
-                  <div className="p-8 md:p-12 pb-6 border-b border-white/5 flex flex-col md:flex-row md:items-start justify-between gap-8 bg-gradient-to-b from-white/[0.02] to-transparent">
+                  <div className="p-6 md:p-12 pb-6 border-b border-white/5 flex flex-col md:flex-row md:items-start justify-between gap-8 bg-gradient-to-b from-white/[0.02] to-transparent pt-20 lg:pt-12">
                     <div className="flex-1">
                       <div className="flex items-center gap-4 mb-6">
                         <button
@@ -420,7 +422,7 @@ const WeeklyReports = () => {
                         </div>
                       </div>
 
-                      <h2 className="text-4xl md:text-5xl font-display font-black leading-tight text-white mb-6">
+                      <h2 className="text-2xl md:text-5xl font-display font-black leading-tight text-white mb-6">
                         {selectedReport.title}
                       </h2>
 
@@ -460,9 +462,9 @@ const WeeklyReports = () => {
                   </div>
 
                   {/* Detail Body */}
-                  <div className="flex-1 overflow-y-auto p-8 md:p-12 pt-10 scrollbar-hide">
+                  <div className="flex-1 overflow-y-auto p-6 md:p-12 pt-8 lg:pt-10 scrollbar-hide">
                     <div className="max-w-4xl mx-auto">
-                      <div className="prose prose-invert prose-lg max-w-none">
+                      <div className="prose prose-invert prose-sm md:prose-lg max-w-none">
                         {selectedReport.content ? (
                           <p className="text-white/70 leading-[1.8] text-lg font-medium whitespace-pre-wrap selection:bg-primary/40">
                             {selectedReport.content}
@@ -533,72 +535,80 @@ const WeeklyReports = () => {
       </main>
 
       {/* Floating Info Footnote */}
-      <footer className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-full bg-amber-500/10 border border-amber-500/20 backdrop-blur-2xl flex items-center gap-3">
-        <Zap className="w-4 h-4 text-amber-500 fill-amber-500/30" />
-        <p className="text-[10px] font-black text-amber-500/80 uppercase tracking-widest whitespace-nowrap">
+      <footer className={`
+        fixed bottom-6 left-1/2 -translate-x-1/2 z-[5] px-4 md:px-6 py-3 rounded-2xl md:rounded-full 
+        bg-amber-500/10 border border-amber-500/20 backdrop-blur-2xl 
+        flex items-center gap-3 transition-all duration-300 lg:z-[100]
+        w-[92%] md:w-auto max-w-lg
+        ${isMobileDetailOpen ? 'opacity-0 pointer-events-none translate-y-10' : 'opacity-100 translate-y-0'}
+      `}>
+        <Zap className="w-4 h-4 text-amber-500 fill-amber-500/30 shrink-0" />
+        <p className="text-[9px] md:text-[10px] font-black text-amber-500/80 uppercase tracking-widest leading-tight">
           Sistem Veri Politikası: <span className="text-white/60">Raporlar 1 yıl süreyle bulutta saklanır.</span>
         </p>
       </footer>
 
       {/* Futuristic Dialog Implementation */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="p-0 border-none bg-transparent shadow-none max-w-2xl overflow-visible">
-          <div className="relative w-full overflow-hidden rounded-[3rem] bg-[#0c0c0c] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)]">
+        <DialogContent className="p-0 border-none bg-transparent shadow-none w-[90vw] md:w-full max-w-2xl mx-auto overflow-visible">
+          <div className="relative w-full max-h-[85vh] overflow-y-auto rounded-[2rem] md:rounded-[3rem] bg-[#0c0c0c] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] scrollbar-hide">
             {/* Modal Header Decoration */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
-            <div className="absolute top-0 right-0 p-8">
+
+            {/* Soft Red Close Button */}
+            <div className="absolute top-3 right-3 md:top-6 md:right-6 z-50">
               <button
                 onClick={() => setDialogOpen(false)}
-                className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors"
+                className="w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors backdrop-blur-md"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-10 md:p-14">
-              <div className="mb-12">
+            <div className="p-4 md:p-14 pt-16 md:pt-14 relative z-10 w-full box-border">
+              <div className="mb-8 md:mb-12">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-widest mb-4">
                   {editingReport ? 'KAYIT GÜNCELLEME' : 'YENİ VERİ GİRİŞİ'}
                 </div>
-                <h2 className="text-4xl font-display font-black text-white">
-                  {editingReport ? 'Rapor Bilgilerini' : 'Yeni Faaliyet'} <span className="text-primary italic">Düzenle</span>
+                <h2 className="text-3xl md:text-4xl font-display font-black text-white">
+                  Rapor
                 </h2>
               </div>
 
-              <div className="grid gap-8">
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-2">Başlık</label>
+              <div className="flex flex-col gap-6 md:gap-8 w-full">
+                <div className="flex flex-col md:flex-row gap-6 md:gap-8 w-full">
+                  <div className="flex-1 space-y-3 w-full">
+                    <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-2 block">Başlık</label>
                     <input
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      placeholder="..."
-                      className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-6 text-sm font-bold focus:outline-none focus:border-primary/50 transition-colors"
+                      placeholder="Başlık Giriniz"
+                      className="w-full h-12 md:h-14 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl px-4 md:px-6 text-sm font-bold text-white placeholder:text-white/20 focus:outline-none focus:border-primary/50 transition-colors block box-border"
                     />
                   </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-2">İşlem Tarihi</label>
+                  <div className="flex-1 space-y-3 w-full">
+                    <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-2 block">İşlem Tarihi</label>
                     <input
                       type="date"
                       value={formData.report_date}
                       onChange={(e) => setFormData({ ...formData, report_date: e.target.value })}
-                      className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-6 text-sm font-bold focus:outline-none focus:border-primary/50 transition-colors [color-scheme:dark]"
+                      className="w-full h-12 md:h-14 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl px-4 md:px-6 text-sm font-bold text-white focus:outline-none focus:border-primary/50 transition-colors [color-scheme:dark] block box-border"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-3 w-full">
                   <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-2">Gövde Metni</label>
                   <textarea
                     rows={6}
                     value={formData.content}
                     onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                    placeholder="Detaylı rapor içeriği..."
-                    className="w-full bg-white/5 border border-white/10 rounded-[2rem] p-6 text-sm font-bold focus:outline-none focus:border-primary/50 transition-colors resize-none"
+                    placeholder="Detaylı rapor içeriği giriniz..."
+                    className="w-full bg-white/5 border border-white/10 rounded-[2rem] p-6 text-sm font-bold text-white placeholder:text-white/20 focus:outline-none focus:border-primary/50 transition-colors resize-none"
                   />
                 </div>
 
-                <div className="relative group/upload">
+                <div className="relative group/upload w-full">
                   <input
                     type="file"
                     id="file-upload"
@@ -607,15 +617,15 @@ const WeeklyReports = () => {
                   />
                   <label
                     htmlFor="file-upload"
-                    className="flex flex-col items-center justify-center p-8 rounded-[2rem] border-2 border-dashed border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-primary/40 transition-all cursor-pointer group-hover/upload:scale-[1.01]"
+                    className="flex flex-col items-center justify-center p-6 md:p-8 rounded-[2rem] border-2 border-dashed border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-primary/40 transition-all cursor-pointer group-hover/upload:scale-[1.01] w-full"
                   >
                     <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover/upload:bg-primary group-hover/upload:transition-all">
                       <Upload className="w-6 h-6 text-primary group-hover/upload:text-black" />
                     </div>
-                    <p className="text-sm font-black text-white/80">
+                    <p className="text-sm font-black text-white/80 text-center">
                       {file ? file.name : (editingReport?.file_url ? 'BELGE YÜKLÜ (Değiştir)' : 'DÖKÜMAN EKLE')}
                     </p>
-                    <p className="text-[10px] font-bold text-white/20 mt-2 uppercase tracking-widest">PDF, DOC, JPG Desteklenir</p>
+                    <p className="text-[10px] font-bold text-white/20 mt-2 uppercase tracking-widest text-center">PDF, DOC, JPG Desteklenir</p>
                   </label>
                 </div>
 

@@ -244,16 +244,6 @@ const Profile = () => {
                 </button>
               ))}
             </div>
-
-            <div className="glass-card rounded-2xl p-2">
-              <button
-                onClick={() => signOut()}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-destructive hover:bg-destructive/10 transition-colors"
-              >
-                <LogOut className="w-5 h-5" />
-                <span className="font-medium">Çıkış Yap</span>
-              </button>
-            </div>
           </motion.div>
 
           {/* Main Content Area */}
@@ -272,201 +262,294 @@ const Profile = () => {
                 className="space-y-6"
               >
                 {activeSection === "account" && (
-                  <div className="space-y-6">
-                    <Card className="glass-card border-none overflow-hidden">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-3 text-2xl font-display">
-                          <User className="w-6 h-6 text-primary" />
-                          Kişisel Bilgiler
-                        </CardTitle>
-                        <CardDescription>Profil bilgilerinizi buradan düzenleyebilirsiniz.</CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="firstName">Ad</Label>
-                            <Input
-                              id="firstName"
-                              value={firstName}
-                              onChange={(e) => setFirstName(e.target.value)}
-                              className="bg-background/50 border-border/50 focus-visible:ring-primary"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="lastName">Soyad</Label>
-                            <Input
-                              id="lastName"
-                              value={lastName}
-                              onChange={(e) => setLastName(e.target.value)}
-                              className="bg-background/50 border-border/50"
-                            />
-                          </div>
-                        </div>
-                        <Button
-                          onClick={handleSaveName}
-                          className="w-full md:w-auto px-8 gap-2 bg-primary hover:shadow-glow-primary transition-all"
-                          disabled={savingName}
-                        >
-                          <Save className="w-4 h-4" />
-                          {savingName ? "Kaydediliyor..." : "İsmi Güncelle"}
-                        </Button>
-                      </CardContent>
-                    </Card>
+                  <div className="space-y-8">
+                    {/* Personal Info Module */}
+                    <div className="relative group">
+                      <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent blur-xl rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                      <div className="relative bg-[#0c0c0c] border border-white/10 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
 
-                    <Card className="glass-card border-none overflow-hidden group border-glow">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-3 text-2xl font-display">
-                          <Mail className="w-6 h-6 text-primary" />
-                          E-posta Adresi
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="email">E-posta</Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            disabled={isOAuthUser}
-                            className={cn(
-                              "bg-background/50 border-border/50",
-                              isOAuthUser && "cursor-not-allowed opacity-70"
-                            )}
-                          />
-                        </div>
-                        {isOAuthUser ? (
-                          <div className="p-4 rounded-xl bg-muted/50 border border-border/50 flex gap-3 text-sm">
-                            <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
-                            <p className="text-muted-foreground">
-                              Google ile giriş yaptığınız için e-posta düzenlemesi Google hesabınızdan yapılmalıdır.
-                            </p>
+                        <div className="p-6 md:p-12 relative z-10 w-full">
+                          <div className="flex items-center gap-4 md:gap-5 mb-8 md:mb-10">
+                            <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-inner">
+                              <User className="w-6 h-6 md:w-7 md:h-7 text-primary" />
+                            </div>
+                            <div>
+                              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-widest mb-1 md:mb-2">
+                                KİMLİK
+                              </div>
+                              <h2 className="text-2xl md:text-3xl font-display font-black text-white">Kişisel Bilgiler</h2>
+                            </div>
                           </div>
-                        ) : (
-                          <Button
-                            onClick={handleSaveEmail}
-                            className="w-full md:w-auto px-8 gap-2"
-                            disabled={savingEmail}
-                          >
-                            <Save className="w-4 h-4" />
-                            {savingEmail ? "Güncelleniyor..." : "E-postayı Güncelle"}
-                          </Button>
-                        )}
-                      </CardContent>
-                    </Card>
+
+                          <div className="grid md:grid-cols-2 gap-6 md:gap-8 w-full max-w-full">
+                            <div className="space-y-3 w-full border-box">
+                              <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-2 block">Ad</label>
+                              <input
+                                value={firstName}
+                                onChange={(e) => setFirstName(e.target.value)}
+                                placeholder="Adınız"
+                                className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-5 md:px-6 text-sm font-bold text-white placeholder:text-white/20 focus:outline-none focus:border-primary/50 transition-all focus:bg-white/[0.07] block min-w-0"
+                              />
+                            </div>
+                            <div className="space-y-3 w-full border-box">
+                              <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-2 block">Soyad</label>
+                              <input
+                                value={lastName}
+                                onChange={(e) => setLastName(e.target.value)}
+                                placeholder="Soyadınız"
+                                className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-5 md:px-6 text-sm font-bold text-white placeholder:text-white/20 focus:outline-none focus:border-primary/50 transition-all focus:bg-white/[0.07] block min-w-0"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="mt-8 md:mt-10 flex flex-col sm:flex-row justify-end">
+                            <button
+                              onClick={handleSaveName}
+                              disabled={savingName}
+                              className="w-full sm:w-auto h-14 px-8 rounded-2xl bg-primary text-black font-black flex items-center justify-center gap-3 shadow-[0_10px_30px_rgba(16,185,129,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                            >
+                              <Save className="w-5 h-5" />
+                              {savingName ? "KAYDEDİLİYOR..." : "DEĞİŞİKLİKLERİ KAYDET"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Email Module */}
+                    <div className="relative group">
+                      <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 to-transparent blur-xl rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                      <div className="relative bg-[#0c0c0c] border border-white/10 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                        <div className="p-6 md:p-12 relative z-10 w-full">
+                          <div className="flex items-center gap-4 md:gap-5 mb-8 md:mb-10">
+                            <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-inner">
+                              <Mail className="w-6 h-6 md:w-7 md:h-7 text-amber-500" />
+                            </div>
+                            <div>
+                              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[9px] font-black uppercase tracking-widest mb-1 md:mb-2">
+                                İLETİŞİM
+                              </div>
+                              <h2 className="text-2xl md:text-3xl font-display font-black text-white">E-posta Adresi</h2>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3 w-full border-box">
+                            <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-2 block">Kayıtlı E-posta</label>
+                            <input
+                              type="email"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              disabled={isOAuthUser}
+                              className={cn(
+                                "w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-5 md:px-6 text-sm font-bold text-white placeholder:text-white/20 focus:outline-none focus:border-amber-500/50 transition-all focus:bg-white/[0.07] block min-w-0",
+                                isOAuthUser && "opacity-50 cursor-not-allowed"
+                              )}
+                            />
+                          </div>
+
+                          {isOAuthUser ? (
+                            <div className="mt-6 md:mt-8 p-6 rounded-2xl bg-amber-500/5 border border-amber-500/20 flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
+                              <AlertTriangle className="w-8 h-8 text-amber-500 shrink-0" />
+                              <p className="text-sm font-medium text-white/70 leading-relaxed">
+                                Google hesabınız ile giriş yaptınız. Güvenliğiniz için e-posta değişikliği doğrudan Google hesap ayarlarınız üzerinden yapılmalıdır.
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="mt-8 md:mt-10 flex flex-col sm:flex-row justify-end">
+                              <button
+                                onClick={handleSaveEmail}
+                                disabled={savingEmail}
+                                className="w-full sm:w-auto h-14 px-8 rounded-2xl bg-amber-500 text-black font-black flex items-center justify-center gap-3 shadow-[0_10px_30px_rgba(245,158,11,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                              >
+                                <Save className="w-5 h-5" />
+                                {savingEmail ? "GÜNCELLENİYOR..." : "E-POSTAYI GÜNCELLE"}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
 
                 {activeSection === "reminders" && (
-                  <Card className="glass-card border-none overflow-hidden">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-3 text-2xl font-display">
-                        <Bell className="w-6 h-6 text-primary" />
-                        Hatırlatıcı Tercihleri
-                      </CardTitle>
-                      <CardDescription>Etkinlikler için bildirim zamanlarını belirleyin.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      {reminderOptions.map((opt, i) => (
-                        <div
-                          key={opt.key}
-                          className="flex items-center justify-between p-4 rounded-xl hover:bg-muted/30 transition-colors border border-transparent hover:border-border/40"
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                              <opt.icon className="w-5 h-5" />
-                            </div>
-                            <div>
-                              <Label htmlFor={opt.key} className="text-base font-medium transition-colors group-hover:text-primary">
-                                {opt.label}
-                              </Label>
-                              <p className="text-xs text-muted-foreground">{opt.description}</p>
-                            </div>
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent blur-2xl rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                    <div className="relative bg-[#0c0c0c] border border-white/10 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+                      <div className="p-6 md:p-12 relative z-10 w-full">
+                        <div className="flex items-center gap-4 md:gap-5 mb-8 md:mb-12">
+                          <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-inner relative overflow-hidden">
+                            <div className="absolute inset-0 bg-primary/20 blur-xl animate-pulse" />
+                            <Bell className="w-6 h-6 md:w-7 md:h-7 text-primary relative z-10" />
                           </div>
-                          <Switch
-                            id={opt.key}
-                            checked={reminders[opt.key]}
-                            onCheckedChange={(val) => setReminders(prev => ({ ...prev, [opt.key]: val }))}
-                          />
+                          <div>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-widest mb-1 md:mb-2">
+                              BİLDİRİMLER
+                            </div>
+                            <h2 className="text-2xl md:text-3xl font-display font-black text-white">Hatırlatıcı Tercihleri</h2>
+                          </div>
                         </div>
-                      ))}
-                      <div className="pt-6">
-                        <Button
-                          onClick={handleSaveReminders}
-                          className="w-full gap-2 shadow-glow-primary"
-                          disabled={saving}
-                        >
-                          <Save className="w-4 h-4" />
-                          {saving ? "Kaydediliyor..." : "Tercihleri Kaydet"}
-                        </Button>
+
+                        <div className="space-y-4">
+                          {reminderOptions.map((opt) => (
+                            <label
+                              key={opt.key}
+                              className="group/item flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 md:p-6 rounded-[1.5rem] bg-white/[0.02] border border-white/5 hover:border-primary/30 hover:bg-white/[0.04] transition-all cursor-pointer gap-4"
+                            >
+                              <div className="flex items-center gap-4 md:gap-5">
+                                <div className="w-12 h-12 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center group-hover/item:bg-primary/10 group-hover/item:scale-110 transition-all text-white/50 group-hover/item:text-primary">
+                                  <opt.icon className="w-6 h-6" />
+                                </div>
+                                <div>
+                                  <h3 className="text-base font-bold text-white group-hover/item:text-primary transition-colors">{opt.label}</h3>
+                                  <p className="text-xs font-medium text-white/40 mt-1">{opt.description}</p>
+                                </div>
+                              </div>
+                              <div className="ml-auto sm:ml-4">
+                                <Switch
+                                  id={opt.key}
+                                  checked={reminders[opt.key]}
+                                  onCheckedChange={(val) => setReminders(prev => ({ ...prev, [opt.key]: val }))}
+                                  className="data-[state=checked]:bg-primary"
+                                />
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+
+                        <div className="mt-8 md:mt-12 flex flex-col sm:flex-row justify-end border-t border-white/10 pt-8">
+                          <button
+                            onClick={handleSaveReminders}
+                            disabled={saving}
+                            className="w-full sm:w-auto h-14 px-10 rounded-2xl bg-primary text-black font-black flex items-center justify-center gap-3 shadow-[0_10px_30px_rgba(16,185,129,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                          >
+                            <Save className="w-5 h-5" />
+                            {saving ? "KAYDEDİLİYOR..." : "TERCİHLERİ KAYDET"}
+                          </button>
+                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 )}
 
                 {activeSection === "security" && (
-                  <div className="space-y-6">
-                    <Card className="glass-card border-none overflow-hidden">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-3 text-2xl font-display">
-                          <Lock className="w-6 h-6 text-primary" />
-                          Şifre Yönetimi
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {isOAuthUser ? (
-                          <div className="p-6 rounded-2xl bg-muted/50 border border-border/50 text-center space-y-3">
-                            <Lock className="w-12 h-12 text-muted-foreground/30 mx-auto" />
-                            <p className="text-muted-foreground">
-                              Google hesabınız ile giriş yaptınız. Şifre işlemleri Google üzerinden yönetilmektedir.
-                            </p>
+                  <div className="space-y-8">
+                    {/* Password Module */}
+                    <div className="relative group">
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-transparent blur-xl rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                      <div className="relative bg-[#0c0c0c] border border-white/10 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                        <div className="p-6 md:p-12 relative z-10 w-full">
+                          <div className="flex items-center gap-4 md:gap-5 mb-8 md:mb-10">
+                            <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-inner">
+                              <Lock className="w-6 h-6 md:w-7 md:h-7 text-blue-400" />
+                            </div>
+                            <div>
+                              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[9px] font-black uppercase tracking-widest mb-1 md:mb-2">
+                                GİZLİLİK
+                              </div>
+                              <h2 className="text-2xl md:text-3xl font-display font-black text-white">Şifre Yönetimi</h2>
+                            </div>
                           </div>
-                        ) : (
-                          <>
-                            <div className="space-y-4">
-                              <div className="space-y-2">
-                                <Label htmlFor="currentPassword">Mevcut Şifre</Label>
-                                <Input id="currentPassword" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+
+                          {isOAuthUser ? (
+                            <div className="p-8 rounded-3xl bg-blue-500/5 border border-blue-500/20 text-center space-y-4">
+                              <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center mx-auto mb-6">
+                                <Lock className="w-8 h-8 text-blue-400" />
                               </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="newPassword">Yeni Şifre</Label>
-                                <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                              <h3 className="text-xl font-bold text-white">Harici Sağlayıcı (Google)</h3>
+                              <p className="text-sm font-medium text-white/60 max-w-md mx-auto leading-relaxed">
+                                Sisteme Google altyapısı kullanarak giriş yaptınız. Şifre değiştirme ve sıfırlama işlemleri sadece Google hesap ayarları üzerinden yapılabilir.
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="w-full xl:max-w-2xl">
+                              <div className="space-y-6">
+                                <div className="space-y-3 w-full border-box">
+                                  <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-2 block">Mevcut Şifre</label>
+                                  <input
+                                    type="password"
+                                    value={currentPassword}
+                                    onChange={(e) => setCurrentPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-5 md:px-6 text-sm font-bold text-white placeholder:text-white/20 focus:outline-none focus:border-blue-500/50 transition-all focus:bg-white/[0.07] block min-w-0"
+                                  />
+                                </div>
+                                <div className="space-y-3 w-full border-box">
+                                  <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-2 block">Yeni Şifre</label>
+                                  <input
+                                    type="password"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-5 md:px-6 text-sm font-bold text-white placeholder:text-white/20 focus:outline-none focus:border-blue-500/50 transition-all focus:bg-white/[0.07] block min-w-0"
+                                  />
+                                </div>
+                                <div className="space-y-3 w-full border-box">
+                                  <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-2 block">Yeniden Yeni Şifre</label>
+                                  <input
+                                    type="password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-5 md:px-6 text-sm font-bold text-white placeholder:text-white/20 focus:outline-none focus:border-blue-500/50 transition-all focus:bg-white/[0.07] block min-w-0"
+                                  />
+                                </div>
                               </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="confirmPassword">Şifre Tekrar</Label>
-                                <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+
+                              <div className="mt-8 md:mt-10">
+                                <button
+                                  onClick={handleSavePassword}
+                                  disabled={savingPassword}
+                                  className="w-full sm:w-auto min-w-[200px] h-14 px-10 rounded-2xl bg-blue-500 text-black font-black flex items-center justify-center gap-3 shadow-[0_10px_30px_rgba(59,130,246,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                                >
+                                  <Lock className="w-5 h-5" />
+                                  {savingPassword ? "GÜNCELLENİYOR..." : "ŞİFREYİ GÜNCELLE"}
+                                </button>
                               </div>
                             </div>
-                            <Button onClick={handleSavePassword} className="w-full" disabled={savingPassword}>
-                              {savingPassword ? "Güncelleniyor..." : "Şifreyi Güncelle"}
-                            </Button>
-                          </>
-                        )}
-                      </CardContent>
-                    </Card>
-
-                    <Card className="glass-card border-none border-destructive/20 overflow-hidden relative">
-                      <div className="absolute top-0 right-0 p-4 opacity-5">
-                        <Trash2 className="w-16 h-16 text-destructive" />
+                          )}
+                        </div>
                       </div>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-3 text-2xl font-display text-destructive">
-                          <AlertTriangle className="w-6 h-6" />
-                          Hesabı Kapat
-                        </CardTitle>
-                        <CardDescription>Bu işlem geri alınamaz. Lütfen dikkatli olun.</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <Button
-                          variant="destructive"
-                          onClick={() => setDeleteDialogOpen(true)}
-                          className="w-full gap-2 bg-destructive/90 hover:bg-destructive shadow-lg hover:shadow-destructive/20 transition-all font-semibold"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Kalıcı Olarak Sil
-                        </Button>
-                      </CardContent>
-                    </Card>
+                    </div>
+
+                    {/* Danger Zone */}
+                    <div className="relative group">
+                      <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-transparent blur-xl rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                      <div className="relative bg-[#0c0c0c] border border-red-500/20 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                        <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+                          <AlertTriangle className="w-64 h-64 text-red-500 -rotate-12 translate-x-1/4 -translate-y-1/4" />
+                        </div>
+
+                        <div className="p-6 md:p-12 relative z-10 w-full">
+                          <div className="flex items-center gap-4 md:gap-5 mb-8">
+                            <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shadow-inner">
+                              <Trash2 className="w-6 h-6 md:w-7 md:h-7 text-red-500" />
+                            </div>
+                            <div>
+                              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-500 text-[9px] font-black uppercase tracking-widest mb-1 md:mb-2">
+                                TEHLİKELİ BÖLGE
+                              </div>
+                              <h2 className="text-2xl md:text-3xl font-display font-black text-red-500">Hesabı Sil</h2>
+                            </div>
+                          </div>
+
+                          <p className="text-sm font-medium text-white/50 mb-8 max-w-xl leading-relaxed">
+                            Hesabınızı kalıcı olarak silmek istiyorsanız aşağıdaki butonu kullanabilirsiniz. Bu işlem geri alınamaz ve tüm verileriniz sistemden tamamen temizlenir.
+                          </p>
+
+                          <button
+                            onClick={() => setDeleteDialogOpen(true)}
+                            className="w-full sm:w-auto h-14 px-8 rounded-2xl bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/50 font-black flex items-center justify-center gap-3 transition-all group/btn"
+                          >
+                            <Trash2 className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
+                            KALICI OLARAK SİL
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </motion.div>

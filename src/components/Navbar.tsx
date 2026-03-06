@@ -79,6 +79,19 @@ const Navbar = () => {
 
           </Link>
 
+          {/* Mobile Login Button (Centered) - Only for unauthenticated users */}
+          {!user && (
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:hidden">
+              <button
+                onClick={() => navigate("/giris")}
+                className="flex items-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 font-bold rounded-xl text-[11px] px-4 py-1.5 transition-all shadow-[0_0_15px_rgba(16,185,129,0.1)] whitespace-nowrap"
+              >
+                <User className="w-3 h-3" />
+                Giriş Yap / Kayıt Ol
+              </button>
+            </div>
+          )}
+
           {/* Desktop Nav Links */}
           <div className="hidden md:flex items-center gap-1 mx-4">
             <button
@@ -152,7 +165,6 @@ const Navbar = () => {
                           <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Panelim</p>
                         </div>
                         <DropdownItem onClick={() => { navigate("/profil"); setDropdownOpen(false); }} icon={<User className="h-4 w-4" />} label="Profil" />
-                        <DropdownItem onClick={() => { navigate("/profil?tab=reminders"); setDropdownOpen(false); }} icon={<Settings className="h-4 w-4" />} label="Ayarlar" />
                         {isAdmin && <DropdownItem onClick={() => { navigate("/yonetim"); setDropdownOpen(false); }} icon={<Shield className="h-4 w-4" />} label="Yönetim" isSpecial />}
                         <div className="my-2 h-px bg-white/5" />
                         <button
@@ -221,12 +233,12 @@ const Navbar = () => {
                       <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-emerald-500 to-amber-500 flex items-center justify-center text-black font-black">
                         {profile?.first_name?.[0]?.toLocaleUpperCase('tr-TR') || "U"}
                       </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-black text-white">{profile?.first_name} {profile?.last_name}</span>
-                        <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Aktif Kullanıcı</span>
+                      <div className="flex flex-col overflow-hidden">
+                        <span className="text-sm font-black text-white truncate">{profile?.first_name} {profile?.last_name}</span>
+                        <span className="text-[10px] text-emerald-400/80 font-bold truncate">{user?.email}</span>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 gap-2">
                       <Button
                         variant="outline"
                         className="justify-start gap-2 border-white/10 font-bold rounded-xl text-xs h-10"
@@ -234,17 +246,10 @@ const Navbar = () => {
                       >
                         <User className="h-3 w-3" /> Profil
                       </Button>
-                      <Button
-                        variant="outline"
-                        className="justify-start gap-2 border-white/10 font-bold rounded-xl text-xs h-10"
-                        onClick={() => { navigate("/profil?tab=reminders"); setMobileOpen(false); }}
-                      >
-                        <Settings className="h-3 w-3" /> Ayarlar
-                      </Button>
                       {isAdmin && (
                         <Button
                           variant="outline"
-                          className="col-span-2 justify-start gap-2 border-white/10 font-bold rounded-xl text-emerald-400 h-10 text-xs"
+                          className="justify-start gap-2 border-white/10 font-bold rounded-xl text-emerald-400 h-10 text-xs"
                           onClick={() => { navigate("/yonetim"); setMobileOpen(false); }}
                         >
                           <Shield className="h-4 w-4" /> Yönetim Paneli

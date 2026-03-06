@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Sparkles, CalendarDays, MapPin, Navigation } from "lucide-react";
+import { Sparkles, CalendarDays, MapPin, Navigation, FileText } from "lucide-react";
 import { useRef } from "react";
 
 interface HeroSectionProps {
@@ -154,86 +154,101 @@ const HeroSection = ({ onViewEvents }: HeroSectionProps) => {
         >
           {/* Top Badge */}
           <motion.div
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-xl mb-8 group cursor-pointer hover:bg-white/10 transition-colors"
-            whileHover={{ y: -2 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-xl mb-16 group cursor-pointer hover:bg-white/10 transition-all hover:scale-105"
           >
             <Sparkles className="h-4 w-4 text-amber-400 group-hover:animate-spin" />
-            <span className="text-sm font-bold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-white uppercase">Kültür · Sanat · Keşif</span>
-          </motion.div>
-
-          {/* Monumental Typography with Animated Shimmer Line */}
-          <div className="relative mb-6">
-            <motion.h1
-              className="font-display font-black tracking-tighter"
-              style={{ fontSize: "clamp(4rem, 10vw, 9rem)", lineHeight: 1 }}
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.2, ease: [0.2, 0.65, 0.3, 0.9] }}
+            <motion.span
+              animate={{ backgroundPosition: ["0% center", "200% center"] }}
+              transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+              className="text-sm font-black tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-white to-amber-200 uppercase bg-[length:200%_auto]"
             >
-              <span className="relative inline-block overflow-hidden text-transparent bg-clip-text bg-emerald-400 drop-shadow-[0_0_40px_rgba(16,185,129,0.3)]">
-                Refik Keşif
-                <br />
-                ve İnşa
-                <motion.span
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/80 to-transparent bg-clip-text text-transparent"
-                  style={{ backgroundSize: '200% auto' }}
-                  animate={{ backgroundPosition: ['200% center', '-200% center'] }}
-                  transition={{
-                    duration: 8,
-                    repeat: Infinity,
-                    ease: 'linear',
-                    repeatDelay: 3
-                  }}
-                >
-                  Refik Keşif
-                  <br />
-                  ve İnşa
-                </motion.span>
-              </span>
-            </motion.h1>
-            {/* Soft text glow underneath */}
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/20 to-emerald-500/0 blur-[100px] -z-10" />
-          </div>
-
-          <motion.p
-            className="max-w-2xl mx-auto text-xl md:text-2xl font-medium text-white/50 mb-12 leading-relaxed"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.5 }}
-          >
-
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.7 }}
-            className="flex flex-col sm:flex-row gap-6 justify-center items-center"
-          >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                onClick={() => {
-                  if (onViewEvents) onViewEvents();
-                  else {
-                    document.querySelector('#events-section')?.scrollIntoView({ behavior: 'smooth' });
-                  }
-                }}
-                className="relative h-16 px-10 rounded-full bg-emerald-500/10 backdrop-blur-xl border border-emerald-500/30 text-emerald-400 font-black text-lg overflow-hidden group shadow-[0_0_40px_rgba(16,185,129,0.1)] hover:shadow-[0_0_60px_rgba(16,185,129,0.3)] hover:bg-emerald-500/20 transition-all duration-300"
-              >
-                <span className="relative z-10 flex items-center gap-3">
-                  Etkinlikleri Keşfet
-                  <Navigation className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </span>
-                {/* Shimmer effect */}
-                <div className="absolute inset-0 -translate-x-full group-hover:animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-              </Button>
-            </motion.div>
+              Kültür · Sanat · Keşif
+            </motion.span>
           </motion.div>
+
+          {/* Action Buttons Container */}
+          <div className="flex flex-col gap-6 items-center">
+            {/* 1. Explore Events Button - Amber Snake */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.4, type: "spring", stiffness: 100 }}
+            >
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="relative p-[2px] rounded-full overflow-hidden group/btn bg-white/5"
+              >
+                <motion.div
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                  className="absolute inset-[-100%] bg-[conic-gradient(transparent,transparent,rgba(217,119,6,0.8),transparent)] z-0"
+                />
+                <Button
+                  onClick={() => {
+                    if (onViewEvents) onViewEvents();
+                    else {
+                      document.querySelector('#events-section')?.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  className="relative z-10 h-14 px-10 rounded-full bg-black/80 backdrop-blur-3xl border-none text-amber-500/90 font-black text-xs tracking-[0.2em] overflow-hidden group hover:text-amber-400 transition-all duration-500 w-64"
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-3 w-full">
+                    ETKİNLİKLERİ KEŞFET
+                    <Navigation className="w-4 h-4 fill-current group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                  </span>
+                  <div className="absolute inset-0 -translate-x-full group-hover:animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                </Button>
+              </motion.div>
+            </motion.div>
+
+            {/* 2. Review Reports Button - Emerald Snake */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.6, type: "spring", stiffness: 100 }}
+            >
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="relative p-[2px] rounded-full overflow-hidden group/btn bg-white/5"
+              >
+                <motion.div
+                  animate={{ rotate: [360, 0] }} // Opposite rotation for visual variety
+                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                  className="absolute inset-[-100%] bg-[conic-gradient(transparent,transparent,rgba(16,185,129,0.8),transparent)] z-0"
+                />
+                <Button
+                  onClick={() => navigate('/raporlar')}
+                  className="relative z-10 h-14 px-10 rounded-full bg-black/80 backdrop-blur-3xl border-none text-emerald-500/90 font-black text-xs tracking-[0.2em] overflow-hidden group hover:text-emerald-400 transition-all duration-500 w-64"
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-3 w-full">
+                    RAPORLARI İNCELE
+                    <FileText className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                  </span>
+                  <div className="absolute inset-0 -translate-x-full group-hover:animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                </Button>
+              </motion.div>
+            </motion.div>
+          </div>
         </motion.div>
       </motion.div>
 
-      {/* 4. Bottom Fade to connect to the next section cleanly */}
-      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-background to-transparent z-20 pointer-events-none" />
+      {/* 4. Ultra-Premium Multi-Layered Transparent Transition */}
+      <div className="absolute bottom-0 left-0 right-0 h-96 pointer-events-none z-20 overflow-hidden">
+        {/* Soft Background Blend */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/10 to-transparent" />
+
+        {/* Subtle Color Bleeds to eliminate 'pure white' feel */}
+        <div className="absolute -bottom-20 -left-20 w-full h-full bg-emerald-500/5 blur-[120px] opacity-40" />
+        <div className="absolute -bottom-20 -right-20 w-full h-full bg-amber-500/5 blur-[120px] opacity-40" />
+
+        {/* Minimal mask for content legibility */}
+        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-background/40 to-transparent" />
+      </div>
     </section>
   );
 };

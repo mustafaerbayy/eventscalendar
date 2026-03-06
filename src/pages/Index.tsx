@@ -36,9 +36,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, CalendarDays, Loader, Clock, Plus, Minus, Calendar, MapPin, Users, UserCheck, UserX, List, LayoutGrid, Sparkles } from "lucide-react";
+import { Search, CalendarDays, Loader, Clock, Plus, Minus, Calendar, MapPin, Users, UserCheck, UserX, List, LayoutGrid, Sparkles, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { formatTurkishDate, formatTurkishTime } from "@/lib/date-utils";
 import EventCard from "@/components/EventCard";
 import CalendarView from "@/components/CalendarView";
@@ -107,6 +107,7 @@ const Index = () => {
     venue_name: "",
     category_id: "",
   });
+  const [isPastEventsOpen, setIsPastEventsOpen] = useState(false);
   const fetchData = async () => {
     const [eventsRes, citiesRes, categoriesRes] = await Promise.all([
       supabase
@@ -332,18 +333,10 @@ const Index = () => {
 
       {/* Events Section with background decoration */}
       <section id="events-section" className="relative py-20">
-        {/* Decorative background elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <motion.div
-            className="absolute top-20 -left-40 w-80 h-80 bg-gradient-to-br from-primary/10 to-accent/5 rounded-full blur-3xl"
-            animate={{ y: [0, 50, 0] }}
-            transition={{ duration: 8, repeat: Infinity }}
-          />
-          <motion.div
-            className="absolute bottom-20 -right-40 w-80 h-80 bg-gradient-to-br from-accent/10 to-primary/5 rounded-full blur-3xl"
-            animate={{ y: [0, -50, 0] }}
-            transition={{ duration: 8, repeat: Infinity }}
-          />
+        {/* Static Background Glow for Performance */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+          <div className="absolute top-0 -left-40 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px]" />
+          <div className="absolute bottom-0 -right-40 w-[600px] h-[600px] bg-accent/10 rounded-full blur-[120px]" />
         </div>
 
         <div className="container mx-auto px-4 relative z-10">
@@ -695,71 +688,62 @@ const Index = () => {
 
       {/* Past Events Section - only show in list view */}
       {viewMode === "list" && pastEvents.length > 0 && (
-        <section className="relative py-20 bg-muted/20">
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <motion.div
-              className="absolute top-20 -left-40 w-80 h-80 bg-gradient-to-br from-muted/10 to-accent/5 rounded-full blur-3xl"
-              animate={{ y: [0, 50, 0] }}
-              transition={{ duration: 8, repeat: Infinity }}
-            />
-            <motion.div
-              className="absolute bottom-20 -right-40 w-80 h-80 bg-gradient-to-br from-accent/10 to-muted/5 rounded-full blur-3xl"
-              animate={{ y: [0, -50, 0] }}
-              transition={{ duration: 8, repeat: Infinity }}
-            />
-          </div>
-
+        <section className="relative py-20 bg-muted/5 border-t border-border/40">
           <div className="container mx-auto px-4 relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
+            <button
+              onClick={() => setIsPastEventsOpen(!isPastEventsOpen)}
+              className="w-full flex items-center justify-between p-6 rounded-[2rem] bg-card/40 border border-white/10 hover:bg-card/60 transition-all hover:scale-[1.005] active:scale-[0.995] group"
             >
-              <div className="flex items-center gap-3 mb-2">
-                <motion.div
-                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 shadow-md shadow-muted/20"
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  transition={{ type: "spring", stiffness: 400 }}
-                >
-                  <Clock className="h-4.5 w-4.5 text-muted-foreground" />
-                </motion.div>
-                <h2 className="font-display text-2xl font-semibold text-muted-foreground md:text-3xl">
-                  Geçmiş Etkinlikler
-                </h2>
+              <div className="flex items-center gap-4">
+                <div className={`flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-500 ${isPastEventsOpen ? 'bg-primary/20 rotate-180' : 'bg-muted/30'}`}>
+                  <Clock className={`h-6 w-6 transition-colors ${isPastEventsOpen ? 'text-primary' : 'text-muted-foreground'}`} />
+                </div>
+                <div className="text-left">
+                  <h2 className="font-display text-2xl font-black text-foreground md:text-3xl leading-none">
+                    Geçmiş Etkinlikler
+                  </h2>
+                  <p className="text-muted-foreground/60 mt-1 text-sm font-medium">Önceki etkinlikleri görüntülemek için tıklayın</p>
+                </div>
               </div>
-              <p className="text-muted-foreground/70 mt-1 text-sm">Önceki etkinlikleri görüntüleyin</p>
-            </motion.div>
+              <div className={`w-12 h-12 rounded-full border border-white/10 flex items-center justify-center transition-transform duration-500 ${isPastEventsOpen ? 'rotate-180 bg-primary/10 border-primary/20' : 'bg-white/5'}`}>
+                <ChevronDown className={`w-6 h-6 transition-colors ${isPastEventsOpen ? 'text-primary' : 'text-muted-foreground'}`} />
+              </div>
+            </button>
 
-            {/* Past Events Grid */}
-            <motion.div
-              className="mt-12 grid gap-4 grid-cols-1"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ staggerChildren: 0.05 }}
-            >
-              {pastEvents.map((event, i) => (
-                <EventCard
-                  key={event.id}
-                  id={event.id}
-                  title={event.title}
-                  date={event.date}
-                  time={event.time}
-                  cityName={event.cities?.name || ""}
-                  venueName={event.venue_name || event.venues?.name || undefined}
-                  categoryName={event.categories?.name || ""}
-                  attendeeCount={getAttendeeCount(event.rsvps || [])}
-                  index={i}
-                  isPast={true}
-                  viewMode="list"
-                  isAdmin={isAdmin}
-                  onEdit={(eventData) => openEditDialog(event)}
-                  onDelete={handleDeleteEvent}
-                  onClick={handleCardClick}
-                />
-              ))}
-            </motion.div>
+            <AnimatePresence>
+              {isPastEventsOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  className="overflow-hidden"
+                >
+                  <div className="pt-12 grid gap-4 grid-cols-1">
+                    {pastEvents.map((event, i) => (
+                      <EventCard
+                        key={event.id}
+                        id={event.id}
+                        title={event.title}
+                        date={event.date}
+                        time={event.time}
+                        cityName={event.cities?.name || ""}
+                        venueName={event.venue_name || event.venues?.name || undefined}
+                        categoryName={event.categories?.name || ""}
+                        attendeeCount={getAttendeeCount(event.rsvps || [])}
+                        index={i}
+                        isPast={true}
+                        viewMode="list"
+                        isAdmin={isAdmin}
+                        onEdit={(eventData) => openEditDialog(event)}
+                        onDelete={handleDeleteEvent}
+                        onClick={handleCardClick}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </section>
       )}

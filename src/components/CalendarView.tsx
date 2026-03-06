@@ -218,12 +218,20 @@ const CalendarView = ({ events, onEventClick, isAuthenticated = true }: Calendar
                       )}
                     </div>
 
-                    {/* Mobile Dots */}
-                    <div className="md:hidden flex gap-1 mt-auto">
-                      {dayEvents.slice(0, 3).map((e) => (
-                        <div key={e.id} className="h-1 w-1 rounded-full bg-primary" />
-                      ))}
-                    </div>
+                    {/* Mobile Event Count Badge */}
+                    {hasEvents && isCurrentMonth && (
+                      <div className="md:hidden mt-auto flex justify-end">
+                        <motion.div
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          className="h-6 w-6 rounded-full bg-gradient-to-br from-primary to-emerald-400 flex items-center justify-center shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] border border-white/20 active:scale-95 transition-transform"
+                        >
+                          <span className="text-[10px] font-black text-black leading-none">
+                            {dayEvents.length}
+                          </span>
+                        </motion.div>
+                      </div>
+                    )}
                   </motion.button>
                 );
               })}
