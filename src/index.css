@@ -236,6 +236,52 @@
       transform: scale(1.01);
     }
   }
+
+  /* Enhanced Design Utilities */
+  .glass-card {
+    background: hsla(var(--card) / 0.55);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid hsla(var(--border) / 0.4);
+    box-shadow: 0 8px 32px 0 hsla(0, 0%, 0%, 0.08);
+  }
+
+  .glass-nav {
+    background: hsla(var(--card) / 0.4);
+    backdrop-filter: blur(12px) saturate(160%);
+    border: 1px solid hsla(var(--border) / 0.3);
+  }
+
+  .text-glow {
+    text-shadow: 0 0 15px hsl(var(--primary) / 0.4);
+  }
+
+  .border-glow {
+    position: relative;
+  }
+
+  .border-glow::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.5), transparent, hsl(var(--accent) / 0.5));
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .border-glow:hover::after {
+    opacity: 1;
+  }
+
+  .bg-mesh {
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(var(--primary) / 0.15) 0, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(var(--accent) / 0.1) 0, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(var(--primary) / 0.05) 0, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(var(--accent) / 0.15) 0, transparent 50%);
+  }
 }
 
 @keyframes shimmer {
