@@ -76,15 +76,7 @@ const Navbar = () => {
               <div className="absolute inset-0 rounded-full bg-primary/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
               <img src="/images/logo.png" alt="Logo" className="h-full w-full object-contain relative drop-shadow-emerald" />
             </motion.div>
-            {!scrolled && (
-              <motion.span
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="text-lg font-black tracking-tighter text-white hidden lg:block"
-              >
-                REFİK
-              </motion.span>
-            )}
+
           </Link>
 
           {/* Desktop Nav Links */}
