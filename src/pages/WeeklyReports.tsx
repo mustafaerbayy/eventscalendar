@@ -116,7 +116,7 @@ const WeeklyReports = () => {
       let fileType = editingReport?.file_type || null;
 
       if (file) {
-        const ext = file.name.split(".").pop()?.toLowerCase() || "pdf";
+        const ext = file.name.split(".").pop()?.toLocaleLowerCase('tr-TR') || "pdf";
         const fileName = `${crypto.randomUUID()}.${ext}`;
         const { error: uploadError } = await supabase.storage
           .from("weekly-reports")
@@ -187,8 +187,8 @@ const WeeklyReports = () => {
 
   const filteredReports = reports
     .filter(report =>
-      report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      report.content?.toLowerCase().includes(searchTerm.toLowerCase())
+      report.title.toLocaleLowerCase('tr-TR').includes(searchTerm.toLocaleLowerCase('tr-TR')) ||
+      report.content?.toLocaleLowerCase('tr-TR').includes(searchTerm.toLocaleLowerCase('tr-TR'))
     )
     .sort((a, b) => {
       const dateA = new Date(a.week_start).getTime();
@@ -407,7 +407,7 @@ const WeeklyReports = () => {
                             </div>
                             <div className="ml-5 flex-1">
                               <h5 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors">
-                                {selectedReport.file_type?.toUpperCase() || "BELGE"} FORMATINDA DOSYA
+                                {selectedReport.file_type?.toLocaleUpperCase('tr-TR') || "BELGE"} FORMATINDA DOSYA
                               </h5>
                               <p className="text-sm text-muted-foreground font-medium mt-1">İndirmek için tıklayın</p>
                             </div>

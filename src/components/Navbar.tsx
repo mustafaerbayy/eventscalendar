@@ -138,7 +138,7 @@ const Navbar = () => {
                   >
                     <div className="relative h-8 w-8 rounded-full overflow-hidden bg-gradient-to-tr from-emerald-500 to-amber-500 p-[1px]">
                       <div className="flex h-full w-full items-center justify-center rounded-full bg-black text-[10px] font-black text-white">
-                        {profile?.first_name?.[0]?.toUpperCase() || "U"}
+                        {profile?.first_name?.[0]?.toLocaleUpperCase('tr-TR') || "U"}
                       </div>
                     </div>
                     {!scrolled && (
@@ -227,7 +227,7 @@ const Navbar = () => {
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 mb-4">
                       <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-emerald-500 to-amber-500 flex items-center justify-center text-black font-black">
-                        {profile?.first_name?.[0]?.toUpperCase() || "U"}
+                        {profile?.first_name?.[0]?.toLocaleUpperCase('tr-TR') || "U"}
                       </div>
                       <div className="flex flex-col">
                         <span className="text-sm font-black text-white">{profile?.first_name} {profile?.last_name}</span>

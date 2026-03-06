@@ -48,10 +48,43 @@ const HeroSection = ({ onViewEvents }: HeroSectionProps) => {
           transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
         />
 
-        {/* Dense Starfield / Grid overlay */}
-        <div className="absolute inset-0 opacity-[0.15]"
-          style={{ backgroundImage: 'radial-gradient(circle at center, white 1px, transparent 1px)', backgroundSize: '40px 40px' }}
-        />
+        {/* Dense Aurora / Liquid Flow Overlay */}
+        <div className="absolute inset-0 z-10">
+          <motion.div
+            className="absolute inset-0 opacity-40 mix-blend-soft-light"
+            style={{
+              background: "radial-gradient(100% 100% at 50% 50%, rgba(16,185,129,0.1) 0%, transparent 100%)",
+              filter: "blur(80px)"
+            }}
+            animate={{
+              scale: [1, 1.2, 1],
+              opacity: [0.3, 0.5, 0.3]
+            }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          />
+
+          {/* Drifting Light Streaks */}
+          {[...Array(3)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute h-px w-[40vw] bg-gradient-to-r from-transparent via-emerald-400/20 to-transparent"
+              style={{
+                top: `${20 + i * 25}%`,
+                left: "-40vw"
+              }}
+              animate={{ x: ["0vw", "140vw"] }}
+              transition={{
+                duration: 15 + i * 5,
+                repeat: Infinity,
+                ease: "linear",
+                delay: i * 4
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Grain Texture Overlay */}
+        <div className="absolute inset-0 opacity-[0.04] z-20 pointer-events-none mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
       </motion.div>
 
       {/* 2. 3D Floating Glassmorphism Elements (Parallax) */}

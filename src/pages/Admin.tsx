@@ -503,7 +503,7 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-24 md:pt-28">
+    <div className="min-h-screen bg-background pt-32 md:pt-40">
       <Navbar />
 
       {/* Header */}
@@ -788,7 +788,7 @@ const Admin = () => {
                       <div className="max-h-48 overflow-y-auto rounded-xl border border-border/50 divide-y divide-border/30">
                         {profiles
                           .filter(p =>
-                            `${p.first_name} ${p.last_name}`.toLowerCase().includes(searchQuery.toLowerCase())
+                            `${p.first_name} ${p.last_name}`.toLocaleLowerCase('tr-TR').includes(searchQuery.toLocaleLowerCase('tr-TR'))
                           )
                           .map((p) => (
                             <label
@@ -809,7 +809,7 @@ const Admin = () => {
                               </div>
                             </label>
                           ))}
-                        {profiles.filter(p => `${p.first_name} ${p.last_name}`.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                        {profiles.filter(p => `${p.first_name} ${p.last_name}`.toLocaleLowerCase('tr-TR').includes(searchQuery.toLocaleLowerCase('tr-TR'))).length === 0 && (
                           <p className="text-sm text-muted-foreground text-center py-4">
                             {searchQuery.trim() ? "Eşleşen kullanıcı bulunamadı" : "Henüz kayıtlı kullanıcı yok"}
                           </p>
@@ -925,7 +925,7 @@ const Admin = () => {
                         {allUsers
                           .filter(u =>
                             u.email !== "admin@admin.com" &&
-                            `${u.first_name} ${u.last_name} ${u.email}`.toLowerCase().includes(userSearchQuery.toLowerCase())
+                            `${u.first_name} ${u.last_name} ${u.email}`.toLocaleLowerCase('tr-TR').includes(userSearchQuery.toLocaleLowerCase('tr-TR'))
                           )
                           .map((u) => {
                             const admin = admins.find(a => a.id === u.id);
@@ -934,7 +934,7 @@ const Admin = () => {
                                 <TableCell className="font-medium">
                                   <div className="flex items-center gap-2">
                                     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold shrink-0">
-                                      {u.first_name?.[0] || u.email?.[0]?.toUpperCase() || "?"}
+                                      {u.first_name?.[0] || u.email?.[0]?.toLocaleUpperCase('tr-TR') || "?"}
                                     </div>
                                     <div className="flex items-center gap-2">
                                       <span>{u.first_name} {u.last_name}</span>
@@ -952,8 +952,8 @@ const Admin = () => {
                                       <Button
                                         size="sm"
                                         className={`gap-1.5 text-xs ${admin.has_announcement_access
-                                            ? "bg-green-100 text-green-700 hover:bg-green-200"
-                                            : "bg-red-100 text-red-700 hover:bg-red-200"
+                                          ? "bg-green-100 text-green-700 hover:bg-green-200"
+                                          : "bg-red-100 text-red-700 hover:bg-red-200"
                                           }`}
                                         onClick={() => handleToggleAnnouncement(u.id)}
                                         disabled={adminLoading}
@@ -974,8 +974,8 @@ const Admin = () => {
                                       <Button
                                         size="sm"
                                         className={`gap-1.5 text-xs ${admin.has_report_access
-                                            ? "bg-green-100 text-green-700 hover:bg-green-200"
-                                            : "bg-red-100 text-red-700 hover:bg-red-200"
+                                          ? "bg-green-100 text-green-700 hover:bg-green-200"
+                                          : "bg-red-100 text-red-700 hover:bg-red-200"
                                           }`}
                                         onClick={() => handleToggleReportAdmin(u.id)}
                                         disabled={adminLoading}
@@ -1006,8 +1006,8 @@ const Admin = () => {
                                       <Button
                                         size="sm"
                                         className={`h-8 px-2 text-xs gap-1 ${admin
-                                            ? "bg-green-100 text-green-700 hover:bg-green-200"
-                                            : "bg-red-100 text-red-700 hover:bg-red-200"
+                                          ? "bg-green-100 text-green-700 hover:bg-green-200"
+                                          : "bg-red-100 text-red-700 hover:bg-red-200"
                                           }`}
                                         onClick={() => admin ? handleRemoveAdmin(u.id) : handleAddAdminById(u.id)}
                                         disabled={adminLoading}
@@ -1034,7 +1034,7 @@ const Admin = () => {
                           })}
                         {allUsers.filter(u =>
                           u.email !== "admin@admin.com" &&
-                          `${u.first_name} ${u.last_name} ${u.email}`.toLowerCase().includes(userSearchQuery.toLowerCase())
+                          `${u.first_name} ${u.last_name} ${u.email}`.toLocaleLowerCase('tr-TR').includes(userSearchQuery.toLocaleLowerCase('tr-TR'))
                         ).length === 0 && (
                             <TableRow>
                               <TableCell colSpan={6} className="text-center text-muted-foreground py-8">

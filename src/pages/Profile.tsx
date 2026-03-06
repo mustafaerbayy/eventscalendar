@@ -172,7 +172,7 @@ const Profile = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-mesh pt-20 md:pt-24 pb-12">
+    <div className="min-h-screen bg-mesh pt-32 md:pt-40 pb-12">
       <Navbar />
 
       <div className="container mx-auto px-4">

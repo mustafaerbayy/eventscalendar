@@ -397,7 +397,7 @@ const Index = () => {
             <div className="relative flex-1">
               <Search className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-primary/60 group-hover:text-primary transition-colors" />
               <Input
-                placeholder="İlham verici bir etkinlik bulun..."
+                placeholder="Etkinlik ara"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-14 h-14 bg-white/5 border-white/5 focus:bg-white/10 focus:border-primary/30 rounded-2xl transition-all placeholder:text-muted-foreground/50 text-base shadow-inner"

@@ -229,7 +229,7 @@ const Login = () => {
                 <div className="flex items-center justify-between px-1">
                   <Label htmlFor="password" className="text-xs font-bold uppercase tracking-widest text-slate-500">Şifre</Label>
                   <Link to="/sifremi-unuttum" className="text-xs font-bold text-primary hover:text-primary/80 transition-colors uppercase tracking-wider">
-                    Sıfırla
+                    Şifremi Unuttum
                   </Link>
                 </div>
                 <div className="relative group/input">

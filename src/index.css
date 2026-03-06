@@ -105,9 +105,12 @@
 
   body {
     @apply bg-background text-foreground font-body antialiased;
-    background-image: var(--bg-texture);
-    background-size: 600px;
+    background-image:
+      url("data:image/svg+xml,%3Csvg width='150' height='150' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 0 L74 46 L120 60 L74 74 L60 120 L46 74 L0 60 L46 46 Z' fill='%23ffffff' fill-opacity='0.08'/%3E%3Cpath d='M60 15 L70 50 L105 60 L70 70 L60 105 L50 70 L15 60 L50 50 Z' fill='%23ffffff' fill-opacity='0.12'/%3E%3C/svg%3E"),
+      var(--bg-texture);
+    background-size: 150px, 600px;
     background-repeat: repeat;
+    background-attachment: fixed;
   }
 
   h1,
@@ -276,11 +279,16 @@
   }
 
   .bg-mesh {
-    background-image: 
+    background-image:
       radial-gradient(at 0% 0%, hsla(var(--primary) / 0.15) 0, transparent 50%),
       radial-gradient(at 100% 0%, hsla(var(--accent) / 0.1) 0, transparent 50%),
       radial-gradient(at 100% 100%, hsla(var(--primary) / 0.05) 0, transparent 50%),
       radial-gradient(at 0% 100%, hsla(var(--accent) / 0.15) 0, transparent 50%);
+  }
+
+  .bg-islamic-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 0 L74 46 L120 60 L74 74 L60 120 L46 74 L0 60 L46 46 Z' fill='%23ffffff' fill-opacity='0.15'/%3E%3Cpath d='M60 15 L70 50 L105 60 L70 70 L60 105 L50 70 L15 60 L50 50 Z' fill='%23ffffff' fill-opacity='0.2'/%3E%3C/svg%3E");
+    background-repeat: repeat;
   }
 }
 
