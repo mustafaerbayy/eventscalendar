@@ -1,5 +1,5 @@
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster as Sonner, toast } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
@@ -12,8 +12,34 @@ const AuthRedirectHandler = () => {
   const navigate = useNavigate();
   useEffect(() => {
     const hash = window.location.hash;
+    const searchParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(hash.replace("#", "?"));
+
+    // Recovery Link
     if (hash && hash.includes("type=recovery") && hash.includes("access_token")) {
       navigate("/sifre-sifirla" + hash, { replace: true });
+      return;
+    }
+
+    // Success email verification
+    const type = searchParams.get("type") || hashParams.get("type");
+    if (type === "signup" && hash.includes("access_token")) {
+      toast.success("E-posta adresiniz başarıyla doğrulandı! Şimdi giriş yapabilirsiniz.", { duration: 6000 });
+      // We don't navigate right away so that Supabase client has time to establish the session
+      return;
+    }
+
+    // Auth Errors (e.g. from expired/used email confirmation links due to email scanners)
+    const errorDesc = searchParams.get("error_description") || hashParams.get("error_description");
+    if (errorDesc) {
+      const decodedError = decodeURIComponent(errorDesc).replace(/\+/g, " ");
+      if (decodedError.includes("Email link is invalid or has expired")) {
+        toast.error("Doğrulama bağlantınız geçersiz veya daha önce kullanılmış. (E-posta güvenlik tarayıcıları bağlantıyı otomatik tüketmiş olabilir). Lütfen tekrar kayıt olarak yeni bir onay maili isteyin.", { duration: 10000 });
+      } else {
+        toast.error(`Kimlik doğrulama hatası: ${decodedError}`, { duration: 8000 });
+      }
+      setTimeout(() => navigate("/giris", { replace: true }), 100);
+      return;
     }
   }, [navigate]);
   return null;

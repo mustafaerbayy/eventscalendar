@@ -51,6 +51,25 @@ const Login = () => {
         toast.error("E-posta veya şifreniz hatalı. Lütfen bilgilerinizi kontrol edip tekrar deneyin.", {
           duration: 5000,
         });
+      } else if (errorMsg.includes("Email not confirmed")) {
+        toast.error("E-posta adresiniz henüz doğrulanmamış. Size yeni bir onay e-postası gönderiyoruz...", { duration: 5000 });
+
+        // Use set timeout to not block the UI thread completely, though it's an async operation
+        const { error: resendError } = await supabase.auth.resend({
+          type: 'signup',
+          email: loginEmail,
+          options: { emailRedirectTo: window.location.origin }
+        });
+
+        if (resendError) {
+          if (resendError.message.includes("rate limit") || resendError.message.includes("too many requests")) {
+            toast.info("Onay e-postanız yakın zamanda zaten gönderilmiş. Lütfen e-posta kutunuzun yanı sıra Spam/Gereksiz klasörünü de kontrol edin.", { duration: 8000 });
+          } else {
+            toast.error("Yeni onay e-postası gönderilemedi: " + getErrorMessage(resendError));
+          }
+        } else {
+          toast.success("Yeni onay bağlantısı e-posta adresinize başarıyla gönderildi! Lütfen gelen kutunuzu kontrol edin.", { duration: 10000 });
+        }
       } else {
         toast.error(getErrorMessage(error));
       }
