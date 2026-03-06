@@ -139,7 +139,7 @@ const EventCard = ({ id, title, date, time, cityName, venueName, categoryName, a
                 </div>
 
                 {isAdmin && (
-                  <div className="flex items-center gap-2 pl-4 border-l border-white/10" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-2 pl-4 border-l border-white/10 relative z-50" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
                     <Button size="icon" variant="ghost" className="h-9 w-9 rounded-full hover:bg-amber-500/20 text-amber-500" onClick={(e) => { e.stopPropagation(); onEdit?.({ id, title, date, time, categoryName, cityName, venueName }); }}>
                       <Edit2 className="h-4 w-4" />
                     </Button>
@@ -243,12 +243,30 @@ const EventCard = ({ id, title, date, time, cityName, venueName, categoryName, a
                 </div>
 
                 {isAdmin && (
-                  <motion.div
-                    whileHover={{ scale: 1.1, x: 5 }}
-                    className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center border border-white/10 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 shadow-xl"
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </motion.div>
+                  <div className="flex items-center gap-2 relative z-50" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
+                    <motion.div
+                      whileHover={{ scale: 1.1, x: 2 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center border border-white/10 hover:bg-amber-500 hover:text-white transition-all duration-300 shadow-xl cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit?.({ id, title, date, time, categoryName, cityName, venueName });
+                      }}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </motion.div>
+                    <motion.div
+                      whileHover={{ scale: 1.1, x: 2 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center border border-white/10 hover:bg-red-500 hover:text-white transition-all duration-300 shadow-xl cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete?.(id);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </motion.div>
+                  </div>
                 )}
               </div>
             ) : (

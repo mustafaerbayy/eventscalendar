@@ -37,37 +37,33 @@ const Register = () => {
       return;
     }
     setLoading(true);
-    
-    // Email'in zaten var olup olmadığını ve hangi identity'ler ile bağlı olduğunu kontrol et
-    try {
-      const { data: emailCheck, error: checkError } = await supabase
-        .rpc('check_email_identity' as any, { p_email: email.toLowerCase() });
-      
-      if (emailCheck && emailCheck.length > 0) {
-        const emailData = emailCheck[0];
 
-        // Eğer email var ve Google identity'si varsa
-        if (emailData && emailData.has_google_identity) {
+    // Email check
+    try {
+      const { data: emailCheckDatas, error: checkError } = await (supabase.rpc as any)('check_email_identity', { p_email: email.toLowerCase() });
+      const emailData = emailCheckDatas?.[0]; // check_email_identity returns a table (array)
+
+      if (emailData && emailData.exists) {
+        if (emailData.has_google_identity && !emailData.has_password_identity) {
           setLoading(false);
           toast.error("Bu e-posta adresi Google ile zaten kayıtlı. Lütfen 'Google ile Giriş Yap' butonunu kullanın.", {
-            duration: 5000,
+            duration: 6000,
           });
           return;
         }
 
-        // Eğer email var ve password identity'si de varsa
-        if (emailData && emailData.has_password_identity) {
+        if (emailData.has_password_identity) {
           setLoading(false);
           toast.error("Bu e-posta adresi zaten kayıtlı. Lütfen giriş yapın veya şifrenizi sıfırlayın.", {
-            duration: 5000,
+            duration: 6000,
           });
           return;
         }
       }
     } catch (err) {
-      console.warn("Email kontrolü başarısız, kayıt devam ediyor:", err);
+      console.warn("Email check failed, proceeding with signup:", err);
     }
-    
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -76,52 +72,22 @@ const Register = () => {
         emailRedirectTo: window.location.origin,
       },
     });
-    
+
     setLoading(false);
-    
-    // Eğer herhangi bir hata varsa
+
     if (error) {
-      // Özel hata mesajları
-      const errorMsg = error.message || "";
-      if (errorMsg.includes("already") || errorMsg.includes("duplicate") || errorMsg.includes("registered")) {
-        toast.error("Bu e-posta adresi zaten kullanımda. Google ile kayıt olduysan 'Google ile Giriş Yap' butonunu kullan.", {
-          duration: 5000,
-        });
-      } else {
-        toast.error(getErrorMessage(error));
-      }
+      toast.error(getErrorMessage(error));
       return;
     }
-    
-    // Eğer kullanıcı oluşturuldu ama session yok = email zaten var = Google ile kayıtlı
+
+    // If user exists but no session, it often means email is already registered or needs confirmation
     if (data?.user && !data?.session) {
-      toast.error("Bu e-posta adresi Google ile zaten kayıtlı. Lütfen 'Google ile Giriş Yap' butonunu kullanın.", {
-        duration: 5000,
-      });
+      toast.info("Bu hesap zaten mevcut olabilir veya onay bekliyor. Lütfen e-postanızı kontrol edin veya giriş yapmayı deneyin.");
+      navigate("/giris");
       return;
     }
-    
-    // Eğer kullanıcı oluşturuldu ve identities var ise kontrol et
-    if (data?.user) {
-      const identities = data.user.identities || [];
-      const hasGoogleIdentity = identities.some(
-        (identity) => identity.provider === 'google'
-      );
-      
-      // Eğer Google identity varsa, bu email Google ile kayıtlı demektir
-      if (hasGoogleIdentity) {
-        toast.error("Bu e-posta adresi Google ile zaten kayıtlı. Lütfen 'Google ile Giriş Yap' butonunu kullanın.", {
-          duration: 5000,
-        });
-        // Session varsa çıkış yap
-        if (data.session) {
-          await supabase.auth.signOut();
-        }
-        return;
-      }
-    }
-    
-    toast.success("Kayıt başarılı! E-postanızı doğrulayın.");
+
+    toast.success("Kayıt başarılı! Lütfen e-postanızı doğrulayın.");
     navigate("/giris");
   };
 
@@ -266,10 +232,10 @@ const Register = () => {
             ) : (
               <>
                 <svg className="h-4 w-4" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
                 Google ile Kayıt Ol
               </>

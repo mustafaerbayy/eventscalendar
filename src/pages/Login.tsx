@@ -31,7 +31,22 @@ const Login = () => {
     setLoading(false);
     if (error) {
       const errorMsg = error.message || "";
-      // Eğer kullanıcı Google ile kayıtlıysa ama şifre ile giriş yapmaya çalışıyorsa
+
+      // Check if user has Google identity instead
+      try {
+        const { data: emailCheckDatas } = await (supabase.rpc as any)('check_email_identity', { p_email: loginEmail.toLowerCase() });
+        const emailData = emailCheckDatas?.[0];
+
+        if (emailData && emailData.exists && emailData.has_google_identity && !emailData.has_password_identity) {
+          toast.error("Bu hesap Google ile kayıtlıdır. Lütfen 'Google ile Giriş Yap' butonunu kullanın.", {
+            duration: 6000,
+          });
+          return;
+        }
+      } catch (err) {
+        console.warn("Identity check failed during login error:", err);
+      }
+
       if (errorMsg.includes("Invalid login") || errorMsg.includes("invalid_grant")) {
         toast.error("E-posta veya şifre hatalı. Google ile kayıt olduysanız 'Google ile Giriş Yap' butonunu kullanın.", {
           duration: 5000,
@@ -72,29 +87,17 @@ const Login = () => {
         { p_email: email.toLowerCase().trim() }
       );
 
-      const emailCheck = data as any;
-      if (emailCheck && emailCheck.length > 0) {
-        const emailData = emailCheck[0];
+      const emailCheck = data?.[0] as any;
+      if (emailCheck && emailCheck.exists) {
+        // Email var ama Google identity yoksa
+        if (!emailCheck.has_google_identity) {
+          setGoogleLoading(false);
 
-        // Email var
-        if (emailData.exists) {
-          // Google identity yoksa
-          if (!emailData.has_google_identity) {
-            setGoogleLoading(false);
-
-            // Email/password identity varsa
-            if (emailData.has_password_identity) {
-              toast.error("Bu e-posta adresi email/şifre ile kayıtlı. Lütfen şifre ile giriş yapın veya Google ile kayıt olun.", {
-                duration: 5000,
-              });
-              return;
-            } else {
-              // Sadece Google identity'si var ya da başka provider
-              toast.error("Bu e-posta adresi başka bir yöntemle kayıtlı. Lütfen o yöntemle giriş yapın.", {
-                duration: 5000,
-              });
-              return;
-            }
+          if (emailCheck.has_password_identity) {
+            toast.error("Bu e-posta adresi e-posta/şifre ile kayıtlı. Lütfen şifrenizle giriş yapın.", {
+              duration: 5000,
+            });
+            return;
           }
         }
       }

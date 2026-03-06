@@ -107,21 +107,22 @@ const Index = () => {
     venue_name: "",
     category_id: "",
   });
+  const fetchData = async () => {
+    const [eventsRes, citiesRes, categoriesRes] = await Promise.all([
+      supabase
+        .from("events")
+        .select("*, cities(name), venues(name), categories(name), rsvps(*, profiles(first_name, last_name))")
+        .order("date", { ascending: true }),
+      supabase.from("cities").select("*").order("name"),
+      supabase.from("categories").select("*").order("name"),
+    ]);
+    setEvents((eventsRes.data as unknown as EventWithRelations[]) || []);
+    setCities(citiesRes.data || []);
+    setCategories(categoriesRes.data || []);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      const [eventsRes, citiesRes, categoriesRes] = await Promise.all([
-        supabase
-          .from("events")
-          .select("*, cities(name), venues(name), categories(name), rsvps(*, profiles(first_name, last_name))")
-          .order("date", { ascending: true }),
-        supabase.from("cities").select("*").order("name"),
-        supabase.from("categories").select("*").order("name"),
-      ]);
-      setEvents((eventsRes.data as unknown as EventWithRelations[]) || []);
-      setCities(citiesRes.data || []);
-      setCategories(categoriesRes.data || []);
-      setLoading(false);
-    };
     fetchData();
   }, []);
 
@@ -206,9 +207,14 @@ const Index = () => {
       .select("*, cities(name), venues(name), categories(name), rsvps(*, profiles(first_name, last_name))")
       .eq("id", selectedEvent.id)
       .single();
+
     if (data) {
-      setSelectedEvent(data as unknown as EventWithRelations);
-      setSelectedEventRsvps(data.rsvps as RsvpWithProfile[]);
+      const updatedEvent = data as unknown as EventWithRelations;
+      setSelectedEvent(updatedEvent);
+      setSelectedEventRsvps(updatedEvent.rsvps as RsvpWithProfile[]);
+
+      // Efficiently update the background list without a full fetch
+      setEvents(prev => prev.map(e => e.id === updatedEvent.id ? updatedEvent : e));
     }
   };
 
@@ -218,14 +224,21 @@ const Index = () => {
       const existing = selectedEventRsvps.find((r) => r.user_id === user.id);
       if (existing) {
         await supabase.from("rsvps").update({ guest_count: count }).eq("id", existing.id);
+
+        // Refresh this specific event's data from Supabase
         const { data } = await supabase
           .from("events")
           .select("*, cities(name), venues(name), categories(name), rsvps(*, profiles(first_name, last_name))")
           .eq("id", selectedEvent.id)
           .single();
+
         if (data) {
-          setSelectedEvent(data as unknown as EventWithRelations);
-          setSelectedEventRsvps(data.rsvps as RsvpWithProfile[]);
+          const updatedEvent = data as unknown as EventWithRelations;
+          setSelectedEvent(updatedEvent);
+          setSelectedEventRsvps(updatedEvent.rsvps as RsvpWithProfile[]);
+
+          // Also update it in the main events list
+          setEvents(prev => prev.map(e => e.id === updatedEvent.id ? updatedEvent : e));
         }
       }
     }

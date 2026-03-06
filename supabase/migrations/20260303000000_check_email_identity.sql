@@ -1,7 +1,9 @@
 -- Email'in var olup olmadığını ve identity'lerini kontrol eden function
+-- Version 1.1: Improved for clarity and speed
 create or replace function check_email_identity(p_email text)
 returns table (
   user_id uuid,
+  exists boolean,
   has_google_identity boolean,
   has_password_identity boolean,
   identities text[]
@@ -20,6 +22,7 @@ begin
   
   -- Eğer user bulunamadı
   if v_user_id is null then
+    return query select null::uuid, false, false, false, null::text[];
     return;
   end if;
   
@@ -33,9 +36,10 @@ begin
   v_has_google := v_identities is not null and 'google' = any(v_identities);
   
   -- Password identity var mı?
+  -- Supabase stores email/password as 'email' provider
   v_has_password := v_identities is not null and 'email' = any(v_identities);
   
-  return query select v_user_id, v_has_google, v_has_password, v_identities;
+  return query select v_user_id, true, v_has_google, v_has_password, v_identities;
 end;
 $$ language plpgsql security definer set search_path = public;
 

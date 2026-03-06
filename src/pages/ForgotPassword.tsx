@@ -19,6 +19,18 @@ const ForgotPassword = () => {
     if (!email.trim()) { toast.error("Lütfen e-posta adresinizi girin."); return; }
     setLoading(true);
     try {
+      // Identity check
+      const { data: emailCheckDatas } = await (supabase.rpc as any)('check_email_identity', { p_email: email.trim().toLowerCase() });
+      const emailData = emailCheckDatas?.[0];
+
+      if (emailData && emailData.exists && emailData.has_google_identity && !emailData.has_password_identity) {
+        setLoading(false);
+        toast.error("Bu hesap Google ile kayıtlıdır ve şifreye gerek kalmadan Google ile giriş yapabilirsiniz. Lütfen 'Google ile Giriş Yap' butonuna dönün.", {
+          duration: 6000,
+        });
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke("send-password-reset", {
         body: { email: email.trim(), redirectUrl: `${window.location.origin}/sifre-sifirla` },
       });
@@ -26,7 +38,7 @@ const ForgotPassword = () => {
       if (data?.error) throw new Error(data.error);
       setSent(true);
     } catch (err: any) {
-      // Don't reveal whether email exists
+      // Don't reveal whether email exists for generic errors, but we already handled the Google case
       setSent(true);
     } finally {
       setLoading(false);
