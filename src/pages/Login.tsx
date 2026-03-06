@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/error-messages";
-import { Eye, EyeOff, LogIn, Mail, Lock } from "lucide-react";
-import { motion } from "framer-motion";
+import { Eye, EyeOff, LogIn, Mail, Lock, ArrowRight } from "lucide-react";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,6 +16,33 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+
+  // 3D Tilt Effect
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const mouseXSpring = useSpring(x);
+  const mouseYSpring = useSpring(y);
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const xPct = mouseX / width - 0.5;
+    const yPct = mouseY / height - 0.5;
+    x.set(xPct);
+    y.set(yPct);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +88,6 @@ const Login = () => {
   };
 
   const handleGoogleLogin = async () => {
-    // Eğer kullanıcı email girmediyse, Google giriş yap
     if (!email.trim()) {
       setGoogleLoading(true);
       const { error } = await supabase.auth.signInWithOAuth({
@@ -77,11 +103,9 @@ const Login = () => {
       return;
     }
 
-    // Eğer email girildiyse, kontrol et - Google kayıtlı mı?
     setGoogleLoading(true);
 
     try {
-      // RPC function ile kontrol et - Tip hatalarını önlemek için any kullanıldı
       const { data, error: checkError } = await (supabase.rpc as any)(
         'check_email_identity',
         { p_email: email.toLowerCase().trim() }
@@ -89,7 +113,6 @@ const Login = () => {
 
       const emailCheck = data?.[0] as any;
       if (emailCheck && emailCheck.exists) {
-        // Email var ama Google identity yoksa
         if (!emailCheck.has_google_identity) {
           setGoogleLoading(false);
 
@@ -105,7 +128,6 @@ const Login = () => {
       console.warn("Email kontrolü yapılamadı, devam ediliyor:", err);
     }
 
-    // Kontrol başarılı veya email'in Google identity'si var, devam et
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -119,139 +141,199 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden px-4 py-12">
-      {/* Decorative background blobs */}
+    <div className="min-h-screen bg-[#020817] flex items-center justify-center relative overflow-hidden px-4 py-12">
+      {/* Innovative Animated Background */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(17,24,39,1),rgba(2,8,23,1))]" />
+
+        {/* Animated stars/dots */}
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full bg-primary/20 blur-sm"
+            style={{
+              width: Math.random() * 300 + 50,
+              height: Math.random() * 300 + 50,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              x: [0, Math.random() * 100 - 50, 0],
+              y: [0, Math.random() * 100 - 50, 0],
+              scale: [1, 1.2, 1],
+              opacity: [0.1, 0.3, 0.1],
+            }}
+            transition={{
+              duration: Math.random() * 10 + 10,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        ))}
+
+        {/* Floating gradient orbs */}
         <motion.div
-          className="absolute -top-40 -left-40 w-96 h-96 rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, hsl(var(--primary) / 0.18), transparent 70%)" }}
-          animate={{ scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-20 -left-20 w-[500px] h-[500px] rounded-full blur-[120px]"
+          style={{ background: "radial-gradient(circle, hsla(var(--primary), 0.15), transparent 70%)" }}
+          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.18), transparent 70%)" }}
-          animate={{ scale: [1.1, 1, 1.1], opacity: [0.5, 0.9, 0.5] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -bottom-20 -right-20 w-[500px] h-[500px] rounded-full blur-[120px]"
+          style={{ background: "radial-gradient(circle, hsla(var(--accent), 0.1), transparent 70%)" }}
+          animate={{ scale: [1.2, 1, 1.2], opacity: [0.2, 0.4, 0.2] }}
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
         />
       </div>
 
       <motion.div
-        className="relative w-full max-w-[420px]"
-        initial={{ opacity: 0, y: 32 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, type: "spring", stiffness: 120 }}
+        className="relative w-full max-w-[440px] perspective-1000"
+        initial={{ opacity: 0, y: 40, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        whileHover={{ scale: 1.02 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          rotateX,
+          rotateY,
+          transformStyle: "preserve-3d",
+        }}
       >
-        {/* Logo */}
-        <div className="flex flex-col items-center mb-6">
-          <Link to="/">
-            <img src="/images/logo.png" alt="Logo" className="h-24 w-24 drop-shadow-lg object-contain hover:scale-105 transition-transform duration-300" />
-          </Link>
-        </div>
+        <div
+          className="relative group rounded-[2.5rem] p-1 bg-gradient-to-b from-white/10 to-white/5 border border-white/10 backdrop-blur-xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)]"
+          style={{ transform: "translateZ(20px)" }}
+        >
+          {/* Inner glass layer */}
+          <div className="rounded-[2.25rem] bg-black/40 p-8 md:p-10 backdrop-blur-sm border border-white/5 relative overflow-hidden">
+            {/* Subtle light sweep effect */}
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full"
+              animate={{ translateX: ["100%", "-100%"] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+            />
 
-        {/* Card */}
-        <div className="rounded-3xl border border-border/60 bg-card/80 backdrop-blur-xl shadow-2xl shadow-primary/10 p-8">
-          <div className="mb-6 text-center">
-            <h1 className="font-display text-2xl font-bold text-foreground">Giriş Yap</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Hesabınıza erişin</p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-sm font-medium">E-posta veya Kullanıcı Adı</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                <Input
-                  id="email"
-                  type="text"
-                  placeholder="ornek@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="pl-10 h-11 bg-background/60 border-border/60 focus:border-primary/60 transition-colors"
+            <div className="flex flex-col items-center mb-10" style={{ transform: "translateZ(40px)" }}>
+              <Link to="/" className="relative group">
+                <div className="absolute -inset-4 bg-primary/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <img
+                  src="/images/logo.png"
+                  alt="Logo"
+                  className="h-20 w-20 object-contain drop-shadow-[0_0_15px_rgba(var(--primary),0.5)] transition-transform duration-500 group-hover:scale-110"
                 />
+              </Link>
+            </div>
+
+            <div className="mb-8 text-center" style={{ transform: "translateZ(30px)" }}>
+              <h1 className="font-display text-4xl font-bold tracking-tight text-white mb-2">
+                Hoş Geldiniz
+              </h1>
+              <p className="text-slate-400 font-medium">Lütfen bilgilerinizi girin</p>
+            </div>
+
+            <form onSubmit={handleLogin} className="space-y-5" style={{ transform: "translateZ(30px)" }}>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-xs font-bold uppercase tracking-widest text-slate-500 ml-1">E-posta</Label>
+                <div className="relative group/input">
+                  <div className="absolute inset-0 bg-primary/5 rounded-2xl blur-md opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within/input:text-primary transition-colors" />
+                  <Input
+                    id="email"
+                    type="text"
+                    placeholder="isim@ornek.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="pl-12 h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20 focus:border-primary/50 text-white placeholder:text-slate-600 transition-all font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between px-1">
+                  <Label htmlFor="password" className="text-xs font-bold uppercase tracking-widest text-slate-500">Şifre</Label>
+                  <Link to="/sifremi-unuttum" className="text-xs font-bold text-primary hover:text-primary/80 transition-colors uppercase tracking-wider">
+                    Sıfırla
+                  </Link>
+                </div>
+                <div className="relative group/input">
+                  <div className="absolute inset-0 bg-primary/5 rounded-2xl blur-md opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within/input:text-primary transition-colors" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="pl-12 pr-12 h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20 focus:border-primary/50 text-white placeholder:text-slate-600 transition-all font-medium"
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors p-1"
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg shadow-xl shadow-primary/20 transition-all active:scale-[0.98] group"
+                disabled={loading || googleLoading}
+              >
+                {loading ? (
+                  <span className="flex items-center gap-3">
+                    <span className="h-5 w-5 rounded-full border-2 border-primary-foreground/40 border-t-primary-foreground animate-spin" />
+                    İşleniyor...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    Giriş Yap <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  </span>
+                )}
+              </Button>
+            </form>
+
+            <div className="relative my-8" style={{ transform: "translateZ(30px)" }}>
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-white/10" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase tracking-tighter">
+                <span className="bg-black/40 px-3 text-slate-500 font-bold backdrop-blur-sm">VEYA</span>
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-sm font-medium">Şifre</Label>
-                <Link to="/sifremi-unuttum" className="text-xs text-primary hover:text-primary/80 transition-colors">
-                  Şifremi unuttum
-                </Link>
-              </div>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="pl-10 pr-10 h-11 bg-background/60 border-border/60 focus:border-primary/60 transition-colors"
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  onClick={() => setShowPassword(!showPassword)}
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
-            <Button type="submit" className="w-full h-11 gap-2 mt-2 font-semibold shadow-lg shadow-primary/20" disabled={loading || googleLoading}>
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <span className="h-4 w-4 rounded-full border-2 border-primary-foreground/40 border-t-primary-foreground animate-spin" />
-                  Giriş yapılıyor...
-                </span>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full h-14 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold transition-all active:scale-[0.98] flex gap-3"
+              onClick={handleGoogleLogin}
+              disabled={loading || googleLoading}
+              style={{ transform: "translateZ(30px)" }}
+            >
+              {googleLoading ? (
+                <span className="h-5 w-5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
               ) : (
-                <><LogIn className="h-4 w-4" /> Giriş Yap</>
-              )}
-            </Button>
-          </form>
-
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border/60" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">veya</span>
-            </div>
-          </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full h-11 gap-2 font-semibold border-border/60 hover:bg-accent/50"
-            onClick={handleGoogleLogin}
-            disabled={loading || googleLoading}
-          >
-            {googleLoading ? (
-              <span className="flex items-center gap-2">
-                <span className="h-4 w-4 rounded-full border-2 border-foreground/40 border-t-foreground animate-spin" />
-                Bağlanıyor...
-              </span>
-            ) : (
-              <>
-                <svg className="h-4 w-4" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                <svg className="h-5 w-5" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="currentColor" opacity="0.8" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="currentColor" opacity="0.6" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                  <path fill="currentColor" opacity="0.9" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
-                Google ile Giriş Yap
-              </>
-            )}
-          </Button>
+              )}
+              Google ile Devam Et
+            </Button>
 
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            Hesabınız yok mu?{" "}
-            <Link to="/kayit" className="font-semibold text-primary hover:text-primary/80 transition-colors">
-              Kayıt Ol
-            </Link>
+            <div className="mt-10 text-center" style={{ transform: "translateZ(30px)" }}>
+              <p className="text-slate-400 font-medium">
+                Henüz hesabınız yok mu?{" "}
+                <Link to="/kayit" className="text-primary hover:text-primary/80 font-bold transition-colors ml-1 underline-offset-4 hover:underline">
+                  Hemen Kayıt Ol
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
       </motion.div>
