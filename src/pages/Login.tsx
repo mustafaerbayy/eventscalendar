@@ -38,8 +38,8 @@ const Login = () => {
         const emailData = emailCheckDatas?.[0];
 
         if (emailData && emailData.exists && emailData.has_google_identity && !emailData.has_password_identity) {
-          toast.error("Bu hesap Google ile kayıtlıdır. Lütfen 'Google ile Giriş Yap' butonunu kullanın.", {
-            duration: 6000,
+          toast.error("Bu e-posta adresi ile sadece 'Google ile Devam Et' seçeneğini kullanabilirsiniz. Eğer bunu istemiyorsanız önce hesabınızı silmeniz ardından tekrardan e-posta ile kaydolmanız gerekmektedir.", {
+            duration: 8000,
           });
           return;
         }
@@ -48,7 +48,7 @@ const Login = () => {
       }
 
       if (errorMsg.includes("Invalid login") || errorMsg.includes("invalid_grant")) {
-        toast.error("E-posta veya şifre hatalı. Google ile kayıt olduysanız 'Google ile Giriş Yap' butonunu kullanın.", {
+        toast.error("E-posta veya şifreniz hatalı. Lütfen bilgilerinizi kontrol edip tekrar deneyin.", {
           duration: 5000,
         });
       } else {
