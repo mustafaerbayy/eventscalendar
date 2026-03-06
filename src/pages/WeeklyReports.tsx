@@ -181,6 +181,23 @@ const WeeklyReports = () => {
     }
   };
 
+  const handleDeleteDocument = async (report: WeeklyReport) => {
+    if (!confirm("Bu dökümanı silmek istediğinizden emin misiniz?")) return;
+    try {
+      if (report.file_url) {
+        const parts = report.file_url.split("/weekly-reports/");
+        if (parts[1]) await supabase.storage.from("weekly-reports").remove([parts[1]]);
+      }
+      const { error } = await supabase.from("weekly_reports").update({ file_url: null, file_type: null }).eq("id", report.id);
+      if (error) throw error;
+      toast.success("Döküman silindi.");
+      if (selectedReport?.id === report.id) setSelectedReport({ ...selectedReport, file_url: null, file_type: null });
+      fetchReports();
+    } catch (err: any) {
+      toast.error("Döküman silme başarısız: " + err.message);
+    }
+  };
+
   const handleArchive = async (report: WeeklyReport) => {
     setArchiveLoading(true);
     try {
@@ -479,7 +496,19 @@ const WeeklyReports = () => {
 
                       {selectedReport.file_url && (
                         <div className="mt-16 group/doc">
-                          <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em] mb-6">EK DOSYALAR</h4>
+                          <div className="flex items-center justify-between mb-6">
+                            <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em]">EK DOSYALAR</h4>
+                            {canReport && (
+                              <button
+                                onClick={() => handleDeleteDocument(selectedReport)}
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 text-[10px] font-black tracking-widest transition-all"
+                                title="Dökümanı Sil"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                DOSYAYI SİL
+                              </button>
+                            )}
+                          </div>
                           <a
                             href={selectedReport.file_url}
                             target="_blank"
