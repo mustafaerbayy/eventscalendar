@@ -1215,7 +1215,7 @@ const Admin = () => {
                       value={formData.name || ""}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white placeholder:text-white/40"
-                      placeholder="Örn: İstanbul, Konser, vb."
+                      placeholder="Kategori Adını Giriniz"
                     />
                   </div>
                 )}
@@ -1294,7 +1294,7 @@ const Admin = () => {
                     <div className="space-y-3">
                       <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Mekan Bilgisi</Label>
                       <Input
-                        placeholder="Mekan adını girin (Örn: Jolly Joker)"
+                        placeholder="Mekan adını girin..."
                         value={formData.venue_name || ""}
                         onChange={(e) => setFormData({ ...formData, venue_name: e.target.value })}
                         className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white placeholder:text-white/40"
