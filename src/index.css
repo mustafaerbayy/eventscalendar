@@ -386,3 +386,101 @@
     opacity: 1;
   }
 }
+
+/* Premium UI Utilities */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  @apply bg-gradient-to-br from-primary via-primary/80 to-accent;
+}
+
+.box-glow {
+  box-shadow: 0 0 40px -10px rgba(16, 185, 129, 0.2);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.3);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Global Placeholder visibility */
+::placeholder {
+  color: rgba(255, 255, 255, 0.45) !important;
+  opacity: 1 !important;
+}
+
+/* Shadcn UI Dialog Close override */
+.fixed.right-4.top-4.rounded-sm.opacity-70,
+button[aria-label="Close"],
+button.absolute.right-4.top-4 {
+  @apply !bg-red-500/20 !border !border-red-500/40 !text-red-500 !opacity-100 !visible transition-all duration-300 !rounded-xl !p-2 !right-6 !top-6 !flex items-center justify-center;
+  z-index: 100 !important;
+}
+
+.fixed.right-4.top-4.rounded-sm.opacity-70:hover,
+button[aria-label="Close"]:hover,
+button.absolute.right-4.top-4:hover {
+  @apply !bg-red-500/30 !border-red-500/60 !scale-110 !rotate-90;
+}
+
+.fixed.right-4.top-4.rounded-sm.opacity-70 svg,
+button[aria-label="Close"] svg,
+button.absolute.right-4.top-4 svg {
+  @apply !text-red-500 !w-5 !h-5 !opacity-100;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}

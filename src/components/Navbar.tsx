@@ -96,11 +96,22 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-1 mx-4">
             <button
               onClick={() => {
+                const scrollTarget = () => {
+                  const firstEvent = document.querySelector('[data-event-id]');
+                  const targetEl = firstEvent || document.querySelector('#calendar-section') || document.querySelector('#events-section');
+
+                  if (targetEl) {
+                    const elementTop = targetEl.getBoundingClientRect().top + window.scrollY;
+                    const offset = 120;
+                    window.scrollTo({ top: elementTop - offset, behavior: 'smooth' });
+                  }
+                };
+
                 if (window.location.pathname === '/') {
-                  document.querySelector('#events-section')?.scrollIntoView({ behavior: 'smooth' });
+                  scrollTarget();
                 } else {
                   navigate('/');
-                  setTimeout(() => document.querySelector('#events-section')?.scrollIntoView({ behavior: 'smooth' }), 300);
+                  setTimeout(scrollTarget, 300);
                 }
               }}
               className="px-4 py-2 text-sm font-bold text-white/70 hover:text-white transition-all flex items-center gap-2 rounded-xl hover:bg-white/5 relative group"
@@ -222,7 +233,32 @@ const Navbar = () => {
           >
             <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setMobileOpen(false)} />
             <div className="absolute right-0 top-0 bottom-0 w-[80%] max-w-sm bg-black border-l border-white/10 p-6 shadow-2xl flex flex-col pt-24">
-              <MobileLink icon={<Calendar />} label="Etkinlikler" onClick={() => { navigate("/"); setMobileOpen(false); }} />
+              <MobileLink
+                icon={<Calendar />}
+                label="Etkinlikler"
+                onClick={() => {
+                  const scrollTarget = () => {
+                    const firstEvent = document.querySelector('[data-event-id]');
+                    const calendarSec = document.querySelector('#calendar-section');
+                    const eventsSec = document.querySelector('#events-section');
+                    const targetEl = firstEvent || calendarSec || eventsSec;
+
+                    if (targetEl) {
+                      const elementTop = targetEl.getBoundingClientRect().top + window.scrollY;
+                      const offset = 120;
+                      window.scrollTo({ top: elementTop - offset, behavior: 'smooth' });
+                    }
+                    setMobileOpen(false);
+                  };
+
+                  if (window.location.pathname === '/') {
+                    scrollTarget();
+                  } else {
+                    navigate('/');
+                    setTimeout(scrollTarget, 400);
+                  }
+                }}
+              />
               <MobileLink icon={<BarChart3 />} label="Raporlar" onClick={() => { navigate("/raporlar"); setMobileOpen(false); }} />
               <MobileLink icon={<Info />} label="Biz Kimiz" onClick={() => { setAboutOpen(true); setMobileOpen(false); }} />
 
@@ -283,6 +319,7 @@ const Navbar = () => {
 
 const DropdownItem = ({ onClick, icon, label, isSpecial }: { onClick: () => void; icon: React.ReactNode; label: string; isSpecial?: boolean }) => (
   <button
+    type="button"
     onClick={onClick}
     className={`flex w-full items-center gap-3 px-3 py-2.5 text-sm font-bold rounded-xl transition-all group ${isSpecial ? 'text-emerald-400 hover:bg-emerald-500/10' : 'text-white/70 hover:text-white hover:bg-white/5'
       }`}
@@ -294,6 +331,7 @@ const DropdownItem = ({ onClick, icon, label, isSpecial }: { onClick: () => void
 
 const MobileLink = ({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) => (
   <button
+    type="button"
     onClick={onClick}
     className="flex items-center gap-4 w-full p-4 rounded-2xl text-lg font-black text-white/70 hover:text-white hover:bg-emerald-500/10 transition-all border border-transparent hover:border-emerald-500/30 mb-2"
   >

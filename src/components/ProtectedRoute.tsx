@@ -1,5 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import LoadingScreen from "@/components/LoadingScreen";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,7 +11,7 @@ const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) =>
   const { user, isAdmin, loading } = useAuth();
 
   // Wait for auth to fully initialize (including checkAdmin)
-  if (loading) return null;
+  if (loading) return <LoadingScreen />;
 
   if (!user) return <Navigate to="/giris" replace />;
 

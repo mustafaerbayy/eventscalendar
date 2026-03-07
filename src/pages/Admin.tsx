@@ -14,9 +14,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Pencil, Trash2, Plus, Calendar, MapPin, Tag, Building, Shield, Users, Send, Megaphone, CheckCircle2, XCircle, Clock, UserPlus, Eye, Archive, FileText } from "lucide-react";
+import { Pencil, Trash2, Plus, Calendar, MapPin, Tag, Shield, Users, Send, Megaphone, CheckCircle2, XCircle, Clock, UserPlus, Eye, Archive, FileText, LayoutDashboard, Database, TrendingUp, AlertTriangle, Search, ChevronRight, MoreHorizontal, Activity, Zap } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import LoadingScreen from "@/components/LoadingScreen";
 import { getErrorMessage } from "@/lib/error-messages";
+import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 interface City { id: string; name: string }
 interface Category { id: string; name: string }
@@ -35,6 +38,7 @@ interface Announcement {
 }
 
 const Admin = () => {
+  const navigate = useNavigate();
   const { user, isAdmin, loading } = useAuth();
   const [hasAnnouncementAccess, setHasAnnouncementAccess] = useState(false);
   const [cities, setCities] = useState<City[]>([]);
@@ -451,7 +455,6 @@ const Admin = () => {
   };
 
   const statCards = [
-    { icon: Calendar, label: "Toplam Etkinlik", value: stats.totalEvents, color: "text-primary", bg: "bg-primary/10", clickable: false },
     {
       icon: Users, label: "Aktif Kullanıcı", value: stats.totalUsers, color: "text-accent", bg: "bg-accent/10", clickable: user?.email === "admin@admin.com", onClick: () => {
         setActiveTab("users");
@@ -472,720 +475,1016 @@ const Admin = () => {
   const maxReminder = Math.max(...reminderBars.map(r => r.val), 1);
 
   // Loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
-          <div className="text-center">
-            <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-            <p className="mt-4 text-muted-foreground">Yükleniyor...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <LoadingScreen />;
 
   // Not admin
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-6 sm:p-12 overflow-hidden selection:bg-primary/30">
         <Navbar />
-        <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
-          <div className="text-center">
-            <Shield className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-foreground mb-2">Erişim Reddedildi</h2>
-            <p className="text-muted-foreground">Bu sayfaya erişim yetkiniz bulunmamaktadır.</p>
-          </div>
+        {/* Abstract Background for Access Denied */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 blur-[150px] opacity-30 rounded-full animate-pulse" />
+          <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]" />
+        </div>
+
+        <div className="text-center relative z-10 max-w-lg w-full">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5, rotate: -20 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={{ type: "spring", damping: 15, stiffness: 100 }}
+            className="w-32 h-32 rounded-[2.5rem] bg-gradient-to-br from-white/10 to-transparent border border-white/10 flex items-center justify-center mx-auto mb-10 box-glow group"
+          >
+            <Shield className="h-14 w-14 text-primary group-hover:scale-110 transition-transform duration-500" />
+            <div className="absolute inset-0 bg-primary/20 blur-2xl -z-10 group-hover:opacity-40 transition-opacity" />
+          </motion.div>
+
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="text-4xl sm:text-6xl font-display font-black text-white mb-6 leading-tight"
+          >
+            Erişim <span className="text-gradient">Kısıtlandı</span>
+          </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="text-white/40 font-bold uppercase tracking-widest text-[10px] sm:text-xs mb-12 max-w-sm mx-auto leading-relaxed"
+          >
+            Bu alan yalnızca sistem yetkilileri için tasarlanmıştır. Devam etmek için gerekli izne sahip değilsiniz.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+          >
+            <Button
+              onClick={() => navigate("/")}
+              className="h-16 px-10 rounded-2xl bg-white text-black font-black text-xs uppercase tracking-widest hover:bg-white/90 hover:-translate-y-1 active:translate-y-0 transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)]"
+            >
+              Ana Sayfaya Dön
+            </Button>
+          </motion.div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background pt-32 md:pt-40">
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-primary/30 selection:text-white overflow-x-hidden font-body">
       <Navbar />
 
-      {/* Header */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-primary/90 via-primary/70 to-primary/50">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 70% 30%, hsl(var(--gold) / 0.4) 0%, transparent 50%)' }} />
-        <div className="container mx-auto px-4 py-12 relative z-10">
-          <motion.div className="flex items-center gap-4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-foreground/20 backdrop-blur-sm border border-primary-foreground/10">
-              <Shield className="h-8 w-8 text-primary-foreground" />
+      {/* Dynamic Background Effects */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(16,185,129,0.08)_0%,transparent_50%)]" />
+        <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(circle_at_100%_100%,rgba(245,158,11,0.05)_0%,transparent_40%)]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] contrast-150 brightness-150" />
+      </div>
+
+      <main className="relative z-10 max-w-[1600px] mx-auto px-4 md:px-8 pt-28 pb-12 lg:pb-24">
+
+        {/* Sleek Header Section */}
+        <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.2em]">Yönetim Merkezi</span>
+              <div className="h-px w-12 bg-gradient-to-r from-primary/50 to-transparent" />
             </div>
-            <div>
-              <h1 className="font-display text-3xl font-bold text-primary-foreground md:text-4xl">Yönetim Paneli</h1>
-              <p className="text-primary-foreground/75 mt-1">Etkinlik, şehir, mekan ve kategorileri yönetin</p>
+            <h1 className="text-4xl md:text-6xl font-display font-black tracking-tight leading-none">
+              <span className="text-gradient drop-shadow-[0_0_25px_rgba(245,158,11,0.2)]">Panel</span>
+            </h1>
+          </motion.div>
+
+          <div className="flex items-center gap-4">
+            <div className="hidden lg:flex flex-col items-end">
+              <span className="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none mb-1">Sistem Durumu</span>
+              <div className="flex items-center gap-2">
+                <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
+                <span className="text-sm font-bold text-white/90">Aktif ve Güvenli</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Dynamic Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {statCards.map((s, i) => (
+            <motion.div
+              key={s.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1, duration: 0.5 }}
+              onClick={s.clickable ? s.onClick : undefined}
+              className={cn(
+                "group relative p-8 rounded-[2.5rem] border border-white/5 bg-white/[0.03] backdrop-blur-xl transition-all duration-500 overflow-hidden",
+                s.clickable ? "cursor-pointer hover:bg-white/[0.06] hover:border-primary/20 hover:scale-[1.02]" : ""
+              )}
+            >
+              <div className="absolute top-0 right-0 p-6 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity">
+                <s.icon className="w-24 h-24 -rotate-12 translate-x-4 -translate-y-4" />
+              </div>
+              <div className="flex items-start justify-between mb-8">
+                <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center border transition-all duration-500",
+                  s.color.includes("primary") ? "bg-primary/10 border-primary/20 text-primary group-hover:bg-primary group-hover:text-black" : "bg-accent/10 border-accent/20 text-accent group-hover:bg-accent group-hover:text-white")}>
+                  <s.icon className="w-6 h-6" />
+                </div>
+                {s.clickable && (
+                  <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ChevronRight className="w-4 h-4" />
+                  </div>
+                )}
+              </div>
+              <div>
+                <p className="text-4xl font-display font-black mb-1">{s.value}</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">{s.label}</p>
+              </div>
+            </motion.div>
+          ))}
+
+          {/* Reminder Stats - Integrated Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="lg:col-span-2 p-8 rounded-[2.5rem] border border-white/5 bg-white/[0.02] backdrop-blur-xl"
+          >
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex flex-col">
+                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1">Kullanıcı Davranışı</span>
+                <h3 className="text-xl font-display font-black">Hatırlatıcı Dağılımı</h3>
+              </div>
+              <Activity className="w-6 h-6 text-primary/30" />
+            </div>
+            <div className="flex items-end gap-3 h-24">
+              {reminderBars.map((r, i) => (
+                <div key={r.label} className="flex-1 flex flex-col items-center gap-2 group/bar h-full justify-end">
+                  <div className="relative w-full flex-1 flex flex-col justify-end">
+                    <motion.div
+                      initial={{ height: 0 }}
+                      animate={{ height: `${(r.val / (maxReminder || 1)) * 100}%` }}
+                      transition={{ duration: 1, delay: 0.5 + (i * 0.1), ease: [0.23, 1, 0.32, 1] }}
+                      className="w-full bg-gradient-to-t from-primary/40 to-primary rounded-t-xl group-hover/bar:from-primary group-hover/bar:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all"
+                    />
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap">
+                      <span className="text-[10px] font-black bg-white/10 px-2 py-1 rounded-md">{r.val} Kişi</span>
+                    </div>
+                  </div>
+                  <span className="text-[8px] font-black text-white/20 uppercase tracking-widest">{r.label.replace('önce', '')}</span>
+                </div>
+              ))}
             </div>
           </motion.div>
         </div>
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-            <path d="M0 20C360 40 720 0 1080 20C1260 30 1380 10 1440 20V40H0V20Z" fill="hsl(var(--background))" />
-          </svg>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-10">
-        {/* Stats */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {statCards.map((s, i) => (
-            <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08, duration: 0.4 }}>
-              <Card
-                className={`border-border/50 bg-card/70 backdrop-blur-sm hover:shadow-lg hover:shadow-primary/5 transition-all ${s.clickable ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98]' : ''
-                  }`}
-                onClick={s.clickable ? s.onClick : undefined}
-              >
-                <CardContent className="p-5">
-                  <div className="flex items-center gap-4">
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${s.bg} ${s.color} transition-colors`}>
-                      <s.icon className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-foreground">{s.value}</p>
-                      <p className="text-xs text-muted-foreground">{s.label}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Reminder Stats */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.4 }}>
-          <Card className="mt-6 border-border/50 bg-card/70 backdrop-blur-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="font-display text-lg">Hatırlatıcı Tercihleri Dağılımı</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {reminderBars.map((s) => (
-                  <div key={s.label} className="flex items-center gap-3">
-                    <span className="text-xs text-muted-foreground w-16 text-right shrink-0">{s.label} önce</span>
-                    <div className="flex-1 h-8 rounded-lg bg-muted/50 overflow-hidden relative">
-                      <motion.div className="h-full rounded-lg bg-gradient-to-r from-primary/80 to-primary" initial={{ width: 0 }} animate={{ width: `${(s.val / maxReminder) * 100}%` }} transition={{ delay: 0.5, duration: 0.6, ease: "easeOut" }} />
-                      <span className="absolute inset-y-0 left-3 flex items-center text-xs font-semibold text-primary-foreground mix-blend-difference">{s.val} kullanıcı</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
 
         {/* CRUD Tabs */}
         <motion.div ref={tabsRef} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.4 }}>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-8">
-            <TabsList className="bg-card/70 border border-border/50 backdrop-blur-sm p-1 flex-wrap h-auto gap-1">
-              <TabsTrigger value="events" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Calendar className="h-3.5 w-3.5" /> Etkinlikler
+            <TabsList className="w-full flex justify-start gap-2 bg-transparent border-b border-white/5 p-0 h-auto mb-12 overflow-x-auto no-scrollbar">
+              <TabsTrigger
+                value="events"
+                className="px-6 py-4 bg-transparent data-[state=active]:bg-transparent data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary rounded-none transition-all gap-2 text-[10px] font-black uppercase tracking-widest"
+              >
+                <Database className="w-3.5 h-3.5" /> VERİTABANI
               </TabsTrigger>
-              <TabsTrigger value="cities" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <MapPin className="h-3.5 w-3.5" /> Şehirler
+              <TabsTrigger
+                value="cities"
+                className="px-6 py-4 bg-transparent data-[state=active]:bg-transparent data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary rounded-none transition-all gap-2 text-[10px] font-black uppercase tracking-widest"
+              >
+                <MapPin className="w-3.5 h-3.5" /> ŞEHİRLER
               </TabsTrigger>
-              <TabsTrigger value="categories" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Tag className="h-3.5 w-3.5" /> Kategoriler
+              <TabsTrigger
+                value="categories"
+                className="px-6 py-4 bg-transparent data-[state=active]:bg-transparent data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary rounded-none transition-all gap-2 text-[10px] font-black uppercase tracking-widest"
+              >
+                <Tag className="w-3.5 h-3.5" /> KATEGORİLER
               </TabsTrigger>
               {(user?.email === "admin@admin.com" || hasAnnouncementAccess) && (
-                <TabsTrigger value="announcements" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <Megaphone className="h-3.5 w-3.5" /> Duyurular
+                <TabsTrigger
+                  value="announcements"
+                  className="px-6 py-4 bg-transparent data-[state=active]:bg-transparent data-[state=active]:text-accent border-b-2 border-transparent data-[state=active]:border-accent rounded-none transition-all gap-2 text-[10px] font-black uppercase tracking-widest"
+                >
+                  <Megaphone className="w-3.5 h-3.5" /> DUYURULAR
                 </TabsTrigger>
               )}
               {user?.email === "admin@admin.com" && (
-                <TabsTrigger value="users" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <Users className="h-3.5 w-3.5" /> Kullanıcılar
+                <TabsTrigger
+                  value="users"
+                  className="px-6 py-4 bg-transparent data-[state=active]:bg-transparent data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary rounded-none transition-all gap-2 text-[10px] font-black uppercase tracking-widest"
+                >
+                  <Users className="w-3.5 h-3.5" /> KULLANICILAR
                 </TabsTrigger>
               )}
             </TabsList>
 
             {/* Events Tab */}
-            <TabsContent value="events">
-              <Card className="border-border/50 bg-card/70 backdrop-blur-sm mt-4">
-                <CardContent className="p-4">
-                  {(() => {
-                    const today = new Date().toISOString().split("T")[0];
-                    const upcomingEvents = events.filter(e => e.date >= today);
-                    const pastEvents = events.filter(e => e.date < today);
-                    return (
-                      <>
-                        <div className="flex justify-between items-center mb-4">
-                          <p className="text-sm text-muted-foreground">{upcomingEvents.length} yaklaşan etkinlik</p>
-                          <Button size="sm" className="gap-1.5 shadow-sm" onClick={() => openDialog("event")}><Plus className="h-4 w-4" /> Yeni Etkinlik</Button>
-                        </div>
-                        <div className="rounded-xl border border-border/50 overflow-hidden">
-                          <Table>
-                            <TableHeader>
-                              <TableRow className="bg-muted/30 hover:bg-muted/30">
-                                <TableHead className="font-semibold">Başlık</TableHead>
-                                <TableHead className="font-semibold">Tarih</TableHead>
-                                <TableHead className="font-semibold">Şehir</TableHead>
-                                <TableHead className="font-semibold">Kategori</TableHead>
-                                <TableHead className="text-right font-semibold">İşlem</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {upcomingEvents.map((e) => (
-                                <TableRow key={e.id} className="hover:bg-muted/20">
-                                  <TableCell className="font-medium">{e.title}</TableCell>
-                                  <TableCell className="text-muted-foreground">{e.date}</TableCell>
-                                  <TableCell>{e.cities?.name && <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium"><MapPin className="h-3 w-3" /> {e.cities.name}</span>}</TableCell>
-                                  <TableCell>{e.categories?.name && <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2.5 py-0.5 text-xs font-medium"><Tag className="h-3 w-3" /> {e.categories.name}</span>}</TableCell>
-                                  <TableCell className="text-right">
-                                    <div className="flex justify-end gap-1">
-                                      <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary" onClick={() => openDialog("event", e)}><Pencil className="h-3.5 w-3.5" /></Button>
-                                      <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive" onClick={() => handleDelete("events", e.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                                    </div>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
+            <TabsContent value="events" className="mt-8">
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                      <Calendar className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-display font-black">Etkinlik Yönetimi</h3>
+                      <p className="text-xs text-white/40 font-bold uppercase tracking-widest">{events.filter(e => e.date >= new Date().toISOString().split("T")[0]).length} Yaklaşan Kayıt</p>
+                    </div>
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => openDialog("event")}
+                    className="h-12 px-6 rounded-xl bg-primary text-black font-black text-xs flex items-center gap-2 shadow-[0_10px_20px_rgba(16,185,129,0.2)] hover:shadow-[0_15px_30px_rgba(16,185,129,0.3)] transition-all"
+                  >
+                    <Plus className="w-4 h-4 stroke-[3px]" />
+                    YENİ ETKİNLİK EKLE
+                  </motion.button>
+                </div>
 
-                        {/* Past Events Section */}
-                        {pastEvents.length > 0 && (
-                          <div className="mt-8 pt-6 border-t border-border/30">
-                            <p className="text-sm text-muted-foreground mb-4 font-semibold flex items-center gap-2">
-                              <Clock className="h-4 w-4" /> {pastEvents.length} geçmiş etkinlik
-                            </p>
-                            <div className="rounded-xl border border-border/50 overflow-hidden">
-                              <Table>
-                                <TableHeader>
-                                  <TableRow className="bg-muted/30 hover:bg-muted/30">
-                                    <TableHead className="font-semibold">Başlık</TableHead>
-                                    <TableHead className="font-semibold">Tarih</TableHead>
-                                    <TableHead className="font-semibold">Şehir</TableHead>
-                                    <TableHead className="font-semibold">Kategori</TableHead>
-                                    <TableHead className="text-right font-semibold">İşlem</TableHead>
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {pastEvents.map((e) => (
-                                    <TableRow key={e.id} className="hover:bg-muted/20 opacity-60">
-                                      <TableCell className="font-medium">{e.title}</TableCell>
-                                      <TableCell className="text-muted-foreground">{e.date}</TableCell>
-                                      <TableCell>{e.cities?.name && <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium"><MapPin className="h-3 w-3" /> {e.cities.name}</span>}</TableCell>
-                                      <TableCell>{e.categories?.name && <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2.5 py-0.5 text-xs font-medium"><Tag className="h-3 w-3" /> {e.categories.name}</span>}</TableCell>
-                                      <TableCell className="text-right">
-                                        <div className="flex justify-end gap-1">
-                                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary" onClick={() => openDialog("event", e)}><Pencil className="h-3.5 w-3.5" /></Button>
-                                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive" onClick={() => handleDelete("events", e.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                                        </div>
-                                      </TableCell>
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                              </Table>
+                <div className="rounded-[2.5rem] border border-white/5 bg-white/[0.02] overflow-hidden backdrop-blur-xl">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-white/5 hover:bg-transparent">
+                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-white/40 py-6 pl-8">Etkinlik</TableHead>
+                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-white/40 py-6">Tarih & Saat</TableHead>
+                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-white/40 py-6">Konum</TableHead>
+                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-white/40 py-6">Kategori</TableHead>
+                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-white/40 py-6 text-right pr-8">İşlemler</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {events.filter(e => e.date >= new Date().toISOString().split("T")[0]).map((e) => (
+                        <TableRow key={e.id} className="border-white/5 group hover:bg-white/[0.03] transition-colors">
+                          <TableCell className="py-6 pl-8 text-sm font-bold text-white group-hover:text-primary transition-colors">{e.title}</TableCell>
+                          <TableCell className="py-6">
+                            <div className="flex flex-col">
+                              <span className="text-sm font-bold text-white/80">{new Date(e.date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long' })}</span>
+                              <span className="text-[10px] font-black text-white/30">{e.time}</span>
                             </div>
-                          </div>
-                        )}
-                      </>
-                    );
-                  })()}
-                </CardContent>
-              </Card>
+                          </TableCell>
+                          <TableCell className="py-6">
+                            <div className="flex items-center gap-2">
+                              {e.cities?.name && (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] font-black tracking-widest text-white/60">
+                                  <MapPin className="w-3 h-3 text-primary" /> {e.cities.name.toUpperCase()}
+                                </span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-6">
+                            {e.categories?.name && (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-primary/10 border border-primary/20 text-[10px] font-black tracking-widest text-primary">
+                                <Tag className="w-3 h-3" /> {e.categories.name.toUpperCase()}
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className="py-6 text-right pr-8">
+                            <div className="flex justify-end gap-2">
+                              <button onClick={() => openDialog("event", e)} className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-primary hover:bg-primary/10 transition-all">
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => handleDelete("events", e.id)} className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-destructive hover:bg-destructive/10 transition-all">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Past Events */}
+                {events.filter(e => e.date < new Date().toISOString().split("T")[0]).length > 0 && (
+                  <div className="mt-12 space-y-6">
+                    <div className="flex items-center gap-3 px-2">
+                      <Clock className="w-4 h-4 text-white/30" />
+                      <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em]">GEÇMİŞ ETKİNLİKLER ({events.filter(e => e.date < new Date().toISOString().split("T")[0]).length})</h4>
+                    </div>
+                    <div className="rounded-[2.5rem] border border-white/5 bg-white/[0.01] overflow-hidden opacity-60">
+                      <Table>
+                        <TableBody>
+                          {events.filter(e => e.date < new Date().toISOString().split("T")[0]).map((e) => (
+                            <TableRow key={e.id} className="border-white/5 hover:bg-white/[0.02] transition-colors">
+                              <TableCell className="py-4 pl-8 text-sm font-bold text-white/60">{e.title}</TableCell>
+                              <TableCell className="py-4 text-[10px] font-black text-white/30 uppercase">
+                                {new Date(e.date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })} • {e.time}
+                              </TableCell>
+                              <TableCell className="py-4 text-right pr-8">
+                                <div className="flex justify-end gap-2">
+                                  <button onClick={() => openDialog("event", e)} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/30 hover:text-white transition-all">
+                                    <Pencil className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button onClick={() => handleDelete("events", e.id)} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/30 hover:text-destructive transition-all">
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                )}
+              </div>
             </TabsContent>
 
             {/* Cities Tab */}
-            <TabsContent value="cities">
-              <Card className="border-border/50 bg-card/70 backdrop-blur-sm mt-4">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <p className="text-sm text-muted-foreground">{cities.length} şehir</p>
-                    <Button size="sm" className="gap-1.5 shadow-sm" onClick={() => openDialog("city")}><Plus className="h-4 w-4" /> Yeni Şehir</Button>
+            <TabsContent value="cities" className="mt-8">
+              <div className="space-y-6">
+                <div className="flex justify-between items-center px-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                      <MapPin className="w-5 h-5 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-display font-black">Şehir Yönetimi</h3>
                   </div>
-                  <div className="rounded-xl border border-border/50 overflow-hidden">
-                    <Table>
-                      <TableHeader><TableRow className="bg-muted/30 hover:bg-muted/30"><TableHead className="font-semibold">Ad</TableHead><TableHead className="text-right font-semibold">İşlem</TableHead></TableRow></TableHeader>
-                      <TableBody>
-                        {cities.map((c) => (
-                          <TableRow key={c.id} className="hover:bg-muted/20">
-                            <TableCell className="font-medium">{c.name}</TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end gap-1">
-                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary" onClick={() => openDialog("city", c)}><Pencil className="h-3.5 w-3.5" /></Button>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive" onClick={() => handleDelete("cities", c.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-              </Card>
+                  <Button onClick={() => openDialog("city")} className="rounded-xl h-12 px-6 gap-2 font-black text-xs">
+                    <Plus className="w-4 h-4 stroke-[3px]" /> YENİ ŞEHİR EKLE
+                  </Button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {cities.map((c) => (
+                    <motion.div
+                      key={c.id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="group p-6 rounded-[2rem] bg-white/[0.03] border border-white/5 hover:border-primary/30 transition-all duration-300"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-base font-bold text-white group-hover:text-primary transition-colors">{c.name}</span>
+                        <div className="flex gap-2">
+                          <button onClick={() => openDialog("city", c)} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/20 hover:text-primary transition-all">
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button onClick={() => handleDelete("cities", c.id)} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/20 hover:text-destructive transition-all">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
             </TabsContent>
 
             {/* Categories Tab */}
-            <TabsContent value="categories">
-              <Card className="border-border/50 bg-card/70 backdrop-blur-sm mt-4">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <p className="text-sm text-muted-foreground">{categories.length} kategori</p>
-                    <Button size="sm" className="gap-1.5 shadow-sm" onClick={() => openDialog("category")}><Plus className="h-4 w-4" /> Yeni Kategori</Button>
+            <TabsContent value="categories" className="mt-8">
+              <div className="space-y-6">
+                <div className="flex justify-between items-center px-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                      <Tag className="w-5 h-5 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-display font-black">Kategori Yönetimi</h3>
                   </div>
-                  <div className="rounded-xl border border-border/50 overflow-hidden">
-                    <Table>
-                      <TableHeader><TableRow className="bg-muted/30 hover:bg-muted/30"><TableHead className="font-semibold">Ad</TableHead><TableHead className="text-right font-semibold">İşlem</TableHead></TableRow></TableHeader>
-                      <TableBody>
-                        {categories.map((c) => (
-                          <TableRow key={c.id} className="hover:bg-muted/20">
-                            <TableCell className="font-medium">{c.name}</TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end gap-1">
-                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary" onClick={() => openDialog("category", c)}><Pencil className="h-3.5 w-3.5" /></Button>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive" onClick={() => handleDelete("categories", c.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-              </Card>
+                  <Button onClick={() => openDialog("category")} className="rounded-xl h-12 px-6 gap-2 font-black text-xs">
+                    <Plus className="w-4 h-4 stroke-[3px]" /> YENİ KATEGORİ EKLE
+                  </Button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {categories.map((c) => (
+                    <motion.div
+                      key={c.id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="group p-6 rounded-[2rem] bg-white/[0.03] border border-white/5 hover:border-primary/30 transition-all duration-300"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-base font-bold text-white group-hover:text-primary transition-colors">{c.name}</span>
+                        <div className="flex gap-2">
+                          <button onClick={() => openDialog("category", c)} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/20 hover:text-primary transition-all">
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button onClick={() => handleDelete("categories", c.id)} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/20 hover:text-destructive transition-all">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
             </TabsContent>
 
             {/* Announcements Tab */}
-            {(user?.email === "admin@admin.com" || hasAnnouncementAccess) && <TabsContent value="announcements">
-              <div className="mt-4 grid gap-6 lg:grid-cols-2">
-                {/* Send Email */}
-                <Card className="border-border/50 bg-card/70 backdrop-blur-sm">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="font-display text-lg flex items-center gap-2">
-                      <Send className="h-5 w-5 text-primary" /> Duyuru Gönder
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Konu</Label>
-                      <Input placeholder="E-posta konusu..." value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Mesaj</Label>
-                      <Textarea placeholder="E-posta içeriğini yazın..." rows={5} value={emailBody} onChange={(e) => setEmailBody(e.target.value)} />
+            {/* Announcements Tab */}
+            {(user?.email === "admin@admin.com" || hasAnnouncementAccess) && (
+              <TabsContent value="announcements" className="mt-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                  {/* Send New Announcement */}
+                  <div className="space-y-8">
+                    <div className="flex items-center gap-4 px-2">
+                      <div className="w-12 h-12 rounded-[1.25rem] bg-accent/10 flex items-center justify-center border border-accent/20">
+                        <Send className="w-6 h-6 text-accent" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-display font-black">Yeni Duyuru</h3>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-accent/50">Bildirim Gönder</p>
+                      </div>
                     </div>
 
-                    {/* User selection */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label>Alıcılar ({selectedUsers.length}/{profiles.length})</Label>
-                        <Button variant="ghost" size="sm" className="text-xs h-7" onClick={toggleAllUsers}>
-                          {selectedUsers.length === profiles.length ? "Tümünü Kaldır" : "Tümünü Seç"}
-                        </Button>
+                    <div className="p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/5 space-y-8">
+                      <div className="space-y-3">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Konu</Label>
+                        <Input
+                          placeholder="Duyuru başlığı..."
+                          value={emailSubject}
+                          onChange={(e) => setEmailSubject(e.target.value)}
+                          className="rounded-2xl h-14 bg-white/5 border-white/10 focus:border-accent/40 px-6 font-bold text-white placeholder:text-white/40"
+                        />
+                      </div>
+                      <div className="space-y-3">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">İçerik</Label>
+                        <Textarea
+                          placeholder="Mesajınızı buraya yazın..."
+                          value={emailBody}
+                          onChange={(e) => setEmailBody(e.target.value)}
+                          className="rounded-2xl min-h-[180px] bg-white/5 border-white/10 focus:border-accent/40 resize-none px-6 py-5 font-medium leading-relaxed text-white placeholder:text-white/40"
+                        />
                       </div>
 
-                      {/* Search Input */}
-                      <Input
-                        placeholder="Kullanıcı adı veya soyadı ile ara..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="text-sm"
-                      />
-
-                      <div className="max-h-48 overflow-y-auto rounded-xl border border-border/50 divide-y divide-border/30">
-                        {profiles
-                          .filter(p =>
-                            `${p.first_name} ${p.last_name}`.toLocaleLowerCase('tr-TR').includes(searchQuery.toLocaleLowerCase('tr-TR'))
-                          )
-                          .map((p) => (
-                            <label
-                              key={p.id}
-                              className="flex items-center gap-3 px-3 py-2.5 hover:bg-muted/30 cursor-pointer transition-colors"
-                            >
-                              <Checkbox
-                                checked={selectedUsers.includes(p.id)}
-                                onCheckedChange={() => toggleUser(p.id)}
-                              />
-                              <div className="flex items-center gap-2 min-w-0">
-                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold shrink-0">
-                                  {p.first_name?.[0] || "?"}
+                      <div className="space-y-6">
+                        <div className="flex items-center justify-between px-1">
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-white/30">Alıcılar ({selectedUsers.length}/{profiles.length})</Label>
+                          <button onClick={toggleAllUsers} className="text-[10px] font-black text-accent uppercase tracking-widest hover:underline decoration-2 underline-offset-4">
+                            {selectedUsers.length === profiles.length ? "Tümünü Kaldır" : "Tümünü Seç"}
+                          </button>
+                        </div>
+                        <div className="relative group">
+                          <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-accent transition-colors" />
+                          <Input
+                            placeholder="Kullanıcı ara..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="rounded-2xl h-14 pl-14 bg-white/5 border-white/10 font-bold text-white placeholder:text-white/40"
+                          />
+                        </div>
+                        <div className="max-h-[300px] overflow-y-auto pr-2 space-y-2 custom-scrollbar">
+                          {allUsers
+                            .filter(u => u.email !== "admin@admin.com" &&
+                              `${u.first_name} ${u.last_name}`.toLocaleLowerCase('tr-TR').includes(searchQuery.toLocaleLowerCase('tr-TR')))
+                            .map((u) => (
+                              <label
+                                key={u.id}
+                                className={cn(
+                                  "flex items-center gap-4 p-5 rounded-2xl border transition-all cursor-pointer",
+                                  selectedUsers.includes(u.id)
+                                    ? "bg-accent/10 border-accent/20"
+                                    : "bg-white/5 border-transparent hover:border-white/10 hover:bg-white/[0.06]"
+                                )}
+                              >
+                                <Checkbox
+                                  checked={selectedUsers.includes(u.id)}
+                                  onCheckedChange={() => toggleUser(u.id)}
+                                  className="w-5 h-5 border-white/20 data-[state=checked]:bg-accent data-[state=checked]:border-accent"
+                                />
+                                <div className="flex items-center gap-4">
+                                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center text-xs font-black border border-white/10">
+                                    {u.first_name?.[0] || "?"}
+                                  </div>
+                                  <div className="flex flex-col">
+                                    <span className="text-sm font-bold">{u.first_name} {u.last_name}</span>
+                                    <span className="text-[10px] text-white/30 font-bold uppercase tracking-widest">Üye</span>
+                                  </div>
                                 </div>
-                                <span className="text-sm font-medium text-foreground truncate">
-                                  {p.first_name} {p.last_name}
-                                </span>
-                              </div>
-                            </label>
-                          ))}
-                        {profiles.filter(p => `${p.first_name} ${p.last_name}`.toLocaleLowerCase('tr-TR').includes(searchQuery.toLocaleLowerCase('tr-TR'))).length === 0 && (
-                          <p className="text-sm text-muted-foreground text-center py-4">
-                            {searchQuery.trim() ? "Eşleşen kullanıcı bulunamadı" : "Henüz kayıtlı kullanıcı yok"}
-                          </p>
-                        )}
+                              </label>
+                            ))}
+                        </div>
+                      </div>
+
+                      <motion.button
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handleSendAnnouncement}
+                        disabled={sending}
+                        className="w-full h-16 rounded-2xl bg-accent text-white font-black text-xs uppercase tracking-widest hover:bg-accent/80 shadow-[0_15px_30px_rgba(245,158,11,0.2)] disabled:opacity-50 transition-all flex items-center justify-center gap-3"
+                      >
+                        <Send className="w-4 h-4 stroke-[3px]" />
+                        {sending ? "GÖNDERİLİYOR..." : `DUYURUYU GÖNDER (${selectedUsers.length} KİŞİ)`}
+                      </motion.button>
+                    </div>
+                  </div>
+
+                  {/* Announcement History */}
+                  <div className="space-y-8">
+                    <div className="flex items-center gap-4 px-2">
+                      <div className="w-12 h-12 rounded-[1.25rem] bg-white/5 flex items-center justify-center border border-white/10">
+                        <Archive className="w-6 h-6 text-white/40" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-display font-black">Duyuru Geçmişi</h3>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Gönderilen Mesajlar</p>
                       </div>
                     </div>
 
-                    <Button onClick={handleSendAnnouncement} className="w-full gap-2 shadow-sm" disabled={sending}>
-                      <Send className="h-4 w-4" />
-                      {sending ? "Gönderiliyor..." : `${selectedUsers.length} Kullanıcıya Gönder`}
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                {/* History */}
-                <Card className="border-border/50 bg-card/70 backdrop-blur-sm">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="font-display text-lg flex items-center gap-2">
-                      <Megaphone className="h-5 w-5 text-accent" /> Geçmiş Duyurular
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {announcements.length === 0 ? (
-                      <div className="text-center py-10">
-                        <Megaphone className="h-10 w-10 text-muted-foreground/30 mx-auto" />
-                        <p className="text-sm text-muted-foreground mt-3">Henüz duyuru gönderilmedi</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
-                        {announcements.map((a) => {
+                    <div className="space-y-4 max-h-[850px] overflow-y-auto pr-4 custom-scrollbar">
+                      {announcements.length === 0 ? (
+                        <div className="p-16 text-center rounded-[2.5rem] bg-white/[0.02] border border-dashed border-white/5">
+                          <Megaphone className="w-16 h-16 text-white/10 mx-auto mb-6" />
+                          <p className="text-sm font-bold text-white/20 uppercase tracking-widest">Henüz kayıt bulunamadı</p>
+                        </div>
+                      ) : (
+                        announcements.map((a) => {
                           const sentCount = a.announcement_recipients?.filter(r => r.status === "sent").length || 0;
-                          const failedCount = a.announcement_recipients?.filter(r => r.status === "failed").length || 0;
                           return (
-                            <div key={a.id} className="rounded-xl border border-border/50 p-4 hover:bg-muted/20 transition-colors">
-                              <div className="flex items-start justify-between gap-2">
-                                <h4 className="font-medium text-foreground text-sm">{a.subject}</h4>
-                                <span className="text-[10px] text-muted-foreground shrink-0 mt-0.5">
-                                  {new Date(a.created_at).toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
-                                </span>
+                            <div key={a.id} className="p-8 rounded-[2rem] bg-white/[0.03] border border-white/5 hover:border-white/10 transition-all space-y-5">
+                              <div className="flex justify-between items-start gap-4">
+                                <div className="space-y-2">
+                                  <h4 className="text-lg font-bold text-white leading-tight group-hover:text-accent transition-colors">{a.subject}</h4>
+                                  <div className="flex items-center gap-2 text-[10px] font-black text-white/20 uppercase tracking-widest">
+                                    <Clock className="w-3 h-3" />
+                                    {new Date(a.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                  </div>
+                                </div>
+                                <button onClick={() => handleDeleteAnnouncement(a.id)} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white/20 hover:text-destructive hover:bg-destructive/10 transition-all">
+                                  <Trash2 className="w-4.5 h-4.5" />
+                                </button>
                               </div>
-                              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{a.body}</p>
-                              <div className="flex items-center gap-3 mt-2.5">
-                                <span className="inline-flex items-center gap-1 text-xs text-primary">
-                                  <Users className="h-3 w-3" /> {a.recipient_count} alıcı
-                                </span>
-                                {sentCount > 0 && (
-                                  <span className="inline-flex items-center gap-1 text-xs text-primary">
-                                    <CheckCircle2 className="h-3 w-3" /> {sentCount} gönderildi
+                              <p className="text-sm text-white/50 font-medium leading-relaxed line-clamp-3">{a.body}</p>
+                              <div className="flex items-center gap-6 pt-5 border-t border-white/5">
+                                <div className="flex flex-col gap-1">
+                                  <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">ALICILAR</span>
+                                  <span className="text-xs font-black text-accent flex items-center gap-2">
+                                    <Users className="w-3.5 h-3.5" /> {a.recipient_count}
                                   </span>
-                                )}
-                                {failedCount > 0 && (
-                                  <span className="inline-flex items-center gap-1 text-xs text-destructive">
-                                    <XCircle className="h-3 w-3" /> {failedCount} başarısız
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">DURUM</span>
+                                  <span className="text-xs font-black text-primary flex items-center gap-2">
+                                    <CheckCircle2 className="w-3.5 h-3.5" /> {sentCount} BAŞARILI
                                   </span>
-                                )}
-                              </div>
-                              <div className="flex justify-end gap-1.5 mt-2.5 pt-2.5 border-t border-border/30">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 gap-1.5 text-xs hover:bg-destructive/10 hover:text-destructive"
-                                  onClick={() => handleDeleteAnnouncement(a.id)}
-                                  disabled={announcementLoading}
-                                >
-                                  <Trash2 className="h-3 w-3" /> Sil
-                                </Button>
+                                </div>
                               </div>
                             </div>
                           );
-                        })}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>}
+                        })
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+            )}
+
             {/* Users Tab */}
-            {user?.email === "admin@admin.com" && <TabsContent value="users">
-              <Card className="border-border/50 bg-card/70 backdrop-blur-sm mt-4">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <p className="text-sm text-muted-foreground">
-                      {allUsers.filter(u => u.email !== "admin@admin.com").length} kullanıcı • {admins.length} admin
-                    </p>
-                    <Button size="sm" className="gap-1.5 shadow-sm" onClick={() => setNewUserDialog(true)}>
-                      <UserPlus className="h-4 w-4" /> Yeni Kullanıcı
-                    </Button>
+            {user?.email === "admin@admin.com" && (
+              <TabsContent value="users" className="mt-8">
+                <div className="space-y-8">
+                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 px-2">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-[1.25rem] bg-primary/10 flex items-center justify-center border border-primary/20">
+                        <Users className="w-6 h-6 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-display font-black">Kullanıcı Yönetimi</h3>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-primary/50">{allUsers.length} Toplam Kayıt</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+                      <div className="relative group flex-1 lg:w-80">
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-primary transition-colors" />
+                        <Input
+                          placeholder="İsim veya e-posta..."
+                          value={userSearchQuery}
+                          onChange={(e) => setUserSearchQuery(e.target.value)}
+                          className="rounded-2xl h-14 pl-14 bg-white/[0.03] border-white/10 font-bold focus:border-primary/40"
+                        />
+                      </div>
+                      <motion.button
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setNewUserDialog(true)}
+                        className="h-14 px-8 rounded-2xl bg-primary text-black font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 shadow-[0_10px_20px_rgba(16,185,129,0.2)]"
+                      >
+                        <UserPlus className="w-4 h-4 stroke-[3px]" /> YENİ KULLANICI
+                      </motion.button>
+                    </div>
                   </div>
 
-                  {/* Search Input */}
-                  <div className="mb-4">
-                    <Input
-                      placeholder="Kullanıcı ara (ad, soyad veya e-posta)..."
-                      value={userSearchQuery}
-                      onChange={(e) => setUserSearchQuery(e.target.value)}
-                      className="text-sm"
-                    />
-                  </div>
-
-                  <div className="rounded-xl border border-border/50 overflow-hidden">
+                  <div className="rounded-[2.5rem] border border-white/5 bg-white/[0.02] overflow-hidden backdrop-blur-xl">
                     <Table>
                       <TableHeader>
-                        <TableRow className="bg-muted/30 hover:bg-muted/30">
-                          <TableHead className="font-semibold">Ad Soyad</TableHead>
-                          <TableHead className="font-semibold">E-posta</TableHead>
-                          <TableHead className="font-semibold">Kayıt Tarihi</TableHead>
-                          <TableHead className="font-semibold text-center">Duyuru Yetkisi</TableHead>
-                          <TableHead className="font-semibold text-center">Rapor Yetkisi</TableHead>
-                          <TableHead className="text-right font-semibold">İşlem</TableHead>
+                        <TableRow className="border-white/5 hover:bg-transparent">
+                          <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 py-8 pl-10">KİMLİK</TableHead>
+                          <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 py-8">KAYIT</TableHead>
+                          <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 py-8 text-center">DUYURU YETKİSİ</TableHead>
+                          <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 py-8 text-center">RAPOR YETKİSİ</TableHead>
+                          <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 py-8 text-right pr-10">AKSİYONLAR</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {allUsers
-                          .filter(u =>
-                            u.email !== "admin@admin.com" &&
-                            `${u.first_name} ${u.last_name} ${u.email}`.toLocaleLowerCase('tr-TR').includes(userSearchQuery.toLocaleLowerCase('tr-TR'))
-                          )
+                          .filter(u => u.email !== "admin@admin.com")
+                          .filter(u => `${u.first_name} ${u.last_name} ${u.email}`.toLocaleLowerCase('tr-TR').includes(userSearchQuery.toLocaleLowerCase('tr-TR')))
                           .map((u) => {
                             const admin = admins.find(a => a.id === u.id);
                             return (
-                              <TableRow key={u.id} className="hover:bg-muted/20">
-                                <TableCell className="font-medium">
-                                  <div className="flex items-center gap-2">
-                                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold shrink-0">
-                                      {u.first_name?.[0] || u.email?.[0]?.toLocaleUpperCase('tr-TR') || "?"}
+                              <TableRow key={u.id} className="border-white/5 group hover:bg-white/[0.03] transition-all">
+                                <TableCell className="py-8 pl-10">
+                                  <div className="flex items-center gap-5">
+                                    <div className="relative">
+                                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/30 to-primary/5 flex items-center justify-center border border-primary/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                                        <span className="text-sm font-black text-primary">{u.first_name?.[0] || "?"}</span>
+                                      </div>
+                                      {admin && (
+                                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full border-2 border-black flex items-center justify-center">
+                                          <Shield className="w-2.5 h-2.5 text-black" />
+                                        </div>
+                                      )}
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                      <span>{u.first_name} {u.last_name}</span>
-                                      {admin && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Admin</Badge>}
+                                    <div className="flex flex-col gap-0.5">
+                                      <div className="flex items-center gap-3">
+                                        <span className="text-base font-bold text-white group-hover:text-primary transition-colors">{u.first_name} {u.last_name}</span>
+                                        {admin && <span className="text-[8px] font-black bg-primary/20 text-primary px-2 py-0.5 rounded-full border border-primary/20 tracking-widest uppercase">ADMIN</span>}
+                                      </div>
+                                      <span className="text-xs text-white/40 font-medium">{u.email}</span>
                                     </div>
                                   </div>
                                 </TableCell>
-                                <TableCell className="text-muted-foreground">{u.email}</TableCell>
-                                <TableCell className="text-muted-foreground text-sm">
-                                  {new Date(u.created_at).toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" })}
+                                <TableCell className="py-8">
+                                  <div className="flex flex-col">
+                                    <span className="text-sm font-bold text-white/80">{new Date(u.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                    <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Üyelik Tarihi</span>
+                                  </div>
                                 </TableCell>
-                                <TableCell className="text-center">
+                                <TableCell className="py-8 text-center">
                                   {admin ? (
-                                    u.email !== "admin@admin.com" ? (
-                                      <Button
-                                        size="sm"
-                                        className={`gap-1.5 text-xs ${admin.has_announcement_access
-                                          ? "bg-green-100 text-green-700 hover:bg-green-200"
-                                          : "bg-red-100 text-red-700 hover:bg-red-200"
-                                          }`}
-                                        onClick={() => handleToggleAnnouncement(u.id)}
-                                        disabled={adminLoading}
-                                      >
-                                        <Megaphone className="h-3 w-3" />
-                                        {admin.has_announcement_access ? "Aktif" : "Pasif"}
-                                      </Button>
-                                    ) : (
-                                      <span className="text-xs text-muted-foreground">Her zaman</span>
-                                    )
-                                  ) : (
-                                    <span className="text-xs text-muted-foreground">-</span>
-                                  )}
-                                </TableCell>
-                                <TableCell className="text-center">
-                                  {admin ? (
-                                    u.email !== "admin@admin.com" ? (
-                                      <Button
-                                        size="sm"
-                                        className={`gap-1.5 text-xs ${admin.has_report_access
-                                          ? "bg-green-100 text-green-700 hover:bg-green-200"
-                                          : "bg-red-100 text-red-700 hover:bg-red-200"
-                                          }`}
-                                        onClick={() => handleToggleReportAdmin(u.id)}
-                                        disabled={adminLoading}
-                                      >
-                                        <FileText className="h-3 w-3" />
-                                        {admin.has_report_access ? "Aktif" : "Pasif"}
-                                      </Button>
-                                    ) : (
-                                      <span className="text-xs text-muted-foreground">Her zaman</span>
-                                    )
-                                  ) : (
-                                    <span className="text-xs text-muted-foreground">-</span>
-                                  )}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  <div className="flex justify-end gap-1">
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
-                                      onClick={() => handleEditUser(u)}
-                                      disabled={usersLoading}
-                                      title="Kullanıcı bilgilerini düzenle"
+                                    <motion.button
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                      onClick={() => handleToggleAnnouncement(u.id)}
+                                      disabled={adminLoading}
+                                      className={cn(
+                                        "px-6 py-2 rounded-xl text-[10px] font-black tracking-widest transition-all",
+                                        admin.has_announcement_access
+                                          ? "bg-primary/20 text-primary border border-primary/30 shadow-[0_5px_15px_rgba(16,185,129,0.1)]"
+                                          : "bg-white/5 text-white/30 border border-white/10"
+                                      )}
                                     >
-                                      <Pencil className="h-3.5 w-3.5" />
-                                    </Button>
-                                    {u.email !== "admin@admin.com" && (
-                                      <Button
-                                        size="sm"
-                                        className={`h-8 px-2 text-xs gap-1 ${admin
-                                          ? "bg-green-100 text-green-700 hover:bg-green-200"
-                                          : "bg-red-100 text-red-700 hover:bg-red-200"
-                                          }`}
-                                        onClick={() => admin ? handleRemoveAdmin(u.id) : handleAddAdminById(u.id)}
-                                        disabled={adminLoading}
-                                        title={admin ? "Admin yetkisini kaldır" : "Admin yetkisi ver"}
-                                      >
-                                        <Shield className="h-3.5 w-3.5" />
-                                        {admin ? "Admin" : "Admin Yap"}
-                                      </Button>
-                                    )}
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
+                                      {admin.has_announcement_access ? "AKTİF" : "PASİF"}
+                                    </motion.button>
+                                  ) : <span className="text-white/10 font-bold">—</span>}
+                                </TableCell>
+                                <TableCell className="py-8 text-center">
+                                  {admin ? (
+                                    <motion.button
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                      onClick={() => handleToggleReportAdmin(u.id)}
+                                      disabled={adminLoading}
+                                      className={cn(
+                                        "px-6 py-2 rounded-xl text-[10px] font-black tracking-widest transition-all",
+                                        admin.has_report_access
+                                          ? "bg-primary/20 text-primary border border-primary/30 shadow-[0_5px_15px_rgba(16,185,129,0.1)]"
+                                          : "bg-white/5 text-white/30 border border-white/10"
+                                      )}
+                                    >
+                                      {admin.has_report_access ? "AKTİF" : "PASİF"}
+                                    </motion.button>
+                                  ) : <span className="text-white/10 font-bold">—</span>}
+                                </TableCell>
+                                <TableCell className="py-8 text-right pr-10">
+                                  <div className="flex justify-end gap-3">
+                                    <motion.button
+                                      whileHover={{ scale: 1.02 }}
+                                      whileTap={{ scale: 0.98 }}
+                                      onClick={() => admin ? handleRemoveAdmin(u.id) : handleAddAdminById(u.id)}
+                                      className={cn(
+                                        "h-11 px-5 rounded-2xl text-[10px] font-black tracking-widest flex items-center gap-2 transition-all",
+                                        admin ? "bg-white/5 text-white/60 hover:bg-destructive/10 hover:text-destructive border border-transparent hover:border-destructive/20" : "bg-primary text-black shadow-[0_5px_15px_rgba(16,185,129,0.2)]"
+                                      )}
+                                    >
+                                      <Shield className="w-4 h-4" />
+                                      {admin ? "YETKİ AL" : "ADMİN YAP"}
+                                    </motion.button>
+                                    <button onClick={() => handleEditUser(u)} className="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/30 hover:bg-white/10 hover:text-white transition-all">
+                                      <Pencil className="w-5 h-5" />
+                                    </button>
+                                    <button
                                       onClick={() => handleDeleteUser(u.id)}
-                                      disabled={usersLoading || u.id === user?.id}
-                                      title={u.id === user?.id ? "Kendinizi silemezsiniz" : "Kullanıcıyı sil"}
+                                      disabled={u.id === user?.id}
+                                      className="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/30 hover:bg-destructive/10 hover:text-destructive disabled:opacity-20 transition-all"
                                     >
-                                      <Trash2 className="h-3.5 w-3.5" />
-                                    </Button>
+                                      <Trash2 className="w-5 h-5" />
+                                    </button>
                                   </div>
                                 </TableCell>
                               </TableRow>
                             );
                           })}
-                        {allUsers.filter(u =>
-                          u.email !== "admin@admin.com" &&
-                          `${u.first_name} ${u.last_name} ${u.email}`.toLocaleLowerCase('tr-TR').includes(userSearchQuery.toLocaleLowerCase('tr-TR'))
-                        ).length === 0 && (
-                            <TableRow>
-                              <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                                {usersLoading ? "Yükleniyor..." : userSearchQuery.trim() ? "Eşleşen kullanıcı bulunamadı" : "Henüz kullanıcı bulunmuyor"}
-                              </TableCell>
-                            </TableRow>
-                          )}
                       </TableBody>
                     </Table>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>}
+                </div>
+              </TabsContent>
+            )}
           </Tabs>
         </motion.div>
 
         {/* Edit/Create Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle className="font-display text-xl">
-                {editingItem ? "Düzenle" : "Yeni Ekle"} — {dialogType === "city" ? "Şehir" : dialogType === "category" ? "Kategori" : dialogType === "venue" ? "Mekan" : "Etkinlik"}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 pt-2">
-              {(dialogType === "city" || dialogType === "category") && (
-                <div className="space-y-2">
-                  <Label>Ad</Label>
-                  <Input value={formData.name || ""} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-                </div>
-              )}
-              {dialogType === "venue" && (
-                <>
-                  <div className="space-y-2"><Label>Ad</Label><Input value={formData.name || ""} onChange={(e) => setFormData({ ...formData, name: e.target.value })} /></div>
-                  <div className="space-y-2">
-                    <Label>Şehir</Label>
-                    <Select value={formData.city_id || ""} onValueChange={(v) => setFormData({ ...formData, city_id: v })}>
-                      <SelectTrigger><SelectValue placeholder="Şehir seçin" /></SelectTrigger>
-                      <SelectContent>{cities.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-                    </Select>
+          <DialogContent className="w-[95vw] sm:max-w-xl bg-[#050505]/95 backdrop-blur-3xl border-white/10 p-0 rounded-[1.5rem] sm:rounded-[2.5rem] selection:bg-primary/30 max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 sm:p-10 pb-6 border-b border-white/5 bg-white/[0.02] backdrop-blur-xl relative z-10">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-display font-black flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                    {editingItem ? <Pencil className="w-5 h-5 text-primary" /> : <Plus className="w-5 h-5 text-primary" />}
                   </div>
-                </>
-              )}
-              {dialogType === "event" && (
-                <>
-                  <div className="space-y-2"><Label>Başlık</Label><Input value={formData.title || ""} onChange={(e) => setFormData({ ...formData, title: e.target.value })} /></div>
-                  <div className="space-y-2"><Label>Açıklama</Label><Textarea value={formData.description || ""} onChange={(e) => setFormData({ ...formData, description: e.target.value })} /></div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2"><Label>Tarih</Label><Input type="date" value={formData.date || ""} onChange={(e) => setFormData({ ...formData, date: e.target.value })} /></div>
-                    <div className="space-y-2"><Label>Saat</Label><Input type="time" value={formData.time || ""} onChange={(e) => setFormData({ ...formData, time: e.target.value })} /></div>
+                  <div>
+                    <h3 className="text-xl font-display font-black">{editingItem ? "Bilgileri Düzenle" : "Yeni Kayıt Oluştur"}</h3>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-white/30">{dialogType === "city" ? "Şehir Yönetimi" : dialogType === "category" ? "Kategori Yönetimi" : dialogType === "venue" ? "Mekan Yönetimi" : "Etkinlik Yönetimi"}</p>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Şehir</Label>
-                    <Select value={formData.city_id || ""} onValueChange={(v) => setFormData({ ...formData, city_id: v })}>
-                      <SelectTrigger><SelectValue placeholder="Şehir seçin" /></SelectTrigger>
-                      <SelectContent>{cities.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-                    </Select>
+                </DialogTitle>
+              </DialogHeader>
+            </div>
+
+            <div className="p-6 sm:p-10 pt-8 overflow-y-auto custom-scrollbar flex-1">
+              <div className="space-y-6">
+                {(dialogType === "city" || dialogType === "category") && (
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">İsim</Label>
+                    <Input
+                      value={formData.name || ""}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white placeholder:text-white/40"
+                      placeholder="Örn: İstanbul, Konser, vb."
+                    />
                   </div>
-                  <div className="space-y-2">
-                    <Label>Mekan</Label>
-                    <Input placeholder="Mekan adını girin" value={formData.venue_name || ""} onChange={(e) => setFormData({ ...formData, venue_name: e.target.value })} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Kategori</Label>
-                    <Select value={formData.category_id || ""} onValueChange={(v) => setFormData({ ...formData, category_id: v })}>
-                      <SelectTrigger><SelectValue placeholder="Kategori seçin" /></SelectTrigger>
-                      <SelectContent>{categories.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                </>
-              )}
-              <Button onClick={handleSave} className="w-full shadow-sm">{editingItem ? "Güncelle" : "Ekle"}</Button>
+                )}
+                {dialogType === "venue" && (
+                  <>
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Mekan Adı</Label>
+                      <Input
+                        value={formData.name || ""}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white placeholder:text-white/40"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Şehir</Label>
+                      <Select value={formData.city_id || ""} onValueChange={(v) => setFormData({ ...formData, city_id: v })}>
+                        <SelectTrigger className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:ring-primary/20 transition-all font-bold text-white">
+                          <SelectValue placeholder="Şehir seçin" />
+                        </SelectTrigger>
+                        <SelectContent className="!bg-[#0c0c0c] border-white/10 rounded-2xl p-2 !z-[9999] !opacity-100 !visible">
+                          {cities.map((c) => <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold hover:bg-white/10 cursor-pointer !text-white">{c.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
+                {dialogType === "event" && (
+                  <>
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Etkinlik Başlığı</Label>
+                      <Input
+                        value={formData.title || ""}
+                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white placeholder:text-white/40"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Açıklama</Label>
+                      <Textarea
+                        value={formData.description || ""}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        className="bg-white/5 border-white/10 rounded-2xl min-h-[120px] p-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-medium leading-relaxed resize-none text-white placeholder:text-white/40"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-3">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Tarih</Label>
+                        <Input
+                          type="date"
+                          value={formData.date || ""}
+                          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                          className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white [color-scheme:dark]"
+                        />
+                      </div>
+                      <div className="space-y-3">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Saat</Label>
+                        <Input
+                          type="time"
+                          value={formData.time || ""}
+                          onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                          className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white [color-scheme:dark]"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Şehir</Label>
+                      <Select value={formData.city_id || ""} onValueChange={(v) => setFormData({ ...formData, city_id: v })}>
+                        <SelectTrigger className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 transition-all font-bold text-white">
+                          <SelectValue placeholder="Şehir seçin" />
+                        </SelectTrigger>
+                        <SelectContent className="!bg-[#0c0c0c] border-white/10 rounded-2xl p-2 !z-[9999] !opacity-100 !visible">
+                          {cities.map((c) => <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold hover:bg-white/10 cursor-pointer !text-white">{c.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Mekan Bilgisi</Label>
+                      <Input
+                        placeholder="Mekan adını girin (Örn: Jolly Joker)"
+                        value={formData.venue_name || ""}
+                        onChange={(e) => setFormData({ ...formData, venue_name: e.target.value })}
+                        className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white placeholder:text-white/40"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Kategori</Label>
+                      <Select value={formData.category_id || ""} onValueChange={(v) => setFormData({ ...formData, category_id: v })}>
+                        <SelectTrigger className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 transition-all font-bold text-white">
+                          <SelectValue placeholder="Kategori seçin" />
+                        </SelectTrigger>
+                        <SelectContent className="!bg-[#0c0c0c] border-white/10 rounded-2xl p-2 !z-[9999] !opacity-100 !visible">
+                          {categories.map((c) => <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold hover:bg-white/10 cursor-pointer !text-white">{c.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
+                <motion.button
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleSave}
+                  className="w-full h-16 rounded-2xl bg-primary text-black font-black text-xs uppercase tracking-widest hover:bg-primary/80 transition-all shadow-[0_15px_30px_rgba(16,185,129,0.2)] mt-4"
+                >
+                  {editingItem ? "GÜNCELLEMEYİ KAYDET" : "YENİ KAYIT OLUŞTUR"}
+                </motion.button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
 
         {/* New User Dialog */}
         <Dialog open={newUserDialog} onOpenChange={setNewUserDialog}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="font-display text-xl">Yeni Kullanıcı Oluştur</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 pt-2">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label>Ad</Label>
-                  <Input value={newUserData.first_name} onChange={(e) => setNewUserData({ ...newUserData, first_name: e.target.value })} />
+          <DialogContent className="w-[95vw] sm:max-w-xl bg-[#050505]/95 backdrop-blur-3xl border-white/10 p-0 rounded-[1.5rem] sm:rounded-[2.5rem] selection:bg-primary/30 max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 sm:p-10 pb-6 border-b border-white/5 bg-white/[0.02] backdrop-blur-xl relative z-10">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-display font-black flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                    <UserPlus className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-display font-black">Yeni Kullanıcı Oluştur</h3>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Üye Kayıt Yönetimi</p>
+                  </div>
+                </DialogTitle>
+              </DialogHeader>
+            </div>
+
+            <div className="p-6 sm:p-10 pt-8 overflow-y-auto custom-scrollbar flex-1">
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">AD</Label>
+                    <Input
+                      value={newUserData.first_name}
+                      onChange={(e) => setNewUserData({ ...newUserData, first_name: e.target.value })}
+                      className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-white placeholder:text-white/40"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">SOYAD</Label>
+                    <Input
+                      value={newUserData.last_name}
+                      onChange={(e) => setNewUserData({ ...newUserData, last_name: e.target.value })}
+                      className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-white placeholder:text-white/40"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Soyad</Label>
-                  <Input value={newUserData.last_name} onChange={(e) => setNewUserData({ ...newUserData, last_name: e.target.value })} />
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">E-POSTA ADRESİ</Label>
+                  <Input
+                    type="email"
+                    value={newUserData.email}
+                    onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
+                    className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-white placeholder:text-white/40"
+                  />
                 </div>
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">ŞİFRE</Label>
+                  <Input
+                    type="password"
+                    value={newUserData.password}
+                    onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
+                    className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-white placeholder:text-white/40"
+                  />
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleCreateUser}
+                  disabled={usersLoading}
+                  className="w-full h-16 rounded-2xl bg-primary text-black font-black text-xs uppercase tracking-widest hover:bg-primary/80 transition-all shadow-[0_15px_30px_rgba(16,185,129,0.2)] mt-4 disabled:opacity-50"
+                >
+                  {usersLoading ? "OLUŞTURULUYOR..." : "KULLANICIYI KAYDET"}
+                </motion.button>
               </div>
-              <div className="space-y-2">
-                <Label>E-posta</Label>
-                <Input type="email" value={newUserData.email} onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Şifre</Label>
-                <Input type="password" value={newUserData.password} onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })} />
-              </div>
-              <Button onClick={handleCreateUser} className="w-full shadow-sm" disabled={usersLoading}>
-                {usersLoading ? "Oluşturuluyor..." : "Kullanıcı Oluştur"}
-              </Button>
             </div>
           </DialogContent>
         </Dialog>
 
         {/* Edit User Dialog */}
         <Dialog open={editUserDialog} onOpenChange={setEditUserDialog}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="font-display text-xl">Kullanıcı Bilgilerini Düzenle</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 pt-2">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label>Ad</Label>
-                  <Input value={editUserData.first_name} onChange={(e) => setEditUserData({ ...editUserData, first_name: e.target.value })} />
+          <DialogContent className="w-[95vw] sm:max-w-xl bg-[#050505]/95 backdrop-blur-3xl border-white/10 p-0 rounded-[1.5rem] sm:rounded-[2.5rem] selection:bg-primary/30 max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 sm:p-10 pb-6 border-b border-white/5 bg-white/[0.02] backdrop-blur-xl relative z-10">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-display font-black flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                    <Pencil className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-display font-black">Kullanıcıyı Düzenle</h3>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-white/30">{editUserData.email}</p>
+                  </div>
+                </DialogTitle>
+              </DialogHeader>
+            </div>
+
+            <div className="p-6 sm:p-10 pt-8 overflow-y-auto custom-scrollbar flex-1">
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">AD</Label>
+                    <Input
+                      value={editUserData.first_name}
+                      onChange={(e) => setEditUserData({ ...editUserData, first_name: e.target.value })}
+                      className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-white placeholder:text-white/40"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">SOYAD</Label>
+                    <Input
+                      value={editUserData.last_name}
+                      onChange={(e) => setEditUserData({ ...editUserData, last_name: e.target.value })}
+                      className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-white placeholder:text-white/40"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Soyad</Label>
-                  <Input value={editUserData.last_name} onChange={(e) => setEditUserData({ ...editUserData, last_name: e.target.value })} />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>E-posta</Label>
-                <Input type="email" value={editUserData.email} onChange={(e) => setEditUserData({ ...editUserData, email: e.target.value })} />
-              </div>
-              <div className="border-t pt-4 mt-2">
-                <p className="text-sm text-muted-foreground mb-3">Şifre değiştirmek istiyorsanız aşağıyı doldurun (boş bırakırsanız şifre değişmez)</p>
                 <div className="space-y-3">
-                  <div className="space-y-2">
-                    <Label>Yeni Şifre</Label>
-                    <Input type="password" placeholder="En az 6 karakter" value={editUserData.new_password} onChange={(e) => setEditUserData({ ...editUserData, new_password: e.target.value })} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Yeni Şifre (Tekrar)</Label>
-                    <Input type="password" placeholder="Şifreyi tekrar girin" value={editUserData.confirm_password} onChange={(e) => setEditUserData({ ...editUserData, confirm_password: e.target.value })} />
-                  </div>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">E-POSTA ADRESİ</Label>
+                  <Input
+                    type="email"
+                    value={editUserData.email}
+                    onChange={(e) => setEditUserData({ ...editUserData, email: e.target.value })}
+                    className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-white placeholder:text-white/40"
+                  />
                 </div>
+
+                <div className="pt-6 border-t border-white/5 mt-2">
+                  <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-6">GÜVENLİK AYARLARI</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">YENİ ŞİFRE</Label>
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        value={editUserData.new_password}
+                        onChange={(e) => setEditUserData({ ...editUserData, new_password: e.target.value })}
+                        className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-white placeholder:text-white/40"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">ŞİFRE TEKRAR</Label>
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        value={editUserData.confirm_password}
+                        onChange={(e) => setEditUserData({ ...editUserData, confirm_password: e.target.value })}
+                        className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-white placeholder:text-white/40"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-[9px] font-medium text-white/20 mt-4 italic">* Şifreyi değiştirmek istemiyorsanız bu alanları boş bırakabilirsiniz.</p>
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleUpdateUser}
+                  disabled={usersLoading}
+                  className="w-full h-16 rounded-2xl bg-primary text-black font-black text-xs uppercase tracking-widest hover:bg-primary/80 transition-all shadow-[0_15px_30px_rgba(16,185,129,0.2)] mt-4 disabled:opacity-50"
+                >
+                  {usersLoading ? "GÜNCELLENİYOR..." : "DEĞİŞİKLİKLERİ KAYDET"}
+                </motion.button>
               </div>
-              <Button onClick={handleUpdateUser} className="w-full shadow-sm" disabled={usersLoading}>
-                {usersLoading ? "Güncelleniyor..." : "Güncelle"}
-              </Button>
             </div>
           </DialogContent>
         </Dialog>
 
 
-      </div>
+      </main>
     </div>
   );
 };

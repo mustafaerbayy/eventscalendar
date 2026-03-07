@@ -324,9 +324,33 @@ const WeeklyReports = () => {
 
             <div className="flex-1 overflow-y-auto pr-2 space-y-3 scrollbar-hide lg:scrollbar-default pb-32 lg:pb-0">
               {loading ? (
-                Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="h-28 bg-white/5 rounded-[2rem] border border-white/5 animate-pulse" />
-                ))
+                <motion.div
+                  className="mt-20 flex flex-col items-center justify-center gap-4 py-20 w-full"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <div className="relative">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                      className="absolute inset-[-10px] rounded-full border-t-2 border-primary/40 border-r-2 border-r-transparent"
+                    />
+                    <motion.div
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      className="relative h-16 w-16"
+                    >
+                      <img src="/images/logo.png" alt="Logo" className="h-full w-full object-contain drop-shadow-[0_0_10px_rgba(245,158,11,0.3)]" />
+                    </motion.div>
+                  </div>
+                  <motion.p
+                    className="text-lg text-white/40 font-bold"
+                    animate={{ opacity: [0.4, 0.8, 0.4] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    Raporlar yükleniyor...
+                  </motion.p>
+                </motion.div>
               ) : filteredReports.length === 0 ? (
                 <div className="flex flex-col items-center justify-center p-12 bg-white/[0.02] rounded-[2.5rem] border border-dashed border-white/10 group">
                   <div className="w-16 h-16 rounded-3xl bg-white/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-500">
@@ -577,66 +601,59 @@ const WeeklyReports = () => {
         </p>
       </footer>
 
-      {/* Futuristic Dialog Implementation */}
+      {/* Premium Dialog Implementation */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="p-0 border-none bg-transparent shadow-none w-[90vw] md:w-full max-w-2xl mx-auto overflow-visible">
-          <div className="relative w-full max-h-[85vh] overflow-y-auto rounded-[2rem] md:rounded-[3rem] bg-[#0c0c0c] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] scrollbar-hide">
-            {/* Modal Header Decoration */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
-
-            {/* Soft Red Close Button */}
-            <div className="absolute top-3 right-3 md:top-6 md:right-6 z-50">
-              <button
-                onClick={() => setDialogOpen(false)}
-                className="w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors backdrop-blur-md"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-4 md:p-14 pt-16 md:pt-14 relative z-10 w-full box-border">
-              <div className="mb-8 md:mb-12">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-widest mb-4">
-                  {editingReport ? 'KAYIT GÜNCELLEME' : 'YENİ VERİ GİRİŞİ'}
+        <DialogContent className="w-[95vw] sm:max-w-2xl bg-[#050505]/95 backdrop-blur-3xl border-white/10 p-0 rounded-[1.5rem] sm:rounded-[2.5rem] selection:bg-primary/30 max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="p-6 sm:p-10 pb-6 border-b border-white/5 bg-white/[0.02] backdrop-blur-xl relative z-10">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-display font-black flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                  {editingReport ? <Pencil className="w-5 h-5 text-primary" /> : <Plus className="w-5 h-5 text-primary" />}
                 </div>
-                <h2 className="text-3xl md:text-4xl font-display font-black text-white">
-                  Rapor
-                </h2>
-              </div>
-
-              <div className="flex flex-col gap-6 md:gap-8 w-full">
-                <div className="flex flex-col md:flex-row gap-6 md:gap-8 w-full">
-                  <div className="flex-1 space-y-3 w-full">
-                    <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-2 block">Başlık</label>
-                    <input
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      placeholder="Başlık Giriniz"
-                      className="w-full h-12 md:h-14 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl px-4 md:px-6 text-sm font-bold text-white placeholder:text-white/20 focus:outline-none focus:border-primary/50 transition-colors block box-border"
-                    />
-                  </div>
-                  <div className="flex-1 space-y-3 w-full">
-                    <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-2 block">İşlem Tarihi</label>
-                    <input
-                      type="date"
-                      value={formData.report_date}
-                      onChange={(e) => setFormData({ ...formData, report_date: e.target.value })}
-                      className="w-full h-12 md:h-14 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl px-4 md:px-6 text-sm font-bold text-white focus:outline-none focus:border-primary/50 transition-colors [color-scheme:dark] block box-border"
-                    />
-                  </div>
+                <div>
+                  <h3 className="text-xl font-display font-black">{editingReport ? "Raporu Güncelle" : "Yeni Rapor Oluştur"}</h3>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Haftalık Veri Yönetimi</p>
                 </div>
+              </DialogTitle>
+            </DialogHeader>
+          </div>
 
-                <div className="space-y-3 w-full">
-                  <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-2">Gövde Metni</label>
-                  <textarea
-                    rows={6}
-                    value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                    placeholder="Detaylı rapor içeriği giriniz..."
-                    className="w-full bg-white/5 border border-white/10 rounded-[2rem] p-6 text-sm font-bold text-white placeholder:text-white/20 focus:outline-none focus:border-primary/50 transition-colors resize-none"
+          <div className="p-6 sm:p-10 pt-8 overflow-y-auto custom-scrollbar flex-1">
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">BAŞLIK</label>
+                  <input
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="Haftalık Rapor Başlığı..."
+                    className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-6 text-sm font-bold text-white placeholder:text-white/20 focus:outline-none focus:border-primary/40 transition-all"
                   />
                 </div>
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">İŞLEM TARİHİ</label>
+                  <input
+                    type="date"
+                    value={formData.report_date}
+                    onChange={(e) => setFormData({ ...formData, report_date: e.target.value })}
+                    className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-6 text-sm font-bold text-white focus:outline-none focus:border-primary/40 transition-all [color-scheme:dark]"
+                  />
+                </div>
+              </div>
 
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">İÇERİK (OPSİYONEL)</label>
+                <textarea
+                  rows={6}
+                  value={formData.content}
+                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  placeholder="Rapor detayı veya açıklama ekleyebilirsiniz..."
+                  className="w-full bg-white/5 border border-white/10 rounded-[1.5rem] p-6 text-sm font-medium text-white/80 placeholder:text-white/20 focus:outline-none focus:border-primary/40 transition-all resize-none leading-relaxed"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">BELGE YÜKLE (PDF/DOC/JPG)</label>
                 <div className="relative group/upload w-full">
                   <input
                     type="file"
@@ -646,28 +663,28 @@ const WeeklyReports = () => {
                   />
                   <label
                     htmlFor="file-upload"
-                    className="flex flex-col items-center justify-center p-6 md:p-8 rounded-[2rem] border-2 border-dashed border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-primary/40 transition-all cursor-pointer group-hover/upload:scale-[1.01] w-full"
+                    className="flex flex-col items-center justify-center p-8 rounded-[1.5rem] border-2 border-dashed border-white/5 bg-white/[0.02] hover:bg-white/[0.04] hover:border-primary/30 transition-all cursor-pointer group-hover/upload:scale-[1.01]"
                   >
-                    <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover/upload:bg-primary group-hover/upload:transition-all">
-                      <Upload className="w-6 h-6 text-primary group-hover/upload:text-black" />
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 transition-all group-hover/upload:bg-primary group-hover/upload:text-black">
+                      <Plus className="w-5 h-5 text-primary group-hover/upload:text-white" />
                     </div>
-                    <p className="text-sm font-black text-white/80 text-center">
-                      {file ? file.name : (editingReport?.file_url ? 'BELGE YÜKLÜ (Değiştir)' : 'DÖKÜMAN EKLE')}
+                    <p className="text-xs font-black text-white/60 text-center uppercase tracking-widest">
+                      {file ? file.name : (editingReport?.file_url ? 'BELGE YÜKLÜ (Değiştir)' : 'DÖKÜMAN VEYA RAPOR EKLE')}
                     </p>
-                    <p className="text-[10px] font-bold text-white/20 mt-2 uppercase tracking-widest text-center">PDF, DOC, JPG Desteklenir</p>
+                    <p className="text-[9px] font-bold text-white/20 mt-2 uppercase tracking-[0.2em] text-center">PDF, DOC, JPG Desteklenir</p>
                   </label>
                 </div>
-
-                <div className="flex gap-4 mt-4">
-                  <button
-                    disabled={saving}
-                    onClick={handleSave}
-                    className="flex-1 h-16 rounded-[2rem] bg-primary text-black font-black flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(16,185,129,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
-                  >
-                    {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : (editingReport ? 'GÜNCELLEMEYİ TAMAMLA' : 'SİSTEME KAYDET')}
-                  </button>
-                </div>
               </div>
+
+              <motion.button
+                whileHover={{ scale: 1.01, y: -2 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={handleSave}
+                disabled={saving}
+                className="w-full h-16 rounded-2xl bg-primary text-black font-black text-xs uppercase tracking-widest hover:bg-primary/80 transition-all shadow-[0_15px_30px_rgba(16,185,129,0.2)] mt-4 disabled:opacity-50"
+              >
+                {saving ? "KAYDEDİLİYOR..." : editingReport ? "DEĞİŞİKLİKLERİ KAYDET" : "RAPORU SİSTEME EKLE"}
+              </motion.button>
             </div>
           </div>
         </DialogContent>

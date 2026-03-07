@@ -19,6 +19,7 @@ import {
 import Navbar from "@/components/Navbar";
 import { getErrorMessage } from "@/lib/error-messages";
 import { cn } from "@/lib/utils";
+import LoadingScreen from "@/components/LoadingScreen";
 
 const Profile = () => {
   const navigate = useNavigate();

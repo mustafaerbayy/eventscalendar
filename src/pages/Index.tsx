@@ -36,7 +36,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, CalendarDays, Loader, Clock, Plus, Minus, Calendar, MapPin, Users, UserCheck, UserX, List, LayoutGrid, Sparkles, ChevronDown } from "lucide-react";
+import { Search, CalendarDays, Loader, Clock, Plus, Minus, Calendar, MapPin, Users, UserCheck, UserX, List, LayoutGrid, Sparkles, ChevronDown, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatTurkishDate, formatTurkishTime } from "@/lib/date-utils";
@@ -405,10 +405,10 @@ const Index = () => {
                     <SelectValue placeholder="Şehir" />
                   </div>
                 </SelectTrigger>
-                <SelectContent className="rounded-2xl border-white/10 bg-card/95 backdrop-blur-xl">
-                  <SelectItem value="all">Tüm Şehirler</SelectItem>
+                <SelectContent className="!rounded-2xl border-white/10 !bg-[#0c0c0c]/95 !backdrop-blur-xl !z-[9999] p-2 !opacity-100 !visible">
+                  <SelectItem value="all" className="rounded-xl py-3 font-bold !text-white hover:bg-white/10 cursor-pointer">Tüm Şehirler</SelectItem>
                   {cities.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold !text-white hover:bg-white/10 cursor-pointer">{c.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -420,10 +420,10 @@ const Index = () => {
                     <SelectValue placeholder="Kategori" />
                   </div>
                 </SelectTrigger>
-                <SelectContent className="rounded-2xl border-white/10 bg-card/95 backdrop-blur-xl">
-                  <SelectItem value="all">Tüm Kategoriler</SelectItem>
+                <SelectContent className="!rounded-2xl border-white/10 !bg-[#0c0c0c]/95 !backdrop-blur-xl !z-[9999] p-2 !opacity-100 !visible">
+                  <SelectItem value="all" className="rounded-xl py-3 font-bold !text-white hover:bg-white/10 cursor-pointer">Tüm Kategoriler</SelectItem>
                   {categories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold !text-white hover:bg-white/10 cursor-pointer">{c.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -499,86 +499,109 @@ const Index = () => {
 
           {/* Event Management Dialog */}
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogContent className="max-w-2xl border-border/50 bg-card/95 rounded-2xl">
-              <DialogHeader>
-                <DialogTitle className="font-display text-2xl">
-                  {editingEvent ? "Etkinliği Düzenle" : "Yeni Etkinlik Ekle"}
-                </DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                <div className="space-y-2">
-                  <Label>Başlık *</Label>
-                  <Input
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Etkinlik başlığı"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Açıklama</Label>
-                  <Textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Etkinlik açıklaması"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Tarih *</Label>
-                    <Input
-                      type="date"
-                      value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Saat *</Label>
-                    <Input
-                      type="time"
-                      value={formData.time}
-                      onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Şehir *</Label>
-                  <Select value={formData.city_id} onValueChange={(val) => setFormData({ ...formData, city_id: val })}>
-                    <SelectTrigger><SelectValue placeholder="Şehir seçiniz" /></SelectTrigger>
-                    <SelectContent>
-                      {cities.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Kategori *</Label>
-                  <Select value={formData.category_id} onValueChange={(val) => setFormData({ ...formData, category_id: val })}>
-                    <SelectTrigger><SelectValue placeholder="Kategori seçiniz" /></SelectTrigger>
-                    <SelectContent>
-                      {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Mekan</Label>
-                  <Input
-                    value={formData.venue_name}
-                    onChange={(e) => setFormData({ ...formData, venue_name: e.target.value })}
-                    placeholder="Mekan adı"
-                  />
-                </div>
+            <DialogContent className="w-[95vw] sm:max-w-xl bg-[#050505]/95 backdrop-blur-3xl border-white/10 p-0 rounded-[1.5rem] sm:rounded-[2.5rem] selection:bg-primary/30 max-h-[90vh] overflow-hidden flex flex-col">
+              <div className="p-6 sm:p-10 pb-6 border-b border-white/5 bg-white/[0.02] backdrop-blur-xl relative z-10">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-display font-black flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                      {editingEvent ? <Pencil className="w-5 h-5 text-primary" /> : <Plus className="w-5 h-5 text-primary" />}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-display font-black">{editingEvent ? "Etkinliği Düzenle" : "Yeni Etkinlik Ekle"}</h3>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Etkinlik Yönetimi</p>
+                    </div>
+                  </DialogTitle>
+                </DialogHeader>
               </div>
 
-              <div className="flex gap-3 pt-4 border-t">
-                <Button variant="outline" onClick={() => setDialogOpen(false)} className="flex-1">İptal</Button>
-                <Button onClick={handleSaveEvent} disabled={saving} className="flex-1 bg-primary hover:bg-primary/90">
-                  {saving ? "Kaydediliyor..." : editingEvent ? "Güncelle" : "Oluştur"}
-                </Button>
+              <div className="p-6 sm:p-10 pt-8 overflow-y-auto custom-scrollbar flex-1">
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">ETKİNLİK BAŞLIĞI *</Label>
+                    <Input
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      placeholder="Etkinlik adını girin..."
+                      className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white placeholder:text-white/40"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">AÇIKLAMA</Label>
+                    <Textarea
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      placeholder="Etkinlik detayı..."
+                      className="bg-white/5 border-white/10 rounded-2xl min-h-[120px] p-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-medium leading-relaxed resize-none text-white placeholder:text-white/40"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">TARİH *</Label>
+                      <Input
+                        type="date"
+                        value={formData.date}
+                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                        className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white [color-scheme:dark]"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">SAAT *</Label>
+                      <Input
+                        type="time"
+                        value={formData.time}
+                        onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                        className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white [color-scheme:dark]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">ŞEHİR *</Label>
+                    <Select value={formData.city_id} onValueChange={(val) => setFormData({ ...formData, city_id: val })}>
+                      <SelectTrigger className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 transition-all font-bold text-white">
+                        <SelectValue placeholder="Şehir seçiniz" />
+                      </SelectTrigger>
+                      <SelectContent className="!bg-[#0c0c0c] border-white/10 rounded-2xl p-2 !z-[9999] !opacity-100 !visible">
+                        {cities.map(c => <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold !text-white hover:bg-white/10 cursor-pointer">{c.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">KATEGORİ *</Label>
+                    <Select value={formData.category_id} onValueChange={(val) => setFormData({ ...formData, category_id: val })}>
+                      <SelectTrigger className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 transition-all font-bold text-white">
+                        <SelectValue placeholder="Kategori seçiniz" />
+                      </SelectTrigger>
+                      <SelectContent className="!bg-[#0c0c0c] border-white/10 rounded-2xl p-2 !z-[9999] !opacity-100 !visible">
+                        {categories.map(c => <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold !text-white hover:bg-white/10 cursor-pointer">{c.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">MEKAN</Label>
+                    <Input
+                      value={formData.venue_name}
+                      onChange={(e) => setFormData({ ...formData, venue_name: e.target.value })}
+                      placeholder="Mekan adı"
+                      className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white placeholder:text-white/40"
+                    />
+                  </div>
+
+                  <motion.button
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleSaveEvent}
+                    disabled={saving}
+                    className="w-full h-16 rounded-2xl bg-primary text-black font-black text-xs uppercase tracking-widest hover:bg-primary/80 transition-all shadow-[0_15px_30px_rgba(16,185,129,0.2)] mt-4"
+                  >
+                    {saving ? "KAYDEDİLİYOR..." : editingEvent ? "DEĞİŞİKLİKLERİ KAYDET" : "ETKİNLİĞİ OLUŞTUR"}
+                  </motion.button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
@@ -590,12 +613,20 @@ const Index = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-              >
-                <Loader className="h-10 w-10 text-primary" />
-              </motion.div>
+              <div className="relative">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                  className="absolute inset-[-10px] rounded-full border-t-2 border-primary/40 border-r-2 border-r-transparent"
+                />
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  className="relative h-16 w-16"
+                >
+                  <img src="/images/logo.png" alt="Logo" className="h-full w-full object-contain drop-shadow-[0_0_10px_rgba(16,185,129,0.3)]" />
+                </motion.div>
+              </div>
               <motion.p
                 className="text-lg text-muted-foreground font-medium"
                 animate={{ opacity: [0.5, 1, 0.5] }}
