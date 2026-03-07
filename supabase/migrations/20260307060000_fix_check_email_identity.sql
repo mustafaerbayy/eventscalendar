@@ -1,8 +1,9 @@
 -- check_email_identity fonksiyonunu case-insensitive ve daha sağlam hale getiriyoruz
+DROP FUNCTION IF EXISTS check_email_identity(text);
 create or replace function check_email_identity(p_email text)
 returns table (
   user_id uuid,
-  exists boolean,
+  "exists" boolean,
   has_google_identity boolean,
   has_password_identity boolean,
   identities text[]
@@ -29,7 +30,7 @@ begin
   select array_agg(provider)
   into v_identities
   from auth.identities
-  where user_id = v_user_id;
+  where auth.identities.user_id = v_user_id;
   
   -- Google identity var mı?
   v_has_google := (v_identities is not null and 'google' = any(v_identities));
