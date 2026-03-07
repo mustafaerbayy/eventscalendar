@@ -20,8 +20,8 @@ const ForgotPassword = () => {
     setLoading(true);
     try {
       // Identity check
-      const response = await (supabase.rpc as any)('check_email_identity', { p_email: email.trim().toLowerCase() });
-      const emailData = response?.data?.[0];
+      const { data: emailCheckDatas } = await (supabase.rpc as any)('check_email_identity', { p_email: email.trim().toLowerCase() });
+      const emailData = emailCheckDatas?.[0];
 
       if (emailData && emailData.exists && emailData.has_google_identity) {
         setLoading(false);

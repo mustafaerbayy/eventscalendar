@@ -30,8 +30,8 @@ const Login = () => {
 
     // Google kimliği bağlanmışsa manuel girişi engelle (Kullanıcının isteği üzerine)
     try {
-      const response = await (supabase.rpc as any)('check_email_identity', { p_email: loginEmail.toLowerCase().trim() });
-      const emailData = response?.data?.[0];
+      const { data: emailCheckDatas } = await (supabase.rpc as any)('check_email_identity', { p_email: loginEmail.toLowerCase().trim() });
+      const emailData = emailCheckDatas?.[0];
 
       if (emailData && emailData.exists && emailData.has_google_identity) {
         setLoading(false);
