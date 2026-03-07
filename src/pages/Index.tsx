@@ -352,24 +352,60 @@ const Index = () => {
               <span className="text-xs font-bold tracking-widest uppercase text-primary/80">Keşfet & Katıl</span>
             </div>
 
-            <h2 className="font-display text-5xl md:text-7xl font-black mb-6 tracking-tighter flex flex-wrap justify-center gap-x-6">
-              {["Yaklaşan", "Etkinlikler"].map((word, i) => (
-                <span key={i} className="relative inline-block overflow-hidden text-transparent bg-clip-text bg-emerald-400 drop-shadow-[0_0_40px_rgba(16,185,129,0.3)]">
-                  {word}
-                  <motion.span
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/80 to-transparent bg-clip-text text-transparent"
-                    style={{ backgroundSize: '200% auto' }}
-                    animate={{ backgroundPosition: ['200% center', '-200% center'] }}
-                    transition={{
-                      duration: 8,
-                      repeat: Infinity,
-                      ease: 'linear',
-                      repeatDelay: 3
-                    }}
-                  >
-                    {word}
-                  </motion.span>
-                </span>
+            <h2 className="font-display text-5xl md:text-7xl font-black mb-8 tracking-tighter flex flex-wrap justify-center gap-x-4 md:gap-x-8">
+              {["Yaklaşan", "Etkinlikler"].map((word, wordIndex) => (
+                <motion.span
+                  key={wordIndex}
+                  className="relative inline-flex group"
+                  initial="initial"
+                  whileInView="animate"
+                  viewport={{ once: true }}
+                >
+                  {/* Premium Background Glow */}
+                  <span className="absolute -inset-8 blur-[40px] bg-emerald-500/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+
+                  {word.split("").map((char, charIndex) => (
+                    <motion.span
+                      key={charIndex}
+                      variants={{
+                        initial: { opacity: 0, y: 15, rotateX: -90, filter: "blur(12px)" },
+                        animate: { opacity: 1, y: 0, rotateX: 0, filter: "blur(0px)" }
+                      }}
+                      transition={{
+                        duration: 0.8,
+                        delay: (wordIndex * 8 + charIndex) * 0.04,
+                        ease: [0.16, 1, 0.3, 1]
+                      }}
+                      className="relative inline-block text-transparent bg-clip-text bg-gradient-to-b from-white via-emerald-400 to-emerald-700 drop-shadow-[0_10px_30px_rgba(16,185,129,0.3)]"
+                    >
+                      {char}
+                      {/* Premium Gold/Light Shimmer Overlay */}
+                      <motion.span
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-200/40 to-transparent bg-clip-text text-transparent"
+                        style={{ backgroundSize: '300% auto' }}
+                        animate={{
+                          backgroundPosition: ['300% center', '-150% center'],
+                        }}
+                        transition={{
+                          duration: 4,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                          repeatDelay: 2 + wordIndex
+                        }}
+                      >
+                        {char}
+                      </motion.span>
+                    </motion.span>
+                  ))}
+
+                  {/* Innovative Underline Accent */}
+                  <motion.div
+                    initial={{ scaleX: 0, opacity: 0 }}
+                    whileInView={{ scaleX: 1, opacity: 1 }}
+                    transition={{ duration: 1, delay: 0.5 + wordIndex * 0.2 }}
+                    className="absolute -bottom-2 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent"
+                  />
+                </motion.span>
               ))}
             </h2>
 

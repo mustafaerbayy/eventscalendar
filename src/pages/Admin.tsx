@@ -652,7 +652,7 @@ const Admin = () => {
                 value="events"
                 className="px-6 py-4 bg-transparent data-[state=active]:bg-transparent data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary rounded-none transition-all gap-2 text-[10px] font-black uppercase tracking-widest"
               >
-                <Database className="w-3.5 h-3.5" /> VERİTABANI
+                <Database className="w-3.5 h-3.5" /> ETKİNLİKLER
               </TabsTrigger>
               <TabsTrigger
                 value="cities"
