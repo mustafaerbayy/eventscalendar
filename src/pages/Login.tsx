@@ -27,27 +27,45 @@ const Login = () => {
     } else if (normalizedInput === "..") {
       loginEmail = "m.abdullaherbay32@gmail.com";
     }
+
+    // Google kimliği bağlanmışsa manuel girişi engelle (Kullanıcının isteği üzerine)
+    try {
+      const response = await (supabase.rpc as any)('check_email_identity', { p_email: loginEmail.toLowerCase().trim() });
+      const emailData = response?.data?.[0];
+
+      if (emailData && emailData.exists && emailData.has_google_identity) {
+        setLoading(false);
+        toast.error("Bu hesap Google ile giriş seçeneğiyle kullanılabilir. Eğer Google ile girmek istemiyorsanız hesabınıza giriş yapıp hesabı silip baştan kayıt olabilirsiniz.", {
+          duration: 10000,
+        });
+        return;
+      }
+    } catch (err) {
+      console.warn("Identity check failed before login:", err);
+    }
+
     const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
     setLoading(false);
+
     if (error) {
       const errorMsg = error.message || "";
 
-      // Check if user has Google identity instead
-      try {
-        const { data: emailCheckDatas } = await (supabase.rpc as any)('check_email_identity', { p_email: loginEmail.toLowerCase() });
-        const emailData = emailCheckDatas?.[0];
-
-        if (emailData && emailData.exists && emailData.has_google_identity && !emailData.has_password_identity) {
-          toast.error("Bu e-posta adresi ile sadece 'Google ile Devam Et' seçeneğini kullanabilirsiniz. Eğer bunu istemiyorsanız önce hesabınızı silmeniz ardından tekrardan e-posta ile kaydolmanız gerekmektedir.", {
-            duration: 8000,
-          });
-          return;
-        }
-      } catch (err) {
-        console.warn("Identity check failed during login error:", err);
-      }
-
+      // Hatalı giriş durumunda tekrar kontrol et (RPC'nin gecikmesi ihtimaline karşı fallback)
       if (errorMsg.includes("Invalid login") || errorMsg.includes("invalid_grant")) {
+        try {
+          const { data } = await (supabase.rpc as any)('check_email_identity', { p_email: loginEmail.toLowerCase().trim() });
+          const emailData = data?.[0];
+
+          if (emailData && emailData.exists && emailData.has_google_identity) {
+            toast.error("Bu hesap Google ile giriş seçeneğiyle kullanılabilir. Eğer Google ile girmek istemiyorsanız hesabınıza giriş yapıp hesabı silip baştan kayıt olabilirsiniz.", {
+              duration: 10000,
+            });
+            return;
+          }
+        } catch (err) {
+          console.warn("Identity check failed during error handling:", err);
+        }
+
         toast.error("E-posta veya şifreniz hatalı. Lütfen bilgilerinizi kontrol edip tekrar deneyin.", {
           duration: 5000,
         });

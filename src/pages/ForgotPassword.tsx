@@ -20,12 +20,12 @@ const ForgotPassword = () => {
     setLoading(true);
     try {
       // Identity check
-      const { data: emailCheckDatas } = await (supabase.rpc as any)('check_email_identity', { p_email: email.trim().toLowerCase() });
-      const emailData = emailCheckDatas?.[0];
+      const response = await (supabase.rpc as any)('check_email_identity', { p_email: email.trim().toLowerCase() });
+      const emailData = response?.data?.[0];
 
-      if (emailData && emailData.exists && emailData.has_google_identity && !emailData.has_password_identity) {
+      if (emailData && emailData.exists && emailData.has_google_identity) {
         setLoading(false);
-        toast.error("Bu hesap Google ile kayıtlıdır ve şifreye gerek kalmadan Google ile giriş yapabilirsiniz. Lütfen 'Google ile Giriş Yap' butonuna dönün.", {
+        toast.error("Bu hesap Google'a bağlı olduğu için şifre buradan değiştirilemez. Lütfen Google ile giriş yapmaya devam edin.", {
           duration: 6000,
         });
         return;
