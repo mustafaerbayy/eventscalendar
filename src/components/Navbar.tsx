@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, Menu, X, User, Settings, Calendar, BarChart3, Info, Shield, Search } from "lucide-react";
+import { LogOut, Menu, X, User, Settings, Calendar, BarChart3, Info, Shield, Search, MessageSquare } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import AboutModal from "@/components/AboutModal";
@@ -129,6 +129,17 @@ const Navbar = () => {
               <span>Raporlar</span>
               <motion.div className="absolute inset-0 bg-emerald-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
             </Link>
+
+            {user && (
+              <Link
+                to="/sosyal"
+                className="px-4 py-2 text-sm font-bold text-white/70 hover:text-white transition-all flex items-center gap-2 rounded-xl hover:bg-white/5 relative group"
+              >
+                <MessageSquare className="h-4 w-4" />
+                <span>Sosyal</span>
+                <motion.div className="absolute inset-0 bg-primary/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+              </Link>
+            )}
 
             <button
               onClick={() => setAboutOpen(true)}
@@ -260,6 +271,11 @@ const Navbar = () => {
                 }}
               />
               <MobileLink icon={<BarChart3 />} label="Raporlar" onClick={() => { navigate("/raporlar"); setMobileOpen(false); }} />
+
+              {user && (
+                <MobileLink icon={<MessageSquare />} label="Sosyal Akış" onClick={() => { navigate("/sosyal"); setMobileOpen(false); }} />
+              )}
+
               <MobileLink icon={<Info />} label="Biz Kimiz" onClick={() => { setAboutOpen(true); setMobileOpen(false); }} />
 
               <div className="mt-auto pt-6 border-t border-white/10 space-y-4">

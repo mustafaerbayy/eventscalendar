@@ -54,6 +54,8 @@ import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import WeeklyReports from "./pages/WeeklyReports";
 import NotFound from "./pages/NotFound";
+import Social from "./pages/Social";
+import SocialProfileView from "./pages/SocialProfileView";
 
 const queryClient = new QueryClient();
 
@@ -82,6 +84,8 @@ const App = () => (
             <Route path="/sifre-sifirla" element={<ResetPassword />} />
             <Route path="/etkinlik/:id" element={<EventDetail />} />
             <Route path="/profil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/sosyal" element={<ProtectedRoute><Social /></ProtectedRoute>} />
+            <Route path="/sosyal/profil/:id" element={<ProtectedRoute><SocialProfileView /></ProtectedRoute>} />
             <Route path="/yonetim" element={<ProtectedRoute adminOnly><Admin /></ProtectedRoute>} />
             <Route path="/raporlar" element={<ProtectedRoute><WeeklyReports /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />

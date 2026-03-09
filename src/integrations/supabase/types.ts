@@ -164,6 +164,64 @@ export type Database = {
           },
         ]
       }
+      posts: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+          image_url: string | null
+          linked_event_id: string | null
+          linked_report_id: string | null
+          poll_data: any | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+          image_url?: string | null
+          linked_event_id?: string | null
+          linked_report_id?: string | null
+          poll_data?: any | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          image_url?: string | null
+          linked_event_id?: string | null
+          linked_report_id?: string | null
+          poll_data?: any | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_linked_event_id_fkey"
+            columns: ["linked_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_linked_report_id_fkey"
+            columns: ["linked_report_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -279,6 +337,47 @@ export type Database = {
             foreignKeyName: "rsvps_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_profiles: {
+        Row: {
+          bio: string | null
+          birth_date: string | null
+          created_at: string
+          job_title: string | null
+          profile_photo: string | null
+          social_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bio?: string | null
+          birth_date?: string | null
+          created_at?: string
+          job_title?: string | null
+          profile_photo?: string | null
+          social_name?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bio?: string | null
+          birth_date?: string | null
+          created_at?: string
+          job_title?: string | null
+          profile_photo?: string | null
+          social_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
