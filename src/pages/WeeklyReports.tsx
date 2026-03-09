@@ -597,7 +597,7 @@ const WeeklyReports = () => {
       `}>
         <Zap className="w-4 h-4 text-amber-500 fill-amber-500/30 shrink-0" />
         <p className="text-[9px] md:text-[10px] font-black text-amber-500/80 uppercase tracking-widest leading-tight">
-          Sistem Veri Politikası: <span className="text-white/60">Raporlar 1 yıl süreyle bulutta saklanır.</span>
+          Sistem Veri Politikası: <span className="text-white/60">Raporlar 1 yıl süreyle bulutta saklanır sonrasında silinir.</span>
         </p>
       </footer>
 
