@@ -98,7 +98,12 @@ const HeroSection = ({ onViewEvents }: HeroSectionProps) => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              <div className="relative p-[2px] rounded-full overflow-hidden group/btn bg-gradient-to-r from-amber-600/50 via-amber-400/30 to-amber-600/50 hover:scale-105 active:scale-95 transition-transform">
+              <div className="relative p-[2px] rounded-full overflow-hidden group/btn hover:scale-105 active:scale-95 transition-transform">
+                {/* Rotating conic-gradient border — CSS animation */}
+                <div
+                  className="absolute inset-[-50%] animate-spin-slow"
+                  style={{ background: 'conic-gradient(from 0deg, transparent, #f59e0b, #d97706, transparent, #f59e0b, transparent)' }}
+                />
                 <Button
                   onClick={() => {
                     if (onViewEvents) onViewEvents();
@@ -106,7 +111,7 @@ const HeroSection = ({ onViewEvents }: HeroSectionProps) => {
                       document.querySelector('#events-section')?.scrollIntoView({ behavior: 'smooth' });
                     }
                   }}
-                  className="relative z-10 h-14 px-10 rounded-full bg-black/80 backdrop-blur-xl border-none text-amber-500/90 font-black text-xs tracking-[0.2em] overflow-hidden group hover:text-amber-400 transition-all duration-500 w-64"
+                  className="relative z-10 h-14 px-10 rounded-full bg-black/80 backdrop-blur-lg border-none text-amber-500/90 font-black text-xs tracking-[0.2em] overflow-hidden group hover:text-amber-400 transition-all duration-500 w-64"
                 >
                   <span className="relative z-10 flex items-center justify-center gap-3 w-full">
                     ETKİNLİKLERİ KEŞFET
@@ -122,10 +127,15 @@ const HeroSection = ({ onViewEvents }: HeroSectionProps) => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
             >
-              <div className="relative p-[2px] rounded-full overflow-hidden group/btn bg-gradient-to-r from-emerald-600/50 via-emerald-400/30 to-emerald-600/50 hover:scale-105 active:scale-95 transition-transform">
+              <div className="relative p-[2px] rounded-full overflow-hidden group/btn hover:scale-105 active:scale-95 transition-transform">
+                {/* Rotating conic-gradient border — CSS animation */}
+                <div
+                  className="absolute inset-[-50%] animate-spin-slow"
+                  style={{ background: 'conic-gradient(from 0deg, transparent, #10b981, #059669, transparent, #10b981, transparent)', animationDirection: 'reverse' }}
+                />
                 <Button
                   onClick={() => navigate('/raporlar')}
-                  className="relative z-10 h-14 px-10 rounded-full bg-black/80 backdrop-blur-xl border-none text-emerald-500/90 font-black text-xs tracking-[0.2em] overflow-hidden group hover:text-emerald-400 transition-all duration-500 w-64"
+                  className="relative z-10 h-14 px-10 rounded-full bg-black/80 backdrop-blur-lg border-none text-emerald-500/90 font-black text-xs tracking-[0.2em] overflow-hidden group hover:text-emerald-400 transition-all duration-500 w-64"
                 >
                   <span className="relative z-10 flex items-center justify-center gap-3 w-full">
                     RAPORLARI İNCELE

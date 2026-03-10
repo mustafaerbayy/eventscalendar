@@ -368,6 +368,13 @@ const Index = () => {
                   }}
                 >
                   {word}
+                  {/* Shimmer Overlay — CSS animation, not framer-motion */}
+                  <span
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-200/30 to-transparent bg-clip-text text-transparent pointer-events-none animate-shimmer"
+                    style={{ backgroundSize: '300% 100%', animationDelay: `${wordIndex * 2}s` }}
+                  >
+                    {word}
+                  </span>
                   {/* Underline Accent */}
                   <motion.div
                     initial={{ scaleX: 0, opacity: 0 }}
