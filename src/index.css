@@ -498,13 +498,3 @@ button.absolute.right-4.top-4 svg {
 .animate-shimmer {
   animation: shimmer 5s ease-in-out infinite;
 }
-
-.animate-spin-slow {
-  animation: spin 4s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
