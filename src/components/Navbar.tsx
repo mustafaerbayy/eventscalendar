@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { LogOut, Menu, X, User, Settings, Calendar, BarChart3, Info, Shield, Search, MessageSquare } from "lucide-react";
@@ -9,6 +9,7 @@ import AboutModal from "@/components/AboutModal";
 const Navbar = () => {
   const { user, profile, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
@@ -130,16 +131,14 @@ const Navbar = () => {
               <motion.div className="absolute inset-0 bg-emerald-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
             </Link>
 
-            {user && (
-              <Link
-                to="/sosyal"
-                className="px-4 py-2 text-sm font-bold text-white/70 hover:text-white transition-all flex items-center gap-2 rounded-xl hover:bg-white/5 relative group"
-              >
-                <MessageSquare className="h-4 w-4" />
-                <span>Sosyal</span>
-                <motion.div className="absolute inset-0 bg-primary/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              </Link>
-            )}
+            <Link
+              to="/sosyal"
+              className="px-4 py-2 text-sm font-bold text-white/70 hover:text-white transition-all flex items-center gap-2 rounded-xl hover:bg-white/5 relative group"
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span>Sosyal</span>
+              <motion.div className="absolute inset-0 bg-primary/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+            </Link>
 
             <button
               onClick={() => setAboutOpen(true)}
@@ -206,14 +205,14 @@ const Navbar = () => {
                     variant="ghost"
                     size="sm"
                     className="text-white/70 hover:text-white font-bold rounded-xl"
-                    onClick={() => navigate("/giris")}
+                    onClick={() => navigate("/giris", { state: { from: location.pathname } })}
                   >
                     Giriş
                   </Button>
                   <Button
                     size="sm"
                     className="bg-emerald-500 hover:bg-emerald-600 text-black font-black rounded-xl px-5 shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all hover:scale-105"
-                    onClick={() => navigate("/kayit")}
+                    onClick={() => navigate("/kayit", { state: { from: location.pathname } })}
                   >
                     Kayıt
                   </Button>
@@ -272,9 +271,7 @@ const Navbar = () => {
               />
               <MobileLink icon={<BarChart3 />} label="Raporlar" onClick={() => { navigate("/raporlar"); setMobileOpen(false); }} />
 
-              {user && (
-                <MobileLink icon={<MessageSquare />} label="Sosyal Akış" onClick={() => { navigate("/sosyal"); setMobileOpen(false); }} />
-              )}
+              <MobileLink icon={<MessageSquare />} label="Sosyal Akış" onClick={() => { navigate("/sosyal"); setMobileOpen(false); }} />
 
               <MobileLink icon={<Info />} label="Biz Kimiz" onClick={() => { setAboutOpen(true); setMobileOpen(false); }} />
 
@@ -318,8 +315,8 @@ const Navbar = () => {
                   </div>
                 ) : (
                   <>
-                    <Button variant="outline" className="w-full font-bold border-white/10 rounded-xl py-6" onClick={() => navigate("/giris")}>Giriş Yap</Button>
-                    <Button className="w-full font-black bg-emerald-500 text-black rounded-xl py-6" onClick={() => navigate("/kayit")}>Kayıt Ol</Button>
+                    <Button variant="outline" className="w-full font-bold border-white/10 rounded-xl py-6" onClick={() => navigate("/giris", { state: { from: location.pathname } })}>Giriş Yap</Button>
+                    <Button className="w-full font-black bg-emerald-500 text-black rounded-xl py-6" onClick={() => navigate("/kayit", { state: { from: location.pathname } })}>Kayıt Ol</Button>
                   </>
                 )}
               </div>

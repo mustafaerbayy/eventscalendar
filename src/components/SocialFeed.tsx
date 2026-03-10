@@ -1706,36 +1706,6 @@ export default function SocialFeed() {
                                     <div className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-500" />
 
                                     <div className="relative">
-                                        {/* Linked Post Feature - Mini Version at Top */}
-                                        {linkedPost && (
-                                            <div
-                                                className="mx-5 mt-5 mb-1 flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10 hover:to-primary/5 border border-primary/10 transition-colors cursor-pointer group/quoted shadow-sm relative z-20"
-                                                onClick={() => {
-                                                    const el = document.getElementById(`post-${linkedPost.id}`);
-                                                    if (el) {
-                                                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                                        el.classList.add('ring-2', 'ring-primary', 'ring-offset-2', 'transition-all', 'duration-500');
-                                                        setTimeout(() => el.classList.remove('ring-2', 'ring-primary', 'ring-offset-2', 'transition-all', 'duration-500'), 2500);
-                                                    } else {
-                                                        navigate(`/sosyal/profil/${linkedPost.user_id}`);
-                                                    }
-                                                }}
-                                            >
-                                                <div className="w-7 h-7 shrink-0 bg-white rounded-full flex items-center justify-center shadow-sm border border-primary/10 group-hover/quoted:bg-primary/5 transition-colors">
-                                                    <MessageCircle className="w-3.5 h-3.5 text-primary/70" />
-                                                </div>
-                                                <div className="flex flex-col min-w-0 flex-1">
-                                                    <span className="text-[10px] font-bold text-primary uppercase tracking-wider leading-none flex items-center gap-1.5 opacity-80 mb-1">
-                                                        {linkedPostAuthor?.social_name || "Gizli Kullanıcı"} alıntılandı
-                                                    </span>
-                                                    <p className="text-xs text-gray-500 truncate group-hover/quoted:text-gray-700 transition-colors font-medium">
-                                                        {linkedPost.content || "Bir görsel içeren gönderiyi alıntıladı."}
-                                                    </p>
-                                                </div>
-                                                <Reply className="w-4 h-4 text-primary/30 group-hover/quoted:text-primary/60 transition-colors shrink-0" />
-                                            </div>
-                                        )}
-
                                         {/* Author Header */}
                                         <div className="flex items-center gap-3.5 px-5 pt-5 pb-2">
                                             <div className="relative shrink-0" onClick={() => navigate(`/sosyal/profil/${post.user_id}`)}>
@@ -1786,6 +1756,36 @@ export default function SocialFeed() {
                                                 </DropdownMenu>
                                             )}
                                         </div>
+
+                                        {/* Linked Post Feature - Mini Version Under Profile */}
+                                        {linkedPost && (
+                                            <div
+                                                className="mx-5 mb-2 mt-1 flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10 hover:to-primary/5 border border-primary/10 transition-colors cursor-pointer group/quoted shadow-sm relative z-20"
+                                                onClick={() => {
+                                                    const el = document.getElementById(`post-${linkedPost.id}`);
+                                                    if (el) {
+                                                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                                        el.classList.add('ring-2', 'ring-primary', 'ring-offset-2', 'transition-all', 'duration-500');
+                                                        setTimeout(() => el.classList.remove('ring-2', 'ring-primary', 'ring-offset-2', 'transition-all', 'duration-500'), 2500);
+                                                    } else {
+                                                        navigate(`/sosyal/profil/${linkedPost.user_id}`);
+                                                    }
+                                                }}
+                                            >
+                                                <div className="w-7 h-7 shrink-0 bg-white rounded-full flex items-center justify-center shadow-sm border border-primary/10 group-hover/quoted:bg-primary/5 transition-colors">
+                                                    <MessageCircle className="w-3.5 h-3.5 text-primary/70" />
+                                                </div>
+                                                <div className="flex flex-col min-w-0 flex-1">
+                                                    <span className="text-[10px] font-bold text-primary uppercase tracking-wider leading-none flex items-center gap-1.5 opacity-80 mb-1">
+                                                        {linkedPostAuthor?.social_name || "Gizli Kullanıcı"} alıntılandı
+                                                    </span>
+                                                    <p className="text-xs text-gray-500 truncate group-hover/quoted:text-gray-700 transition-colors font-medium">
+                                                        {linkedPost.content || "Bir görsel içeren gönderiyi alıntıladı."}
+                                                    </p>
+                                                </div>
+                                                <Reply className="w-4 h-4 text-primary/30 group-hover/quoted:text-primary/60 transition-colors shrink-0" />
+                                            </div>
+                                        )}
 
                                         {/* Text Content */}
                                         {post.content ? (

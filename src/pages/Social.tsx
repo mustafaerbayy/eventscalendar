@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import SocialProfileForm from "@/components/SocialProfileForm";
@@ -27,6 +28,8 @@ import {
     UserCircle,
     Settings,
     Loader2,
+    MessageSquare,
+    MessageCircle,
     MoreHorizontal,
     Pencil,
     Trash2,
@@ -44,6 +47,8 @@ import {
 const Social = () => {
     const { user } = useAuth();
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
+    const location = useLocation();
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<"feed" | "profile">("feed");
     const [editingPostId, setEditingPostId] = useState<string | null>(null);
@@ -168,6 +173,68 @@ const Social = () => {
         if (diffDays < 7) return `${diffDays}g`;
         return new Date(dateStr).toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
     };
+
+    if (!user) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex flex-col">
+                <Navbar />
+                <main className="flex-1 flex items-center justify-center p-4">
+                    <div className="max-w-md w-full bg-white/80 backdrop-blur-xl p-8 rounded-3xl border border-white/60 shadow-xl text-center">
+                        <div className="relative mb-6">
+                            <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
+                                <Rss className="w-8 h-8 text-primary" />
+                            </div>
+                            <div className="absolute -top-1 -right-1">
+                                <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" />
+                            </div>
+                        </div>
+
+                        <h1 className="text-2xl font-bold text-gray-900 mb-3 tracking-tight">Sosyal Akış'a Hoş Geldiniz</h1>
+                        <p className="text-gray-500 mb-8 leading-relaxed text-sm">
+                            Paylaşımları görmek, topluluğumuzla etkileşim kurmak ve kendi anılarınızı paylaşmak için giriş yapmanız gerekmektedir.
+                        </p>
+
+                        <div className="space-y-3">
+                            <Button
+                                onClick={() => navigate("/giris", { state: { from: location.pathname } })}
+                                className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-12 rounded-xl text-base shadow-lg shadow-primary/25 transition-all hover:scale-[1.02]"
+                            >
+                                Giriş Yap
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => navigate("/kayit", { state: { from: location.pathname } })}
+                                className="w-full border-gray-200 hover:bg-gray-50 text-gray-600 font-semibold h-12 rounded-xl"
+                            >
+                                Yeni Hesap Oluştur
+                            </Button>
+                        </div>
+
+                        <div className="mt-8 flex items-center justify-center gap-6">
+                            <div className="flex flex-col items-center gap-1">
+                                <div className="p-2 bg-emerald-50 rounded-lg">
+                                    <MessageCircle className="w-4 h-4 text-emerald-600" />
+                                </div>
+                                <span className="text-[10px] font-bold text-gray-400 uppercase">Yorum Yap</span>
+                            </div>
+                            <div className="flex flex-col items-center gap-1">
+                                <div className="p-2 bg-blue-50 rounded-lg">
+                                    <Heart className="w-4 h-4 text-blue-600" />
+                                </div>
+                                <span className="text-[10px] font-bold text-gray-400 uppercase">Beğen</span>
+                            </div>
+                            <div className="flex flex-col items-center gap-1">
+                                <div className="p-2 bg-purple-50 rounded-lg">
+                                    <BarChart2 className="w-4 h-4 text-purple-600" />
+                                </div>
+                                <span className="text-[10px] font-bold text-gray-400 uppercase">Anketler</span>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50/50 flex flex-col">

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,7 @@ const EventDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [rsvps, setRsvps] = useState<RsvpWithProfile[]>([]);
   const [myRsvp, setMyRsvp] = useState<{ status: string; guest_count: number } | null>(null);
@@ -80,7 +81,7 @@ const EventDetailPage = () => {
 
   const handleRsvp = async (status: "attending" | "not_attending") => {
     if (!user) {
-      navigate("/giris");
+      navigate("/giris", { state: { from: location.pathname } });
       return;
     }
     if (!id) return;

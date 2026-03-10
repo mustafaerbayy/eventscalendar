@@ -88,7 +88,7 @@ const App = () => (
               <Route path="/sifre-sifirla" element={<ResetPassword />} />
               <Route path="/etkinlik/:id" element={<EventDetail />} />
               <Route path="/profil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/sosyal" element={<ProtectedRoute><Social /></ProtectedRoute>} />
+              <Route path="/sosyal" element={<Social />} />
               <Route path="/sosyal/profil/:id" element={<ProtectedRoute><SocialProfileView /></ProtectedRoute>} />
               <Route path="/yonetim" element={<ProtectedRoute adminOnly><Admin /></ProtectedRoute>} />
               <Route path="/raporlar" element={<ProtectedRoute><WeeklyReports /></ProtectedRoute>} />

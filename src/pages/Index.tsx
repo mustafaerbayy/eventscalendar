@@ -23,7 +23,7 @@ export function scrollToNearestEvent(viewMode: "list" | "calendar", upcomingEven
   document.querySelector("#events-section")?.scrollIntoView({ behavior: "smooth" });
 }
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -71,6 +71,7 @@ interface RsvpWithProfile {
 
 const Index = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAdmin, user } = useAuth();
   const [events, setEvents] = useState<EventWithRelations[]>([]);
   const [cities, setCities] = useState<{ id: string; name: string }[]>([]);
@@ -128,6 +129,45 @@ const Index = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (!loading && events.length > 0 && user) {
+      const searchParams = new URLSearchParams(window.location.search);
+      const eventId = searchParams.get('eventId');
+      if (eventId) {
+        const event = events.find((e) => e.id === eventId);
+        if (event) {
+          setSelectedEvent(event);
+          const rsvpData = event.rsvps || [];
+          setSelectedEventRsvps(rsvpData);
+
+          const mine = rsvpData.find((r) => r.user_id === user.id);
+          if (mine) {
+            setMyRsvp({ status: mine.status, guest_count: mine.guest_count });
+            setGuestCount(mine.guest_count);
+          } else {
+            setMyRsvp(null);
+            setGuestCount(0);
+          }
+
+          // Clean up the URL
+          navigate('/', { replace: true });
+          
+          // Scroll page down so it doesn't open at the very top of the hero section
+          setTimeout(() => {
+            const element = document.querySelector(`[data-event-id="${eventId}"]`);
+            if (element) {
+              const elementTop = element.getBoundingClientRect().top + window.scrollY;
+              const offset = 120;
+              window.scrollTo({ top: elementTop - offset, behavior: "smooth" });
+            } else {
+              document.querySelector("#events-section")?.scrollIntoView({ behavior: "smooth" });
+            }
+          }, 100);
+        }
+      }
+    }
+  }, [loading, events.length, user, navigate]);
+
   const today = new Date().toISOString().split("T")[0];
 
   const filteredEvents = events.filter((e) => {
@@ -153,7 +193,7 @@ const Index = () => {
   const handleCardClick = async (eventId: string) => {
     if (!user) {
       toast.info("Detayları görmek için lütfen giriş yapın.");
-      navigate("/giris");
+      navigate("/giris", { state: { from: `/?eventId=${eventId}` } });
       return;
     }
     const event = events.find((e) => e.id === eventId);

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,8 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || "/";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -93,7 +95,7 @@ const Login = () => {
       }
     } else {
       toast.success("Hoş geldiniz!");
-      navigate("/");
+      navigate(from, { replace: true });
     }
   };
 
@@ -103,7 +105,7 @@ const Login = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: `${window.location.origin}${from === '/' ? '' : '?redirect_to=' + encodeURIComponent(from)}`,
         },
       });
       setGoogleLoading(false);
@@ -141,7 +143,7 @@ const Login = () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: `${window.location.origin}${from === '/' ? '' : '?redirect_to=' + encodeURIComponent(from)}`,
       },
     });
     setGoogleLoading(false);
