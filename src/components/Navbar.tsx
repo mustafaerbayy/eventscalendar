@@ -56,7 +56,7 @@ const Navbar = () => {
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className={`
             mx-auto pointer-events-auto relative flex items-center justify-between h-16
-            bg-black/40 backdrop-blur-2xl border border-white/10
+            bg-black/40 backdrop-blur-lg border border-white/10
             shadow-[0_8px_32px_rgba(0,0,0,0.4)]
             before:absolute before:inset-0 before:rounded-[inherit] before:p-[1px]
             before:bg-gradient-to-r before:from-emerald-500/20 before:via-white/5 before:to-amber-500/20
@@ -181,7 +181,7 @@ const Navbar = () => {
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="absolute top-full right-0 mt-3 w-56 rounded-2xl bg-black/80 backdrop-blur-2xl border border-white/10 shadow-2xl p-2 z-[200]"
+                        className="absolute top-full right-0 mt-3 w-56 rounded-2xl bg-black/80 backdrop-blur-lg border border-white/10 shadow-2xl p-2 z-[200]"
                       >
                         <div className="px-3 py-2 mb-2 border-b border-white/5">
                           <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Panelim</p>
@@ -242,7 +242,7 @@ const Navbar = () => {
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="fixed inset-0 z-[150] md:hidden"
           >
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setMobileOpen(false)} />
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
             <div className="absolute right-0 top-0 bottom-0 w-[80%] max-w-sm bg-black border-l border-white/10 p-6 shadow-2xl flex flex-col pt-24">
               <MobileLink
                 icon={<Calendar />}

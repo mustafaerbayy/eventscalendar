@@ -168,120 +168,106 @@ const EventCard = ({ id, title, date, time, cityName, venueName, categoryName, a
       transition={{ duration: 0.6, delay: index * 0.08, ease: "easeOut" }}
       className={isPast ? "opacity-50" : ""}
     >
-      <motion.div
-        whileHover={{ y: -10, scale: 1.02 }}
-        transition={{ type: "spring", stiffness: 300, damping: 15 }}
+      <Card
+        className="group cursor-pointer overflow-hidden border border-white/20 bg-white/10 backdrop-blur-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(0,0,0,0.4)] hover:border-white/30 relative rounded-[2.5rem] h-full"
+        onClick={handleCardClick}
       >
-        <Card
-          className="group cursor-pointer overflow-hidden border border-white/20 bg-white/10 backdrop-blur-3xl transition-all duration-500 hover:shadow-[0_24px_60px_rgba(0,0,0,0.4)] hover:border-white/30 relative rounded-[2.5rem] h-full"
-          onClick={handleCardClick}
-        >
-          {/* Animated Background Orbs */}
-          <div className={`absolute -top-24 -right-24 h-64 w-64 bg-gradient-to-br ${colors.gradient} rounded-full blur-[80px] opacity-20 group-hover:opacity-40 transition-all duration-700`} />
-          <div className={`absolute -bottom-24 -left-24 h-64 w-64 bg-gradient-to-tr ${colors.gradient} rounded-full blur-[80px] opacity-10 group-hover:opacity-30 transition-all duration-700 delay-100`} />
+        {/* Background Orbs */}
+        <div className={`absolute -top-24 -right-24 h-64 w-64 bg-gradient-to-br ${colors.gradient} rounded-full blur-[60px] opacity-20 group-hover:opacity-40 transition-opacity duration-500`} />
+        <div className={`absolute -bottom-24 -left-24 h-64 w-64 bg-gradient-to-tr ${colors.gradient} rounded-full blur-[60px] opacity-10 group-hover:opacity-30 transition-opacity duration-500`} />
 
-          <CardContent className="p-8 flex flex-col h-full relative z-10">
-            {/* Header: Date + Status */}
+        <CardContent className="p-8 flex flex-col h-full relative z-10">
+          {/* Header: Date + Status */}
+          {isAuthenticated && (
+            <div className="flex justify-between items-start mb-6">
+              <div className="bg-white/10 border border-white/10 rounded-2xl p-3 flex flex-col items-center min-w-[60px] shadow-xl">
+                <span className="text-[10px] font-black uppercase tracking-widest text-primary/80">{formatTurkishDate(date).split(' ')[1]}</span>
+                <span className="text-2xl font-black text-foreground leading-none mt-1">{formatTurkishDate(date).split(' ')[0]}</span>
+              </div>
+
+              <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border-2 text-[10px] font-black uppercase tracking-widest shadow-lg ${getDaysUntilEvent(date) <= 1
+                ? "bg-red-500/20 text-red-400 border-red-500/30 animate-pulse"
+                : "bg-primary/20 text-primary border-primary/30"
+                }`}>
+                <Sparkles className="h-3 w-3" />
+                {formatDaysUntil(date)}
+              </div>
+            </div>
+          )}
+
+          {/* Content */}
+          <div className="flex-1">
             {isAuthenticated && (
-              <div className="flex justify-between items-start mb-6">
-                <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-3 flex flex-col items-center min-w-[60px] shadow-xl">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-primary/80">{formatTurkishDate(date).split(' ')[1]}</span>
-                  <span className="text-2xl font-black text-foreground leading-none mt-1">{formatTurkishDate(date).split(' ')[0]}</span>
-                </div>
+              <Badge className="mb-4 bg-white/10 text-foreground border-white/10 font-bold px-3 py-1 uppercase tracking-wider text-[10px]">
+                {categoryName}
+              </Badge>
+            )}
 
-                <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-xl border-2 text-[10px] font-black uppercase tracking-widest shadow-lg ${getDaysUntilEvent(date) <= 1
-                  ? "bg-red-500/20 text-red-400 border-red-500/30 animate-pulse"
-                  : "bg-primary/20 text-primary border-primary/30"
-                  }`}>
-                  <Sparkles className="h-3 w-3" />
-                  {formatDaysUntil(date)}
+            <h3 className={`font-display font-black text-foreground mb-4 leading-[1.1] tracking-tight group-hover:text-primary transition-colors duration-300 ${isAuthenticated ? "text-2xl md:text-3xl" : "text-xl md:text-2xl mt-4"}`}>
+              {title}
+            </h3>
+
+            {isAuthenticated && (
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center gap-3 text-muted-foreground group-hover:text-foreground/80 transition-colors">
+                  <Clock className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-semibold">{formatTurkishTime(time)}</span>
+                </div>
+                <div className="flex items-center gap-3 text-muted-foreground group-hover:text-foreground/80 transition-colors">
+                  <MapPin className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-semibold truncate">{venueName || cityName}</span>
                 </div>
               </div>
             )}
+          </div>
 
-            {/* Content */}
-            <div className="flex-1">
-              {isAuthenticated && (
-                <Badge className="mb-4 bg-white/10 text-foreground border-white/10 font-bold px-3 py-1 uppercase tracking-wider text-[10px]">
-                  {categoryName}
-                </Badge>
-              )}
-
-              <h3 className={`font-display font-black text-foreground mb-4 leading-[1.1] tracking-tight group-hover:text-primary transition-colors duration-300 ${isAuthenticated ? "text-2xl md:text-3xl" : "text-xl md:text-2xl mt-4"}`}>
-                {title}
-              </h3>
-
-              {isAuthenticated && (
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center gap-3 text-muted-foreground group-hover:text-foreground/80 transition-colors">
-                    <Clock className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-semibold">{formatTurkishTime(time)}</span>
+          {/* Footer */}
+          {isAuthenticated ? (
+            <div className="pt-6 border-t border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="flex -space-x-2">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-8 w-8 rounded-full border-2 border-background bg-muted flex items-center justify-center overflow-hidden">
+                      <Users className="h-4 w-4 text-muted-foreground/50" />
+                    </div>
+                  ))}
+                  <div className="h-8 w-8 rounded-full border-2 border-background bg-primary flex items-center justify-center text-[10px] font-black text-primary-foreground">
+                    +{attendeeCount}
                   </div>
-                  <div className="flex items-center gap-3 text-muted-foreground group-hover:text-foreground/80 transition-colors">
-                    <MapPin className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-semibold truncate">{venueName || cityName}</span>
-                  </div>
+                </div>
+                <span className="text-xs font-bold text-muted-foreground pl-1">Katılımcı</span>
+              </div>
+
+              {isAdmin && (
+                <div className="flex items-center gap-2 relative z-50" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
+                  <button
+                    className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center border border-white/10 hover:bg-amber-500 hover:text-white hover:scale-110 active:scale-95 transition-all duration-300 shadow-xl cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit?.({ id, title, date, time, categoryName, cityName, venueName });
+                    }}
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </button>
+                  <button
+                    className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center border border-white/10 hover:bg-red-500 hover:text-white hover:scale-110 active:scale-95 transition-all duration-300 shadow-xl cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete?.(id);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
               )}
             </div>
-
-            {/* Footer */}
-            {isAuthenticated ? (
-              <div className="pt-6 border-t border-white/5 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-2">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="h-8 w-8 rounded-full border-2 border-background bg-muted flex items-center justify-center overflow-hidden">
-                        <Users className="h-4 w-4 text-muted-foreground/50" />
-                      </div>
-                    ))}
-                    <div className="h-8 w-8 rounded-full border-2 border-background bg-primary flex items-center justify-center text-[10px] font-black text-primary-foreground">
-                      +{attendeeCount}
-                    </div>
-                  </div>
-                  <span className="text-xs font-bold text-muted-foreground pl-1">Katılımcı</span>
-                </div>
-
-                {isAdmin && (
-                  <div className="flex items-center gap-2 relative z-50" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
-                    <motion.div
-                      whileHover={{ scale: 1.1, x: 2 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center border border-white/10 hover:bg-amber-500 hover:text-white transition-all duration-300 shadow-xl cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEdit?.({ id, title, date, time, categoryName, cityName, venueName });
-                      }}
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </motion.div>
-                    <motion.div
-                      whileHover={{ scale: 1.1, x: 2 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center border border-white/10 hover:bg-red-500 hover:text-white transition-all duration-300 shadow-xl cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete?.(id);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </motion.div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="pt-4 border-t border-white/5">
-                <span className="text-xs font-bold text-primary italic">Detaylar için giriş yapın →</span>
-              </div>
-            )}
-          </CardContent>
-
-          {/* Shimmer on Hover */}
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-          </div>
-        </Card>
-      </motion.div>
+          ) : (
+            <div className="pt-4 border-t border-white/5">
+              <span className="text-xs font-bold text-primary italic">Detaylar için giriş yapın →</span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </motion.div>
   );
 };

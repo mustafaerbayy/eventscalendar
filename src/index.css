@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap');
+/* Google Fonts loaded via <link> in index.html for non-blocking performance */
 
 @tailwind base;
 @tailwind components;
@@ -110,7 +110,7 @@
       var(--bg-texture);
     background-size: 150px, 600px;
     background-repeat: repeat;
-    background-attachment: fixed;
+    background-attachment: scroll;
   }
 
   h1,

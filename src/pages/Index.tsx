@@ -357,52 +357,22 @@ const Index = () => {
               {["Yaklaşan", "Etkinlikler"].map((word, wordIndex) => (
                 <motion.span
                   key={wordIndex}
-                  className="relative inline-flex group"
-                  initial="initial"
-                  whileInView="animate"
+                  className="relative inline-block text-transparent bg-clip-text bg-gradient-to-b from-white via-emerald-400 to-emerald-700 drop-shadow-[0_10px_30px_rgba(16,185,129,0.3)]"
+                  initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
+                  whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                   viewport={{ once: true }}
+                  transition={{
+                    duration: 0.8,
+                    delay: wordIndex * 0.15,
+                    ease: [0.16, 1, 0.3, 1]
+                  }}
                 >
-                  {/* Premium Background Glow */}
-                  <span className="absolute -inset-8 blur-[40px] bg-emerald-500/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-
-                  {word.split("").map((char, charIndex) => (
-                    <motion.span
-                      key={charIndex}
-                      variants={{
-                        initial: { opacity: 0, y: 15, rotateX: -90, filter: "blur(12px)" },
-                        animate: { opacity: 1, y: 0, rotateX: 0, filter: "blur(0px)" }
-                      }}
-                      transition={{
-                        duration: 0.8,
-                        delay: (wordIndex * 8 + charIndex) * 0.04,
-                        ease: [0.16, 1, 0.3, 1]
-                      }}
-                      className="relative inline-block text-transparent bg-clip-text bg-gradient-to-b from-white via-emerald-400 to-emerald-700 drop-shadow-[0_10px_30px_rgba(16,185,129,0.3)]"
-                    >
-                      {char}
-                      {/* Premium Gold/Light Shimmer Overlay */}
-                      <motion.span
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-200/40 to-transparent bg-clip-text text-transparent"
-                        style={{ backgroundSize: '300% auto' }}
-                        animate={{
-                          backgroundPosition: ['300% center', '-150% center'],
-                        }}
-                        transition={{
-                          duration: 4,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                          repeatDelay: 2 + wordIndex
-                        }}
-                      >
-                        {char}
-                      </motion.span>
-                    </motion.span>
-                  ))}
-
-                  {/* Innovative Underline Accent */}
+                  {word}
+                  {/* Underline Accent */}
                   <motion.div
                     initial={{ scaleX: 0, opacity: 0 }}
                     whileInView={{ scaleX: 1, opacity: 1 }}
+                    viewport={{ once: true }}
                     transition={{ duration: 1, delay: 0.5 + wordIndex * 0.2 }}
                     className="absolute -bottom-2 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent"
                   />
@@ -415,7 +385,7 @@ const Index = () => {
 
           {/* Enhanced Filters */}
           <motion.div
-            className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center p-4 rounded-[2rem] bg-card/40 backdrop-blur-2xl border border-white/10 shadow-2xl relative overflow-hidden group"
+            className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center p-4 rounded-[2rem] bg-card/40 backdrop-blur-lg border border-white/10 shadow-2xl relative overflow-hidden group"
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
@@ -536,7 +506,7 @@ const Index = () => {
 
           {/* Event Management Dialog */}
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogContent className="w-[95vw] sm:max-w-xl bg-[#050505]/95 backdrop-blur-3xl border-white/10 p-0 rounded-[1.5rem] sm:rounded-[2.5rem] selection:bg-primary/30 max-h-[90vh] overflow-hidden flex flex-col">
+            <DialogContent className="w-[95vw] sm:max-w-xl bg-[#050505]/95 backdrop-blur-lg border-white/10 p-0 rounded-[1.5rem] sm:rounded-[2.5rem] selection:bg-primary/30 max-h-[90vh] overflow-hidden flex flex-col">
               <div className="p-6 sm:p-10 pb-6 border-b border-white/5 bg-white/[0.02] backdrop-blur-xl relative z-10">
                 <DialogHeader>
                   <DialogTitle className="text-2xl font-display font-black flex items-center gap-4">

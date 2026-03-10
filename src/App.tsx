@@ -5,7 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { useEffect } from "react";
+import React, { Suspense, useEffect } from "react";
+import LoadingScreen from "@/components/LoadingScreen";
 
 // Supabase recovery token root'a düşerse /sifre-sifirla'ya yönlendir
 const AuthRedirectHandler = () => {
@@ -44,18 +45,20 @@ const AuthRedirectHandler = () => {
   }, [navigate]);
   return null;
 };
-import Index from "./pages/Index";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
-import EventDetail from "./pages/EventDetail";
-import Profile from "./pages/Profile";
-import Admin from "./pages/Admin";
-import WeeklyReports from "./pages/WeeklyReports";
-import NotFound from "./pages/NotFound";
-import Social from "./pages/Social";
-import SocialProfileView from "./pages/SocialProfileView";
+
+// Lazy-loaded pages (code splitting)
+const Index = React.lazy(() => import("./pages/Index"));
+const Login = React.lazy(() => import("./pages/Login"));
+const Register = React.lazy(() => import("./pages/Register"));
+const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = React.lazy(() => import("./pages/ResetPassword"));
+const EventDetail = React.lazy(() => import("./pages/EventDetail"));
+const Profile = React.lazy(() => import("./pages/Profile"));
+const Admin = React.lazy(() => import("./pages/Admin"));
+const WeeklyReports = React.lazy(() => import("./pages/WeeklyReports"));
+const NotFound = React.lazy(() => import("./pages/NotFound"));
+const Social = React.lazy(() => import("./pages/Social"));
+const SocialProfileView = React.lazy(() => import("./pages/SocialProfileView"));
 
 const queryClient = new QueryClient();
 
@@ -76,20 +79,22 @@ const App = () => (
         <ScrollToTop />
         <AuthProvider>
           <AuthRedirectHandler />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/giris" element={<Login />} />
-            <Route path="/kayit" element={<Register />} />
-            <Route path="/sifremi-unuttum" element={<ForgotPassword />} />
-            <Route path="/sifre-sifirla" element={<ResetPassword />} />
-            <Route path="/etkinlik/:id" element={<EventDetail />} />
-            <Route path="/profil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path="/sosyal" element={<ProtectedRoute><Social /></ProtectedRoute>} />
-            <Route path="/sosyal/profil/:id" element={<ProtectedRoute><SocialProfileView /></ProtectedRoute>} />
-            <Route path="/yonetim" element={<ProtectedRoute adminOnly><Admin /></ProtectedRoute>} />
-            <Route path="/raporlar" element={<ProtectedRoute><WeeklyReports /></ProtectedRoute>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <Suspense fallback={<LoadingScreen />}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/giris" element={<Login />} />
+              <Route path="/kayit" element={<Register />} />
+              <Route path="/sifremi-unuttum" element={<ForgotPassword />} />
+              <Route path="/sifre-sifirla" element={<ResetPassword />} />
+              <Route path="/etkinlik/:id" element={<EventDetail />} />
+              <Route path="/profil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/sosyal" element={<ProtectedRoute><Social /></ProtectedRoute>} />
+              <Route path="/sosyal/profil/:id" element={<ProtectedRoute><SocialProfileView /></ProtectedRoute>} />
+              <Route path="/yonetim" element={<ProtectedRoute adminOnly><Admin /></ProtectedRoute>} />
+              <Route path="/raporlar" element={<ProtectedRoute><WeeklyReports /></ProtectedRoute>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

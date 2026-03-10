@@ -350,6 +350,7 @@ export type Database = {
           job_title: string | null
           profile_photo: string | null
           social_name: string
+          university: string | null
           updated_at: string
           user_id: string
         }
@@ -360,6 +361,7 @@ export type Database = {
           job_title?: string | null
           profile_photo?: string | null
           social_name?: string
+          university?: string | null
           updated_at?: string
           user_id: string
         }
@@ -370,6 +372,7 @@ export type Database = {
           job_title?: string | null
           profile_photo?: string | null
           social_name?: string
+          university?: string | null
           updated_at?: string
           user_id?: string
         }

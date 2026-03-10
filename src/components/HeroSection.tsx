@@ -1,8 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { Sparkles, CalendarDays, MapPin, Navigation, FileText } from "lucide-react";
-import { useRef } from "react";
 
 interface HeroSectionProps {
   onViewEvents?: () => void;
@@ -10,94 +9,30 @@ interface HeroSectionProps {
 
 const HeroSection = ({ onViewEvents }: HeroSectionProps) => {
   const navigate = useNavigate();
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Parallax effects
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end start"],
-  });
-
-  const yBg = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
-  const yText = useTransform(scrollYProgress, [0, 1], ["0%", "80%"]);
-  const opacityText = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   return (
-    <section ref={containerRef} className="relative overflow-hidden min-h-[100vh] flex items-center justify-center bg-black perspective-1000">
+    <section className="relative overflow-hidden min-h-[100vh] flex items-center justify-center bg-black">
 
-      {/* 1. Ultra-Deep Mesh Gradient Background */}
-      <motion.div style={{ y: yBg }} className="absolute inset-0 z-0">
+      {/* Static Background — Replaces 6 animated orbs with performant static gradients */}
+      <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-black" />
-        {/* Core Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-[1000px] max-h-[1000px] bg-gradient-to-tr from-emerald-600/30 via-primary/30 to-amber-500/30 rounded-full blur-[120px] mix-blend-screen animate-pulse duration-[10000ms]" />
+        {/* Core Glow — static */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-[1000px] max-h-[1000px] bg-gradient-to-tr from-emerald-600/30 via-primary/30 to-amber-500/30 rounded-full blur-[80px] mix-blend-screen" />
 
-        {/* Animated Orbs */}
-        <motion.div
-          className="absolute top-[20%] left-[20%] w-[40vw] h-[40vw] bg-emerald-500/30 rounded-full blur-[100px] mix-blend-screen"
-          animate={{ x: [0, 100, 0], y: [0, -100, 0], scale: [1, 1.2, 1] }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-        />
-        <motion.div
-          className="absolute bottom-[20%] right-[20%] w-[50vw] h-[50vw] bg-amber-500/20 rounded-full blur-[120px] mix-blend-screen"
-          animate={{ x: [0, -150, 0], y: [0, 100, 0], scale: [1, 1.5, 1] }}
-          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-        />
-        <motion.div
-          className="absolute top-[40%] left-[60%] w-[30vw] h-[30vw] bg-blue-500/20 rounded-full blur-[90px] mix-blend-screen"
-          animate={{ x: [0, 50, -50, 0], y: [0, 150, 0], scale: [1, 0.8, 1.1, 1] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        />
-
-        {/* Dense Aurora / Liquid Flow Overlay */}
-        <div className="absolute inset-0 z-10">
-          <motion.div
-            className="absolute inset-0 opacity-40 mix-blend-soft-light"
-            style={{
-              background: "radial-gradient(100% 100% at 50% 50%, rgba(16,185,129,0.1) 0%, transparent 100%)",
-              filter: "blur(80px)"
-            }}
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.5, 0.3]
-            }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          />
-
-          {/* Drifting Light Streaks */}
-          {[...Array(3)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute h-px w-[40vw] bg-gradient-to-r from-transparent via-emerald-400/20 to-transparent"
-              style={{
-                top: `${20 + i * 25}%`,
-                left: "-40vw"
-              }}
-              animate={{ x: ["0vw", "140vw"] }}
-              transition={{
-                duration: 15 + i * 5,
-                repeat: Infinity,
-                ease: "linear",
-                delay: i * 4
-              }}
-            />
-          ))}
-        </div>
+        {/* Static orbs (previously animated with infinite x/y/scale transitions) */}
+        <div className="absolute top-[15%] left-[15%] w-[40vw] h-[40vw] bg-emerald-500/25 rounded-full blur-[80px] mix-blend-screen" />
+        <div className="absolute bottom-[15%] right-[15%] w-[45vw] h-[45vw] bg-amber-500/15 rounded-full blur-[80px] mix-blend-screen" />
+        <div className="absolute top-[35%] left-[55%] w-[30vw] h-[30vw] bg-blue-500/15 rounded-full blur-[60px] mix-blend-screen" />
 
         {/* Grain Texture Overlay */}
         <div className="absolute inset-0 opacity-[0.04] z-20 pointer-events-none mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-      </motion.div>
+      </div>
 
-      {/* 2. 3D Floating Glassmorphism Elements (Parallax) */}
+      {/* Floating glassmorphism elements (desktop only, CSS animation instead of framer-motion) */}
       <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden flex items-center justify-center">
-        {/* Left Floating Card */}
-        <motion.div
-          className="absolute left-[10%] top-[30%] w-64 h-80 rounded-[2rem] border border-white/10 bg-white/5 backdrop-blur-2xl shadow-2xl p-6 hidden lg:flex flex-col gap-4 transform-gpu"
-          animate={{
-            y: [-20, 20, -20],
-            rotateX: [10, -5, 10],
-            rotateY: [-15, 5, -15],
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+        {/* Left Floating Card — CSS animation instead of framer-motion */}
+        <div
+          className="absolute left-[10%] top-[30%] w-64 h-80 rounded-[2rem] border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-6 hidden lg:flex flex-col gap-4 transform-gpu animate-float"
         >
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-transparent flex items-center justify-center mb-4">
             <CalendarDays className="text-emerald-400 w-6 h-6" />
@@ -112,17 +47,12 @@ const HeroSection = ({ onViewEvents }: HeroSectionProps) => {
             </div>
             <span className="text-emerald-400/80 text-xs font-bold">+24 Kayıt</span>
           </div>
-        </motion.div>
+        </div>
 
-        {/* Right Floating Card */}
-        <motion.div
-          className="absolute right-[12%] bottom-[25%] w-72 h-64 rounded-[2rem] border border-white/10 bg-white/5 backdrop-blur-2xl shadow-2xl p-6 hidden lg:flex flex-col gap-4 transform-gpu"
-          animate={{
-            y: [20, -20, 20],
-            rotateX: [-10, 5, -10],
-            rotateY: [15, -5, 15],
-          }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        {/* Right Floating Card — CSS animation instead of framer-motion */}
+        <div
+          className="absolute right-[12%] bottom-[25%] w-72 h-64 rounded-[2rem] border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-6 hidden lg:flex flex-col gap-4 transform-gpu animate-float"
+          style={{ animationDelay: "2s", animationDirection: "reverse" }}
         >
           <div className="flex items-center gap-4 mb-2">
             <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-amber-400/20 to-transparent flex items-center justify-center">
@@ -136,57 +66,39 @@ const HeroSection = ({ onViewEvents }: HeroSectionProps) => {
           <div className="h-24 w-full rounded-xl bg-gradient-to-br from-white/5 to-transparent border border-white/5 flex items-center justify-center mt-auto">
             <Navigation className="text-white/20 w-8 h-8" />
           </div>
-        </motion.div>
-
-
+        </div>
       </div>
 
-      {/* 3. Hero Content */}
+      {/* Hero Content — simple entry animations only (no parallax) */}
       <motion.div
-        style={{ y: yText, opacity: opacityText }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
         className="container relative z-20 mx-auto px-4 text-center pt-32 md:pt-0 pb-20"
       >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, type: "spring", stiffness: 100 }}
-          className="flex flex-col items-center"
-        >
+        <div className="flex flex-col items-center">
           {/* Top Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-xl mb-16 group cursor-pointer hover:bg-white/10 transition-all hover:scale-105"
           >
-            <Sparkles className="h-4 w-4 text-amber-400 group-hover:animate-spin" />
-            <motion.span
-              animate={{ backgroundPosition: ["0% center", "200% center"] }}
-              transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-              className="text-sm font-black tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-white to-amber-200 uppercase bg-[length:200%_auto]"
-            >
+            <Sparkles className="h-4 w-4 text-amber-400" />
+            <span className="text-sm font-black tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-white to-amber-200 uppercase">
               Kültür · Sanat · Keşif
-            </motion.span>
+            </span>
           </motion.div>
 
           {/* Action Buttons Container */}
           <div className="flex flex-col gap-6 items-center">
-            {/* 1. Explore Events Button - Amber Snake */}
+            {/* Explore Events Button */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.4, type: "spring", stiffness: 100 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
             >
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="relative p-[2px] rounded-full overflow-hidden group/btn bg-white/5"
-              >
-                <motion.div
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-[-100%] bg-[conic-gradient(transparent,transparent,rgba(217,119,6,0.8),transparent)] z-0"
-                />
+              <div className="relative p-[2px] rounded-full overflow-hidden group/btn bg-gradient-to-r from-amber-600/50 via-amber-400/30 to-amber-600/50 hover:scale-105 active:scale-95 transition-transform">
                 <Button
                   onClick={() => {
                     if (onViewEvents) onViewEvents();
@@ -194,59 +106,43 @@ const HeroSection = ({ onViewEvents }: HeroSectionProps) => {
                       document.querySelector('#events-section')?.scrollIntoView({ behavior: 'smooth' });
                     }
                   }}
-                  className="relative z-10 h-14 px-10 rounded-full bg-black/80 backdrop-blur-3xl border-none text-amber-500/90 font-black text-xs tracking-[0.2em] overflow-hidden group hover:text-amber-400 transition-all duration-500 w-64"
+                  className="relative z-10 h-14 px-10 rounded-full bg-black/80 backdrop-blur-xl border-none text-amber-500/90 font-black text-xs tracking-[0.2em] overflow-hidden group hover:text-amber-400 transition-all duration-500 w-64"
                 >
                   <span className="relative z-10 flex items-center justify-center gap-3 w-full">
                     ETKİNLİKLERİ KEŞFET
                     <Navigation className="w-4 h-4 fill-current group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                   </span>
-                  <div className="absolute inset-0 -translate-x-full group-hover:animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                 </Button>
-              </motion.div>
+              </div>
             </motion.div>
 
-            {/* 2. Review Reports Button - Emerald Snake */}
+            {/* Review Reports Button */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.6, type: "spring", stiffness: 100 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
             >
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="relative p-[2px] rounded-full overflow-hidden group/btn bg-white/5"
-              >
-                <motion.div
-                  animate={{ rotate: [360, 0] }} // Opposite rotation for visual variety
-                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-[-100%] bg-[conic-gradient(transparent,transparent,rgba(16,185,129,0.8),transparent)] z-0"
-                />
+              <div className="relative p-[2px] rounded-full overflow-hidden group/btn bg-gradient-to-r from-emerald-600/50 via-emerald-400/30 to-emerald-600/50 hover:scale-105 active:scale-95 transition-transform">
                 <Button
                   onClick={() => navigate('/raporlar')}
-                  className="relative z-10 h-14 px-10 rounded-full bg-black/80 backdrop-blur-3xl border-none text-emerald-500/90 font-black text-xs tracking-[0.2em] overflow-hidden group hover:text-emerald-400 transition-all duration-500 w-64"
+                  className="relative z-10 h-14 px-10 rounded-full bg-black/80 backdrop-blur-xl border-none text-emerald-500/90 font-black text-xs tracking-[0.2em] overflow-hidden group hover:text-emerald-400 transition-all duration-500 w-64"
                 >
                   <span className="relative z-10 flex items-center justify-center gap-3 w-full">
                     RAPORLARI İNCELE
                     <FileText className="w-4 h-4 group-hover:scale-110 transition-transform" />
                   </span>
-                  <div className="absolute inset-0 -translate-x-full group-hover:animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                 </Button>
-              </motion.div>
+              </div>
             </motion.div>
           </div>
-        </motion.div>
+        </div>
       </motion.div>
 
-      {/* 4. Ultra-Premium Multi-Layered Transparent Transition */}
+      {/* Bottom Transition */}
       <div className="absolute bottom-0 left-0 right-0 h-96 pointer-events-none z-20 overflow-hidden">
-        {/* Soft Background Blend */}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/10 to-transparent" />
-
-        {/* Subtle Color Bleeds to eliminate 'pure white' feel */}
-        <div className="absolute -bottom-20 -left-20 w-full h-full bg-emerald-500/5 blur-[120px] opacity-40" />
-        <div className="absolute -bottom-20 -right-20 w-full h-full bg-amber-500/5 blur-[120px] opacity-40" />
-
-        {/* Minimal mask for content legibility */}
+        <div className="absolute -bottom-20 -left-20 w-full h-full bg-emerald-500/5 blur-[80px] opacity-40" />
+        <div className="absolute -bottom-20 -right-20 w-full h-full bg-amber-500/5 blur-[80px] opacity-40" />
         <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-background/40 to-transparent" />
       </div>
     </section>

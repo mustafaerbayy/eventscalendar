@@ -38,6 +38,7 @@ import {
     Sparkles,
     TrendingUp,
     Heart,
+    GraduationCap,
 } from "lucide-react";
 
 const Social = () => {
@@ -250,6 +251,13 @@ const Social = () => {
 
                                 {myProfile?.job_title && (
                                     <p className="text-sm text-primary/70 font-medium mt-0.5">{myProfile.job_title}</p>
+                                )}
+
+                                {myProfile?.university && (
+                                    <p className="flex items-center gap-1.5 text-sm text-gray-500 font-medium mt-1">
+                                        <GraduationCap className="h-4 w-4" />
+                                        {myProfile.university}
+                                    </p>
                                 )}
 
 

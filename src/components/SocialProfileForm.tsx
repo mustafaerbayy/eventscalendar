@@ -25,6 +25,7 @@ const profileSchema = z.object({
     social_name: z.string().min(2, "Sosyal ad en az 2 karakter olmalıdır"),
     birth_date: z.string().optional().nullable(),
     job_title: z.string().optional().nullable(),
+    university: z.string().optional().nullable(),
     bio: z.string().max(500, "Biyografi en fazla 500 karakter olabilir").optional().nullable(),
 });
 
@@ -40,6 +41,7 @@ export default function SocialProfileForm() {
             social_name: "",
             birth_date: "",
             job_title: "",
+            university: "",
             bio: "",
         },
     });
@@ -69,6 +71,7 @@ export default function SocialProfileForm() {
                 social_name: profile.social_name || "",
                 birth_date: profile.birth_date || "",
                 job_title: profile.job_title || "",
+                university: profile.university || "",
                 bio: profile.bio || "",
             });
         }
@@ -82,6 +85,7 @@ export default function SocialProfileForm() {
                     social_name: values.social_name,
                     birth_date: values.birth_date || null,
                     job_title: values.job_title || null,
+                    university: values.university || null,
                     bio: values.bio || null,
                     updated_at: new Date().toISOString(),
                 })
@@ -181,6 +185,20 @@ export default function SocialProfileForm() {
                                     <FormLabel>Meslek / Ünvan</FormLabel>
                                     <FormControl>
                                         <Input placeholder="Örn: Yazılım Mühendisi" {...field} value={field.value || ""} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="university"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Üniversite</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Örn: Boğaziçi Üniversitesi" {...field} value={field.value || ""} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

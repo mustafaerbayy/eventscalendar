@@ -7,7 +7,7 @@ import Navbar from "@/components/Navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Loader2, MapPin, Briefcase, Calendar, User, ArrowLeft } from "lucide-react";
+import { Loader2, MapPin, Briefcase, Calendar, User, ArrowLeft, GraduationCap } from "lucide-react";
 
 export default function SocialProfileView() {
     const { id } = useParams<{ id: string }>();
@@ -150,7 +150,7 @@ export default function SocialProfileView() {
                                         <p className="text-gray-400 italic">Kullanıcı henüz bir biyografi eklemedi.</p>
                                     )}
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6 border-t border-gray-100">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6 mt-6 border-t border-gray-100">
                                         {age !== null && (
                                             <div className="flex items-center text-gray-600">
                                                 <Calendar className="h-5 w-5 mr-3 text-primary/60" />
@@ -168,6 +168,16 @@ export default function SocialProfileView() {
                                                 <p>{new Date(profile.created_at).toLocaleDateString("tr-TR", { month: "long", year: "numeric" })}</p>
                                             </div>
                                         </div>
+
+                                        {profile.university && (
+                                            <div className="flex items-center text-gray-600">
+                                                <GraduationCap className="h-5 w-5 mr-3 text-primary/60" />
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-900">Üniversite</p>
+                                                    <p>{profile.university}</p>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
