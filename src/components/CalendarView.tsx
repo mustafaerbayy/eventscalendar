@@ -102,8 +102,8 @@ const CalendarView = ({ events, onEventClick, isAuthenticated = true }: Calendar
       >
         <Card className="overflow-hidden border border-white/20 bg-white/10 backdrop-blur-lg shadow-[0_32px_64px_rgba(0,0,0,0.4)] rounded-[2.5rem] relative">
           {/* Background Decorative Blur */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[100px] pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/10 blur-[100px] pointer-events-none" />
+          <div className="hidden md:block absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[100px] pointer-events-none transform-gpu" />
+          <div className="hidden md:block absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/10 blur-[100px] pointer-events-none transform-gpu" />
 
           <CardContent className="p-0 relative z-10">
             {/* Calendar Header - Month Navigation */}

@@ -96,7 +96,7 @@ const EventCard = ({ id, title, date, time, cityName, venueName, categoryName, a
         onClick={handleCardClick}
       >
         <Card
-          className="relative overflow-hidden border border-white/20 bg-white/10 backdrop-blur-3xl transition-all duration-500 hover:bg-white/15 hover:border-white/30 hover:shadow-2xl rounded-2xl"
+          className="relative overflow-hidden border border-white/20 bg-white/10 backdrop-blur-xl md:backdrop-blur-2xl transition-all duration-500 hover:bg-white/15 hover:border-white/30 hover:shadow-2xl rounded-2xl transform-gpu"
         >
           {/* Subtle Glow */}
           <div className={`absolute inset-0 bg-gradient-to-r ${colors.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
@@ -169,12 +169,12 @@ const EventCard = ({ id, title, date, time, cityName, venueName, categoryName, a
       className={isPast ? "opacity-50" : ""}
     >
       <Card
-        className="group cursor-pointer overflow-hidden border border-white/20 bg-white/10 backdrop-blur-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(0,0,0,0.4)] hover:border-white/30 relative rounded-[2.5rem] h-full"
+        className="group cursor-pointer overflow-hidden border border-white/20 bg-white/10 backdrop-blur-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(0,0,0,0.4)] hover:border-white/30 relative rounded-[2.5rem] h-full transform-gpu"
         onClick={handleCardClick}
       >
         {/* Background Orbs */}
-        <div className={`absolute -top-24 -right-24 h-64 w-64 bg-gradient-to-br ${colors.gradient} rounded-full blur-[60px] opacity-20 group-hover:opacity-40 transition-opacity duration-500`} />
-        <div className={`absolute -bottom-24 -left-24 h-64 w-64 bg-gradient-to-tr ${colors.gradient} rounded-full blur-[60px] opacity-10 group-hover:opacity-30 transition-opacity duration-500`} />
+        <div className={`hidden md:block absolute -top-24 -right-24 h-64 w-64 bg-gradient-to-br ${colors.gradient} rounded-full blur-[60px] opacity-20 group-hover:opacity-40 transition-opacity duration-500 transform-gpu`} />
+        <div className={`hidden md:block absolute -bottom-24 -left-24 h-64 w-64 bg-gradient-to-tr ${colors.gradient} rounded-full blur-[60px] opacity-10 group-hover:opacity-30 transition-opacity duration-500 transform-gpu`} />
 
         <CardContent className="p-8 flex flex-col h-full relative z-10">
           {/* Header: Date + Status */}

@@ -151,7 +151,7 @@ const Index = () => {
 
           // Clean up the URL
           navigate('/', { replace: true });
-          
+
           // Scroll page down so it doesn't open at the very top of the hero section
           setTimeout(() => {
             const element = document.querySelector(`[data-event-id="${eventId}"]`);
@@ -375,9 +375,9 @@ const Index = () => {
       {/* Events Section with background decoration */}
       <section id="events-section" className="relative py-20">
         {/* Static Background Glow for Performance */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-          <div className="absolute top-0 -left-40 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px]" />
-          <div className="absolute bottom-0 -right-40 w-[600px] h-[600px] bg-accent/10 rounded-full blur-[120px]" />
+        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20 hidden md:block">
+          <div className="absolute top-0 -left-40 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] transform-gpu" />
+          <div className="absolute bottom-0 -right-40 w-[600px] h-[600px] bg-accent/10 rounded-full blur-[120px] transform-gpu" />
         </div>
 
         <div className="container mx-auto px-4 relative z-10">
@@ -389,45 +389,13 @@ const Index = () => {
             className="text-center mb-16"
           >
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6 backdrop-blur-md">
-              <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+              <Sparkles className="h-4 w-4 text-primary" />
               <span className="text-xs font-bold tracking-widest uppercase text-primary/80">Keşfet & Katıl</span>
             </div>
 
-            <h2 className="font-display text-5xl md:text-7xl font-black mb-8 tracking-tighter flex flex-wrap justify-center gap-x-4 md:gap-x-8">
-              {["Yaklaşan", "Etkinlikler"].map((word, wordIndex) => (
-                <motion.span
-                  key={wordIndex}
-                  className="relative inline-block text-transparent bg-clip-text bg-gradient-to-b from-white via-emerald-400 to-emerald-700 drop-shadow-[0_10px_30px_rgba(16,185,129,0.3)]"
-                  initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
-                  whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  viewport={{ once: true }}
-                  transition={{
-                    duration: 0.8,
-                    delay: wordIndex * 0.15,
-                    ease: [0.16, 1, 0.3, 1]
-                  }}
-                >
-                  {word}
-                  {/* Shimmer Overlay — CSS animation, not framer-motion */}
-                  <span
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-200/30 to-transparent bg-clip-text text-transparent pointer-events-none animate-shimmer"
-                    style={{ backgroundSize: '300% 100%', animationDelay: `${wordIndex * 2}s` }}
-                  >
-                    {word}
-                  </span>
-                  {/* Underline Accent */}
-                  <motion.div
-                    initial={{ scaleX: 0, opacity: 0 }}
-                    whileInView={{ scaleX: 1, opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 1, delay: 0.5 + wordIndex * 0.2 }}
-                    className="absolute -bottom-2 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent"
-                  />
-                </motion.span>
-              ))}
+            <h2 className="font-display text-5xl md:text-7xl font-black mb-8 tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-emerald-500 to-amber-500">
+              Yaklaşan Etkinlikler
             </h2>
-
-
           </motion.div>
 
           {/* Enhanced Filters */}

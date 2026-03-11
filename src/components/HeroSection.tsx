@@ -17,12 +17,12 @@ const HeroSection = ({ onViewEvents }: HeroSectionProps) => {
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-black" />
         {/* Core Glow — static */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-[1000px] max-h-[1000px] bg-gradient-to-tr from-emerald-600/30 via-primary/30 to-amber-500/30 rounded-full blur-[80px] mix-blend-screen" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vw] md:w-[80vw] md:h-[80vw] max-w-[1000px] max-h-[1000px] bg-gradient-to-tr from-emerald-600/30 via-primary/30 to-amber-500/30 rounded-full blur-[60px] md:blur-[80px] mix-blend-screen transform-gpu" />
 
         {/* Static orbs (previously animated with infinite x/y/scale transitions) */}
-        <div className="absolute top-[15%] left-[15%] w-[40vw] h-[40vw] bg-emerald-500/25 rounded-full blur-[80px] mix-blend-screen" />
-        <div className="absolute bottom-[15%] right-[15%] w-[45vw] h-[45vw] bg-amber-500/15 rounded-full blur-[80px] mix-blend-screen" />
-        <div className="absolute top-[35%] left-[55%] w-[30vw] h-[30vw] bg-blue-500/15 rounded-full blur-[60px] mix-blend-screen" />
+        <div className="hidden md:block absolute top-[15%] left-[15%] w-[40vw] h-[40vw] bg-emerald-500/25 rounded-full blur-[80px] mix-blend-screen transform-gpu" />
+        <div className="hidden md:block absolute bottom-[15%] right-[15%] w-[45vw] h-[45vw] bg-amber-500/15 rounded-full blur-[80px] mix-blend-screen transform-gpu" />
+        <div className="hidden md:block absolute top-[35%] left-[55%] w-[30vw] h-[30vw] bg-blue-500/15 rounded-full blur-[60px] mix-blend-screen transform-gpu" />
 
         {/* Grain Texture Overlay */}
         <div className="absolute inset-0 opacity-[0.04] z-20 pointer-events-none mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
