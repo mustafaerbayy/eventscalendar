@@ -14,9 +14,10 @@ import {
   Bell, Clock, CalendarDays, CalendarRange, CalendarClock,
   User, Save, Mail, Lock, Trash2, AlertTriangle,
   Settings, ShieldCheck, ChevronRight, LogOut,
-  LayoutDashboard, Activity
+  LayoutDashboard, Activity, UserCircle
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import SocialProfileForm from "@/components/SocialProfileForm";
 import { getErrorMessage } from "@/lib/error-messages";
 import { cn } from "@/lib/utils";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -25,7 +26,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const { user, profile, loading, refreshProfile, signOut } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeSection, setActiveSection] = useState<"account" | "reminders" | "security">(
+  const [activeSection, setActiveSection] = useState<"account" | "social" | "reminders" | "security">(
     (searchParams.get("tab") as any) || "account"
   );
 
@@ -168,6 +169,7 @@ const Profile = () => {
 
   const sidebarItems = [
     { id: "account", label: "Hesap Bilgileri", icon: User },
+    { id: "social", label: "Sosyal Profil", icon: UserCircle },
     { id: "reminders", label: "Hatırlatıcılar", icon: Bell },
     { id: "security", label: "Güvenlik", icon: ShieldCheck },
   ];
@@ -369,6 +371,29 @@ const Profile = () => {
                             </div>
                           )}
                         </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeSection === "social" && (
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent blur-xl rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                    <div className="relative bg-[#0c0c0c] border border-white/10 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                      <div className="p-6 md:p-12 relative z-10 w-full">
+                        <div className="flex items-center gap-4 md:gap-5 mb-8 md:mb-10">
+                          <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-inner">
+                            <UserCircle className="w-6 h-6 md:w-7 md:h-7 text-primary" />
+                          </div>
+                          <div>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-widest mb-1 md:mb-2">
+                              TOPLULUK
+                            </div>
+                            <h2 className="text-2xl md:text-3xl font-display font-black text-white">Sosyal Profil</h2>
+                          </div>
+                        </div>
+
+                        <SocialProfileForm hideCard={true} />
                       </div>
                     </div>
                   </div>

@@ -448,26 +448,26 @@ const WeeklyReports = () => {
                   className="flex flex-col h-full"
                 >
                   {/* Detail Header */}
-                  <div className="p-6 md:p-12 pb-6 border-b border-white/5 flex flex-col md:flex-row md:items-start justify-between gap-8 bg-gradient-to-b from-white/[0.02] to-transparent pt-20 lg:pt-12">
+                  <div className="p-6 md:p-8 pb-4 border-b border-white/5 flex flex-col md:flex-row md:items-start justify-between gap-6 bg-gradient-to-b from-white/[0.02] to-transparent pt-20 lg:pt-8">
                     <div className="flex-1">
-                      <div className="flex items-center gap-4 mb-6">
+                      <div className="flex items-center gap-4 mb-4">
                         <button
                           onClick={() => setIsMobileDetailOpen(false)}
                           className="lg:hidden w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10"
                         >
                           <ChevronRight className="w-5 h-5 rotate-180" />
                         </button>
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-primary/10 border border-primary/20 text-primary font-black text-[10px] tracking-widest uppercase shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-primary/10 border border-primary/20 text-primary font-black text-[10px] tracking-widest uppercase shadow-[0_0_20px_rgba(16,185,129,0.1)]">
                           <Clock className="w-4 h-4" />
                           {new Date(selectedReport.week_start).toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                         </div>
                       </div>
 
-                      <h2 className="text-2xl md:text-5xl font-display font-black leading-tight text-white mb-6">
+                      <h2 className="text-2xl md:text-3xl font-display font-black leading-tight text-white mb-4">
                         {selectedReport.title}
                       </h2>
 
-                      <div className="flex items-center gap-8">
+                      <div className="flex items-center gap-6">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary to-accent p-[1px]">
                             <div className="w-full h-full rounded-2xl bg-black flex items-center justify-center text-[10px] font-black">
@@ -503,7 +503,7 @@ const WeeklyReports = () => {
                   </div>
 
                   {/* Detail Body */}
-                  <div className="flex-1 overflow-y-auto p-6 md:p-12 pt-8 lg:pt-10 scrollbar-hide">
+                  <div className="flex-1 overflow-y-auto p-6 md:p-8 pt-6 lg:pt-6 scrollbar-hide">
                     <div className="max-w-4xl mx-auto">
                       <div className="prose prose-invert prose-sm md:prose-lg max-w-none">
                         {selectedReport.content ? (

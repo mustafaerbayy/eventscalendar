@@ -7,7 +7,7 @@ import Navbar from "@/components/Navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Loader2, MapPin, Briefcase, Calendar, User, ArrowLeft, GraduationCap } from "lucide-react";
+import { Loader2, MapPin, Briefcase, Calendar, User, ArrowLeft, GraduationCap, Linkedin } from "lucide-react";
 
 export default function SocialProfileView() {
     const { id } = useParams<{ id: string }>();
@@ -21,14 +21,26 @@ export default function SocialProfileView() {
         queryFn: async () => {
             if (!id) throw new Error("ID eksik");
 
-            const { data, error } = await supabase
+            const { data: socialData, error: socialError } = await supabase
                 .from("social_profiles")
                 .select("*")
                 .eq("user_id", id)
                 .single();
 
-            if (error) throw error;
-            return data;
+            if (socialError) throw socialError;
+
+            const { data: profileData, error: profileError } = await supabase
+                .from("profiles")
+                .select("first_name, last_name")
+                .eq("id", id)
+                .single();
+
+            if (profileError) throw profileError;
+
+            return {
+                ...socialData,
+                full_name: `${profileData?.first_name || ""} ${profileData?.last_name || ""}`.trim() || "Gizli Kullanıcı"
+            };
         },
         enabled: !!id,
     });
@@ -49,6 +61,7 @@ export default function SocialProfileView() {
         if (!name) return "U";
         return name
             .split(" ")
+            .filter(Boolean)
             .map((n) => n[0])
             .join("")
             .substring(0, 2)
@@ -111,13 +124,13 @@ export default function SocialProfileView() {
                             {/* Sol Kolon: Fotoğraf & Temel Bilgiler */}
                             <div className="bg-white p-8 md:w-1/3 flex flex-col items-center text-center border-r border-gray-100">
                                 <Avatar className="h-32 w-32 mb-4 border-4 border-white shadow-lg ring-1 ring-gray-100">
-                                    <AvatarImage src={profile.profile_photo || ""} alt={profile.social_name} />
+                                    <AvatarImage src={profile.profile_photo || ""} alt={profile.full_name} />
                                     <AvatarFallback className="text-3xl bg-primary/10 text-primary">
-                                        {getInitials(profile.social_name)}
+                                        {getInitials(profile.full_name)}
                                     </AvatarFallback>
                                 </Avatar>
 
-                                <h1 className="text-2xl font-bold text-gray-900 mb-1">{profile.social_name}</h1>
+                                <h1 className="text-2xl font-bold text-gray-900 mb-1">{profile.full_name}</h1>
 
                                 {profile.job_title && (
                                     <p className="flex items-center text-gray-600 mb-4 justify-center">
@@ -130,7 +143,7 @@ export default function SocialProfileView() {
                                     {!isOwnProfile ? (
                                         <Button className="w-full">Takip Et</Button>
                                     ) : (
-                                        <Button variant="outline" className="w-full" onClick={() => navigate("/sosyal")}>Profili Düzenle</Button>
+                                        <Button variant="outline" className="w-full" onClick={() => navigate("/profil?tab=social")}>Profili Düzenle</Button>
                                     )}
                                 </div>
                             </div>
@@ -175,6 +188,25 @@ export default function SocialProfileView() {
                                                 <div>
                                                     <p className="text-sm font-medium text-gray-900">Üniversite</p>
                                                     <p>{profile.university}</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {profile.linkedin_url && (
+                                            <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-blue-200 transition-colors group">
+                                                <div className="bg-blue-50 p-2 rounded-lg group-hover:bg-blue-100 transition-colors">
+                                                    <Linkedin className="h-5 w-5 text-[#0077B5]" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-0.5">Linkedin</p>
+                                                    <a
+                                                        href={profile.linkedin_url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-sm font-medium text-[#0077B5] hover:underline flex items-center gap-1"
+                                                    >
+                                                        Profilime Git
+                                                        <span className="text-xs">↗</span>
+                                                    </a>
                                                 </div>
                                             </div>
                                         )}

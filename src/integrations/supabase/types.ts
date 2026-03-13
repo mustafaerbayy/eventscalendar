@@ -478,6 +478,7 @@ export type Database = {
           birth_date: string | null
           created_at: string
           job_title: string | null
+          linkedin_url: string | null
           profile_photo: string | null
           social_name: string
           university: string | null
@@ -489,6 +490,7 @@ export type Database = {
           birth_date?: string | null
           created_at?: string
           job_title?: string | null
+          linkedin_url?: string | null
           profile_photo?: string | null
           social_name?: string
           university?: string | null
@@ -500,6 +502,7 @@ export type Database = {
           birth_date?: string | null
           created_at?: string
           job_title?: string | null
+          linkedin_url?: string | null
           profile_photo?: string | null
           social_name?: string
           university?: string | null

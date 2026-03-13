@@ -43,13 +43,29 @@ function PollVotersList({ voterIds }: { voterIds: string[] }) {
         queryFn: async () => {
             if (!voterIds || voterIds.length === 0) return [];
 
-            const { data, error } = await supabase
-                .from("social_profiles")
-                .select("user_id, social_name, profile_photo")
-                .in("user_id", voterIds);
+            const [
+                { data: mainProfiles, error: mainProfileError },
+                { data: socialProfiles, error: socialProfileError }
+            ] = await Promise.all([
+                supabase.from("profiles").select("id, first_name, last_name").in("id", voterIds),
+                supabase.from("social_profiles").select("user_id, profile_photo").in("user_id", voterIds)
+            ]);
 
-            if (error) throw error;
-            return data;
+            if (mainProfileError) throw mainProfileError;
+
+            // Merge
+            const profileMap = new Map();
+            (mainProfiles || []).forEach(p => {
+                profileMap.set(p.id, {
+                    social_name: `${p.first_name || ""} ${p.last_name || ""}`.trim() || "Gizli Kullanıcı",
+                });
+            });
+            (socialProfiles || []).forEach(sp => {
+                const existing = profileMap.get(sp.user_id) || {};
+                profileMap.set(sp.user_id, { ...existing, profile_photo: sp.profile_photo });
+            });
+
+            return Array.from(profileMap.values());
         },
         enabled: voterIds.length > 0
     });
@@ -87,52 +103,7 @@ function PollVotersList({ voterIds }: { voterIds: string[] }) {
     );
 }
 
-// Client-side image compression utility
-const compressImage = (file: File, maxWidth = 1920, maxHeight = 1920, quality = 0.8): Promise<File> => {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => {
-            let { width, height } = img;
-
-            // Scale down if needed, maintaining aspect ratio
-            if (width > maxWidth || height > maxHeight) {
-                const ratio = Math.min(maxWidth / width, maxHeight / height);
-                width = Math.round(width * ratio);
-                height = Math.round(height * ratio);
-            }
-
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-                reject(new Error('Canvas context oluşturulamadı'));
-                return;
-            }
-
-            ctx.drawImage(img, 0, 0, width, height);
-
-            canvas.toBlob(
-                (blob) => {
-                    if (!blob) {
-                        reject(new Error('Görsel sıkıştırılamadı'));
-                        return;
-                    }
-                    const compressedFile = new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), {
-                        type: 'image/webp',
-                        lastModified: Date.now(),
-                    });
-                    resolve(compressedFile);
-                },
-                'image/webp',
-                quality
-            );
-        };
-        img.onerror = () => reject(new Error('Görsel yüklenemedi'));
-        img.src = URL.createObjectURL(file);
-    });
-};
+import { compressImage } from "@/lib/image-utils";
 
 // --- Reaction & Like Sub-Components ---
 
@@ -144,11 +115,31 @@ function ReactorsList({ userIds }: { userIds: string[] }) {
         queryKey: ["reactor_profiles", ...userIds],
         queryFn: async () => {
             if (userIds.length === 0) return [];
-            const { data } = await supabase
-                .from("social_profiles")
-                .select("user_id, social_name, profile_photo")
-                .in("user_id", userIds);
-            return data || [];
+
+            const [
+                { data: mainProfiles, error: mainProfileError },
+                { data: socialProfiles, error: socialProfileError }
+            ] = await Promise.all([
+                supabase.from("profiles").select("id, first_name, last_name").in("id", userIds),
+                supabase.from("social_profiles").select("user_id, profile_photo").in("user_id", userIds)
+            ]);
+
+            if (mainProfileError) throw mainProfileError;
+
+            // Merge
+            const profileMap = new Map();
+            (mainProfiles || []).forEach(p => {
+                profileMap.set(p.id, {
+                    user_id: p.id,
+                    social_name: `${p.first_name || ""} ${p.last_name || ""}`.trim() || "Gizli Kullanıcı",
+                });
+            });
+            (socialProfiles || []).forEach(sp => {
+                const existing = profileMap.get(sp.user_id) || {};
+                profileMap.set(sp.user_id, { ...existing, profile_photo: sp.profile_photo });
+            });
+
+            return Array.from(profileMap.values());
         },
         enabled: userIds.length > 0,
     });
@@ -482,13 +473,30 @@ function CommentsSection({ postId, onReplyClick }: { postId: string, onReplyClic
             if (error) throw error;
             if (!data || data.length === 0) return [];
 
-            // Fetch social profiles for comment authors
+            // Fetch profiles and social profiles for comment authors
             const uniqueUserIds = [...new Set(data.map(c => c.user_id))];
-            const { data: profiles } = await supabase
-                .from("social_profiles")
-                .select("user_id, social_name, profile_photo")
-                .in("user_id", uniqueUserIds);
-            const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
+
+            const [
+                { data: mainProfiles, error: mainProfileError },
+                { data: socialProfiles, error: socialProfileError }
+            ] = await Promise.all([
+                supabase.from("profiles").select("id, first_name, last_name").in("id", uniqueUserIds),
+                supabase.from("social_profiles").select("user_id, profile_photo").in("user_id", uniqueUserIds)
+            ]);
+
+            if (mainProfileError) console.error("Error fetching main profiles:", mainProfileError);
+
+            // Merge
+            const profileMap = new Map();
+            (mainProfiles || []).forEach(p => {
+                profileMap.set(p.id, {
+                    social_name: `${p.first_name || ""} ${p.last_name || ""}`.trim() || "Gizli Kullanıcı",
+                });
+            });
+            (socialProfiles || []).forEach(sp => {
+                const existing = profileMap.get(sp.user_id) || {};
+                profileMap.set(sp.user_id, { ...existing, profile_photo: sp.profile_photo });
+            });
 
             return data.map(comment => ({
                 ...comment,
@@ -706,7 +714,7 @@ function CommentsSection({ postId, onReplyClick }: { postId: string, onReplyClic
 }
 
 export default function SocialFeed() {
-    const { user } = useAuth();
+    const { user, profile } = useAuth();
     const isSuperAdmin = user?.email === "admin@admin.com";
     const queryClient = useQueryClient();
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -780,24 +788,41 @@ export default function SocialFeed() {
 
             if (!rawPosts || rawPosts.length === 0) return [];
 
-            // Step 2: Batch-fetch social profiles for all unique post authors (and quoted post authors)
+            // Step 2: Batch-fetch profiles and social profiles for all unique user IDs
             const uniqueUserIds = [...new Set([
                 ...rawPosts.map(p => (p as any).user_id),
                 ...rawPosts.filter(p => (p as any).linked_post?.user_id).map(p => (p as any).linked_post?.user_id)
             ])];
-            const { data: profiles, error: profileError } = await supabase
-                .from("social_profiles")
-                .select("user_id, social_name, profile_photo")
-                .in("user_id", uniqueUserIds);
 
-            if (profileError) {
-                console.error("Error fetching social profiles:", profileError);
-            }
+            const [
+                { data: mainProfiles, error: mainProfileError },
+                { data: socialProfiles, error: socialProfileError }
+            ] = await Promise.all([
+                supabase.from("profiles").select("id, first_name, last_name").in("id", uniqueUserIds),
+                supabase.from("social_profiles").select("user_id, profile_photo").in("user_id", uniqueUserIds)
+            ]);
+
+            if (mainProfileError) console.error("Error fetching main profiles:", mainProfileError);
+            if (socialProfileError) console.error("Error fetching social profiles:", socialProfileError);
 
             // Step 3: Merge profiles into posts
-            const profileMap = new Map(
-                (profiles || []).map(p => [p.user_id, p])
-            );
+            const profileMap = new Map();
+
+            // Map main profiles first
+            (mainProfiles || []).forEach(p => {
+                profileMap.set(p.id, {
+                    social_name: `${p.first_name || ""} ${p.last_name || ""}`.trim() || "Gizli Kullanıcı",
+                });
+            });
+
+            // Merge social profile photos
+            (socialProfiles || []).forEach(sp => {
+                const existing = profileMap.get(sp.user_id) || {};
+                profileMap.set(sp.user_id, {
+                    ...existing,
+                    profile_photo: sp.profile_photo
+                });
+            });
 
             return rawPosts.map(post => ({
                 ...post,
@@ -809,17 +834,21 @@ export default function SocialFeed() {
 
     // Fetch current user's social profile for the post creation avatar
     const { data: currentUserProfile } = useQuery({
-        queryKey: ["current_social_profile", user?.id],
+        queryKey: ["current_social_profile", user?.id, profile?.first_name, profile?.last_name],
         queryFn: async () => {
             if (!user?.id) return null;
-            const { data, error } = await supabase
+            const { data: socialData, error: socialError } = await supabase
                 .from("social_profiles")
-                .select("social_name, profile_photo")
+                .select("profile_photo")
                 .eq("user_id", user.id)
                 .single();
 
-            if (error && error.code !== 'PGRST116') throw error;
-            return data;
+            if (socialError && socialError.code !== 'PGRST116') throw socialError;
+
+            return {
+                social_name: `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim() || "Profilim",
+                profile_photo: socialData?.profile_photo
+            };
         },
         enabled: !!user?.id
     });
@@ -859,8 +888,8 @@ export default function SocialFeed() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        if (file.size > 20 * 1024 * 1024) {
-            toast.error("Görsel boyutu 20MB'dan küçük olmalıdır.");
+        if (file.size > 50 * 1024 * 1024) {
+            toast.error("En fazla 50 MB fotoğraf yüklenebilir.");
             return;
         }
 
