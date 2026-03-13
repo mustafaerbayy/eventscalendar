@@ -14,7 +14,7 @@ import {
   Bell, Clock, CalendarDays, CalendarRange, CalendarClock,
   User, Save, Mail, Lock, Trash2, AlertTriangle,
   Settings, ShieldCheck, ChevronRight, LogOut,
-  LayoutDashboard, Activity, UserCircle
+  Activity, UserCircle
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import SocialProfileForm from "@/components/SocialProfileForm";
@@ -26,8 +26,8 @@ const Profile = () => {
   const navigate = useNavigate();
   const { user, profile, loading, refreshProfile, signOut } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeSection, setActiveSection] = useState<"account" | "social" | "reminders" | "security">(
-    (searchParams.get("tab") as any) || "account"
+  const [activeSection, setActiveSection] = useState<"account" | "social" | "reminders">(
+    ((searchParams.get("tab") as any) === "security" ? "account" : (searchParams.get("tab") as any)) || "account"
   );
 
   // Reminders State
@@ -171,7 +171,6 @@ const Profile = () => {
     { id: "account", label: "Hesap Bilgileri", icon: User },
     { id: "social", label: "Sosyal Profil", icon: UserCircle },
     { id: "reminders", label: "Hatırlatıcılar", icon: Bell },
-    { id: "security", label: "Güvenlik", icon: ShieldCheck },
   ];
 
   return (
@@ -373,96 +372,7 @@ const Profile = () => {
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
 
-                {activeSection === "social" && (
-                  <div className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent blur-xl rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                    <div className="relative bg-[#0c0c0c] border border-white/10 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
-                      <div className="p-6 md:p-12 relative z-10 w-full">
-                        <div className="flex items-center gap-4 md:gap-5 mb-8 md:mb-10">
-                          <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-inner">
-                            <UserCircle className="w-6 h-6 md:w-7 md:h-7 text-primary" />
-                          </div>
-                          <div>
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-widest mb-1 md:mb-2">
-                              TOPLULUK
-                            </div>
-                            <h2 className="text-2xl md:text-3xl font-display font-black text-white">Sosyal Profil</h2>
-                          </div>
-                        </div>
-
-                        <SocialProfileForm hideCard={true} />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {activeSection === "reminders" && (
-                  <div className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent blur-2xl rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                    <div className="relative bg-[#0c0c0c] border border-white/10 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
-                      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-
-                      <div className="p-6 md:p-12 relative z-10 w-full">
-                        <div className="flex items-center gap-4 md:gap-5 mb-8 md:mb-12">
-                          <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-inner relative overflow-hidden">
-                            <div className="absolute inset-0 bg-primary/20 blur-xl animate-pulse" />
-                            <Bell className="w-6 h-6 md:w-7 md:h-7 text-primary relative z-10" />
-                          </div>
-                          <div>
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-widest mb-1 md:mb-2">
-                              BİLDİRİMLER
-                            </div>
-                            <h2 className="text-2xl md:text-3xl font-display font-black text-white">Hatırlatıcı Tercihleri</h2>
-                          </div>
-                        </div>
-
-                        <div className="space-y-4">
-                          {reminderOptions.map((opt) => (
-                            <label
-                              key={opt.key}
-                              className="group/item flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 md:p-6 rounded-[1.5rem] bg-white/[0.02] border border-white/5 hover:border-primary/30 hover:bg-white/[0.04] transition-all cursor-pointer gap-4"
-                            >
-                              <div className="flex items-center gap-4 md:gap-5">
-                                <div className="w-12 h-12 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center group-hover/item:bg-primary/10 group-hover/item:scale-110 transition-all text-white/50 group-hover/item:text-primary">
-                                  <opt.icon className="w-6 h-6" />
-                                </div>
-                                <div>
-                                  <h3 className="text-base font-bold text-white group-hover/item:text-primary transition-colors">{opt.label}</h3>
-                                  <p className="text-xs font-medium text-white/40 mt-1">{opt.description}</p>
-                                </div>
-                              </div>
-                              <div className="ml-auto sm:ml-4">
-                                <Switch
-                                  id={opt.key}
-                                  checked={reminders[opt.key]}
-                                  onCheckedChange={(val) => setReminders(prev => ({ ...prev, [opt.key]: val }))}
-                                  className="data-[state=checked]:bg-primary"
-                                />
-                              </div>
-                            </label>
-                          ))}
-                        </div>
-
-                        <div className="mt-8 md:mt-12 flex flex-col sm:flex-row justify-end border-t border-white/10 pt-8">
-                          <button
-                            onClick={handleSaveReminders}
-                            disabled={saving}
-                            className="w-full sm:w-auto h-14 px-10 rounded-2xl bg-primary text-black font-black flex items-center justify-center gap-3 shadow-[0_10px_30px_rgba(16,185,129,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
-                          >
-                            <Save className="w-5 h-5" />
-                            {saving ? "KAYDEDİLİYOR..." : "TERCİHLERİ KAYDET"}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {activeSection === "security" && (
-                  <div className="space-y-8">
                     {/* Password Module */}
                     <div className="relative group">
                       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-transparent blur-xl rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
@@ -572,6 +482,91 @@ const Profile = () => {
                           >
                             <Trash2 className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
                             KALICI OLARAK SİL
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeSection === "social" && (
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent blur-xl rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                    <div className="relative bg-[#0c0c0c] border border-white/10 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                      <div className="p-6 md:p-12 relative z-10 w-full">
+                        <div className="flex items-center gap-4 md:gap-5 mb-8 md:mb-10">
+                          <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-inner">
+                            <UserCircle className="w-6 h-6 md:w-7 md:h-7 text-primary" />
+                          </div>
+                          <div>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-widest mb-1 md:mb-2">
+                              TOPLULUK
+                            </div>
+                            <h2 className="text-2xl md:text-3xl font-display font-black text-white">Sosyal Profil</h2>
+                          </div>
+                        </div>
+
+                        <SocialProfileForm hideCard={true} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeSection === "reminders" && (
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent blur-2xl rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                    <div className="relative bg-[#0c0c0c] border border-white/10 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+                      <div className="p-6 md:p-12 relative z-10 w-full">
+                        <div className="flex items-center gap-4 md:gap-5 mb-8 md:mb-12">
+                          <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-inner relative overflow-hidden">
+                            <div className="absolute inset-0 bg-primary/20 blur-xl animate-pulse" />
+                            <Bell className="w-6 h-6 md:w-7 md:h-7 text-primary relative z-10" />
+                          </div>
+                          <div>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-widest mb-1 md:mb-2">
+                              BİLDİRİMLER
+                            </div>
+                            <h2 className="text-2xl md:text-3xl font-display font-black text-white">Hatırlatıcı Tercihleri</h2>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          {reminderOptions.map((opt) => (
+                            <label
+                              key={opt.key}
+                              className="group/item flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 md:p-6 rounded-[1.5rem] bg-white/[0.02] border border-white/5 hover:border-primary/30 hover:bg-white/[0.04] transition-all cursor-pointer gap-4"
+                            >
+                              <div className="flex items-center gap-4 md:gap-5">
+                                <div className="w-12 h-12 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center group-hover/item:bg-primary/10 group-hover/item:scale-110 transition-all text-white/50 group-hover/item:text-primary">
+                                  <opt.icon className="w-6 h-6" />
+                                </div>
+                                <div>
+                                  <h3 className="text-base font-bold text-white group-hover/item:text-primary transition-colors">{opt.label}</h3>
+                                  <p className="text-xs font-medium text-white/40 mt-1">{opt.description}</p>
+                                </div>
+                              </div>
+                              <div className="ml-auto sm:ml-4">
+                                <Switch
+                                  id={opt.key}
+                                  checked={reminders[opt.key]}
+                                  onCheckedChange={(val) => setReminders(prev => ({ ...prev, [opt.key]: val }))}
+                                  className="data-[state=checked]:bg-primary"
+                                />
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+
+                        <div className="mt-8 md:mt-12 flex flex-col sm:flex-row justify-end border-t border-white/10 pt-8">
+                          <button
+                            onClick={handleSaveReminders}
+                            disabled={saving}
+                            className="w-full sm:w-auto h-14 px-10 rounded-2xl bg-primary text-black font-black flex items-center justify-center gap-3 shadow-[0_10px_30px_rgba(16,185,129,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                          >
+                            <Save className="w-5 h-5" />
+                            {saving ? "KAYDEDİLİYOR..." : "TERCİHLERİ KAYDET"}
                           </button>
                         </div>
                       </div>

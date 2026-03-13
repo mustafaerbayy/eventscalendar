@@ -10,6 +10,13 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { FileText, Download, Plus, Pencil, Trash2, Calendar, Upload, Loader2, Search, Clock, AlertCircle, ChevronRight, X, Layers, Zap } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import jsPDF from "jspdf";
+import { robotoRegularB64, robotoBoldB64 } from "@/lib/robotoFont";
+
+// ── Font helpers (module-level so it survives re-renders) ─────────────────────
+const loadRobotoFonts = () => ({ regular: robotoRegularB64, bold: robotoBoldB64 });
+// ─────────────────────────────────────────────────────────────────────────────
+
 
 interface WeeklyReport {
   id: string;
@@ -40,6 +47,7 @@ const WeeklyReports = () => {
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const [archiveLoading, setArchiveLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const fetchReports = async () => {
     setLoading(true);
@@ -129,17 +137,13 @@ const WeeklyReports = () => {
         fileType = ext;
       }
 
-      const creatorName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 'Bilinmeyen Kullanıcı';
-
-      const record = {
+      const record: any = {
         title: formData.title.trim(),
         week_start: formData.report_date,
         week_end: formData.report_date,
         content: formData.content.trim() || null,
         file_url: fileUrl,
         file_type: fileType,
-        created_by: user!.id,
-        creator_name: creatorName,
       };
 
       if (editingReport) {
@@ -150,7 +154,13 @@ const WeeklyReports = () => {
           setSelectedReport({ ...selectedReport, ...record });
         }
       } else {
-        const { error } = await supabase.from("weekly_reports").insert(record);
+        const creatorName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 'Bilinmeyen Kullanıcı';
+        const newRecord = {
+          ...record,
+          created_by: user!.id,
+          creator_name: creatorName,
+        };
+        const { error } = await supabase.from("weekly_reports").insert(newRecord);
         if (error) throw error;
         toast.success("Rapor oluşturuldu.");
       }
@@ -217,6 +227,147 @@ const WeeklyReports = () => {
       toast.error("İşlem başarısız: " + err.message);
     } finally {
       setArchiveLoading(false);
+    }
+  };
+
+  const downloadReportAsPdf = async (report: WeeklyReport) => {
+    setPdfLoading(true);
+    try {
+      // Load locally-bundled Roboto font (no network needed)
+      const fonts = loadRobotoFonts();
+
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+      // Register Roboto font variants
+      doc.addFileToVFS("Roboto-Regular.ttf", fonts.regular);
+      doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
+      doc.addFileToVFS("Roboto-Bold.ttf", fonts.bold);
+      doc.addFont("Roboto-Bold.ttf", "Roboto", "bold");
+
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+      const marginL = 20;
+      const marginR = 20;
+      const contentW = pageW - marginL - marginR;
+      let y = 0;
+
+      // ---- Header bar ----
+      doc.setFillColor(16, 185, 129);
+      doc.rect(0, 0, pageW, 18, "F");
+
+      doc.setFont("Roboto", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      doc.text("RAPORLAMA MERKEZİ", marginL, 11);
+
+      // Date – Turkish month names (Roboto supports Turkish chars now)
+      const trMonths = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+      const now = new Date();
+      const printDate = `${now.getDate()} ${trMonths[now.getMonth()]} ${now.getFullYear()}`;
+      doc.setFontSize(8);
+      doc.text(printDate, pageW - marginR, 11, { align: "right" });
+
+      y = 32;
+
+      // ---- Report title ----
+      doc.setFont("Roboto", "bold");
+      doc.setFontSize(22);
+      doc.setTextColor(20, 20, 20);
+      const titleLines = doc.splitTextToSize(report.title, contentW);
+      doc.text(titleLines, marginL, y);
+      y += titleLines.length * 9 + 4;
+
+      // ---- Divider ----
+      doc.setDrawColor(16, 185, 129);
+      doc.setLineWidth(0.8);
+      doc.line(marginL, y, pageW - marginR, y);
+      y += 8;
+
+      // ---- Meta row ----
+      doc.setFont("Roboto", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(100, 100, 100);
+      const trWeekdays = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
+      const rpDateObj = new Date(report.week_start);
+      const reportDateStr = `${trWeekdays[rpDateObj.getUTCDay()]}, ${rpDateObj.getUTCDate()} ${trMonths[rpDateObj.getUTCMonth()]} ${rpDateObj.getUTCFullYear()}`;
+      doc.text(`Tarih: ${reportDateStr}`, marginL, y);
+      doc.text(`Hazırlayan: ${report.creator_name}`, pageW - marginR, y, { align: "right" });
+      y += 14;
+
+      // ---- Content ----
+      if (report.content) {
+        doc.setFont("Roboto", "normal");
+        doc.setFontSize(11);
+        doc.setTextColor(40, 40, 40);
+        const lines = doc.splitTextToSize(report.content, contentW);
+        const lineHeight = 6;
+        lines.forEach((line: string) => {
+          if (y + lineHeight > pageH - 20) {
+            doc.addPage();
+            y = 20;
+          }
+          doc.text(line, marginL, y);
+          y += lineHeight;
+        });
+      } else {
+        doc.setFont("Roboto", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(160, 160, 160);
+        doc.text("Resmi metin içeriği girilmemiş.", marginL, y);
+        y += 10;
+      }
+
+      // ---- Attachment note ----
+      if (report.file_url) {
+        y += 8;
+        if (y > pageH - 30) { doc.addPage(); y = 20; }
+        doc.setFillColor(240, 253, 244);
+        doc.roundedRect(marginL, y, contentW, 14, 3, 3, "F");
+        doc.setFont("Roboto", "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(16, 185, 129);
+        doc.text(`EK DOSYA: ${report.file_type?.toUpperCase() ?? "BELGE"} dosyası bu rapora eklenmiştir.`, marginL + 4, y + 9);
+        y += 20;
+      }
+
+      // ---- Footer ----
+      const totalPages = (doc.internal as any).getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFont("Roboto", "normal");
+        doc.setFontSize(7);
+        doc.setTextColor(180, 180, 180);
+        doc.text(`Sayfa ${i} / ${totalPages}`, pageW / 2, pageH - 8, { align: "center" });
+        doc.text("Sistem Veri Politikası: Raporlar 1 yıl süreyle saklanır.", marginL, pageH - 8);
+      }
+
+      const safeTitle = report.title.replace(/[^a-zA-Z0-9_\-ğüşöçıĞÜŞÖÇİ ]/g, "").trim().replace(/\s+/g, "_");
+      doc.save(`${safeTitle}_${report.week_start}.pdf`);
+      toast.success("Rapor PDF olarak indirildi.");
+    } catch (err: any) {
+      console.error(err);
+      toast.error("PDF oluşturulurken hata oluştu.");
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
+  const downloadFile = async (url: string, fileName: string) => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Dosya indirilemedi");
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+      toast.success("Dosya indiriliyor...");
+    } catch (err: any) {
+      toast.error("Dosya indirilemedi: " + err.message);
     }
   };
 
@@ -405,7 +556,7 @@ const WeeklyReports = () => {
                         {report.file_url && (
                           <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-primary/80">
                             <Upload className="w-3 h-3" />
-                            EKLENTİ
+                            İNDİR
                           </div>
                         )}
                         {(() => {
@@ -447,57 +598,79 @@ const WeeklyReports = () => {
                   transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
                   className="flex flex-col h-full"
                 >
-                  {/* Detail Header */}
-                  <div className="p-6 md:p-8 pb-4 border-b border-white/5 flex flex-col md:flex-row md:items-start justify-between gap-6 bg-gradient-to-b from-white/[0.02] to-transparent pt-20 lg:pt-8">
+                  {/* Detail Header - Minimalist & Compact */}
+                  <div className="p-3 md:p-5 pb-3 border-b border-white/5 flex flex-col md:flex-row md:items-start justify-between gap-3 bg-gradient-to-b from-white/[0.02] to-transparent pt-20 lg:pt-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-4 mb-4">
+                      <div className="flex items-center gap-3 mb-2">
                         <button
                           onClick={() => setIsMobileDetailOpen(false)}
-                          className="lg:hidden w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10"
+                          className="lg:hidden w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10"
                         >
-                          <ChevronRight className="w-5 h-5 rotate-180" />
+                          <ChevronRight className="w-4 h-4 rotate-180" />
                         </button>
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-primary/10 border border-primary/20 text-primary font-black text-[10px] tracking-widest uppercase shadow-[0_0_20px_rgba(16,185,129,0.1)]">
-                          <Clock className="w-4 h-4" />
-                          {new Date(selectedReport.week_start).toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                        </div>
                       </div>
 
-                      <h2 className="text-2xl md:text-3xl font-display font-black leading-tight text-white mb-4">
+                      <h2 className="text-lg md:text-xl font-display font-black leading-tight text-white mb-2">
                         {selectedReport.title}
                       </h2>
 
-                      <div className="flex items-center gap-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary to-accent p-[1px]">
-                            <div className="w-full h-full rounded-2xl bg-black flex items-center justify-center text-[10px] font-black">
+                      <div className="flex items-center justify-between md:justify-start gap-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-primary to-accent p-[1px]">
+                            <div className="w-full h-full rounded-xl bg-black flex items-center justify-center text-[9px] font-black">
                               {selectedReport.creator_name?.[0]?.toUpperCase()}
                             </div>
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Hazırlayan</span>
-                            <span className="text-sm font-bold text-white/90">{selectedReport.creator_name}</span>
+                            <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Hazırlayan</span>
+                            <span className="text-xs font-bold text-white/80">{selectedReport.creator_name}</span>
                           </div>
                         </div>
 
-                        {canReport && (
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleArchive(selectedReport)}
-                              disabled={archiveLoading}
-                              className={`w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center transition-all ${selectedReport.is_archived ? 'text-amber-500 hover:bg-amber-500/10' : 'text-white/40 hover:text-primary'}`}
-                              title={selectedReport.is_archived ? "Arşivden Çıkar" : "Arşive Al"}
-                            >
-                              <Layers className={`w-4 h-4 ${archiveLoading ? 'animate-pulse' : ''}`} />
-                            </button>
-                            <button onClick={() => openEditDialog(selectedReport)} className="w-10 h-10 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/40 hover:text-primary transition-all">
-                              <Pencil className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => handleDelete(selectedReport)} className="w-10 h-10 rounded-2xl bg-white/5 hover:bg-destructive/10 border border-white/10 flex items-center justify-center text-white/40 hover:text-destructive transition-all">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        )}
+                        <div className="flex gap-2">
+                          {/* PDF Download – visible to all */}
+                          <button
+                            onClick={() => downloadReportAsPdf(selectedReport)}
+                            disabled={pdfLoading}
+                            title="Raporu PDF olarak indir"
+                            className="flex items-center gap-2 h-10 px-4 rounded-2xl bg-primary/10 hover:bg-primary/20 border border-primary/20 hover:border-primary/40 text-primary font-black text-[10px] tracking-widest transition-all disabled:opacity-50"
+                          >
+                            {pdfLoading ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Download className="w-4 h-4" />
+                            )}
+                            <span className="hidden sm:inline">PDF İNDİR</span>
+                          </button>
+
+                          {canReport && (
+                            <>
+                              <button
+                                onClick={() => handleArchive(selectedReport)}
+                                disabled={archiveLoading}
+                                className={`w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center transition-all ${selectedReport.is_archived ? 'text-amber-500 hover:bg-amber-500/10' : 'text-white/40 hover:text-primary'}`}
+                                title={selectedReport.is_archived ? "Arşivden Çıkar" : "Arşive Al"}
+                              >
+                                <Layers className={`w-4 h-4 ${archiveLoading ? 'animate-pulse' : ''}`} />
+                              </button>
+                              <button onClick={() => openEditDialog(selectedReport)} className="w-10 h-10 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/40 hover:text-primary transition-all">
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => handleDelete(selectedReport)} className="w-10 h-10 rounded-2xl bg-white/5 hover:bg-destructive/10 border border-white/10 flex items-center justify-center text-white/40 hover:text-destructive transition-all">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Compact Date Box - Single line on mobile to save space */}
+                    <div className="flex items-center md:flex-col md:items-end gap-2 md:gap-1 shrink-0 px-3 md:px-4 py-1 md:py-2 rounded-2xl bg-white/5 border border-white/10 self-end md:self-center">
+                      <span className="hidden md:block text-[8px] font-black text-white/30 uppercase tracking-[0.2em]">RAPOR TARİHİ</span>
+                      <div className="flex items-center gap-1.5 md:gap-2 text-primary font-black text-[9px] md:text-[10px] tracking-widest uppercase">
+                        <Clock className="w-3 h-3" />
+                        {new Date(selectedReport.week_start).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
                       </div>
                     </div>
                   </div>
@@ -507,9 +680,11 @@ const WeeklyReports = () => {
                     <div className="max-w-4xl mx-auto">
                       <div className="prose prose-invert prose-sm md:prose-lg max-w-none">
                         {selectedReport.content ? (
-                          <p className="text-white/70 leading-[1.8] text-lg font-medium whitespace-pre-wrap selection:bg-primary/40">
-                            {selectedReport.content}
-                          </p>
+                          <div className="relative">
+                            <p className="text-white/70 leading-[1.8] text-lg font-medium whitespace-pre-wrap selection:bg-primary/40">
+                              {selectedReport.content}
+                            </p>
+                          </div>
                         ) : (
                           <div className="flex flex-col items-center justify-center py-20 bg-white/5 rounded-[3rem] border border-dashed border-white/10">
                             <AlertCircle className="w-12 h-12 text-white/10 mb-4" />
@@ -522,23 +697,20 @@ const WeeklyReports = () => {
                         <div className="mt-16 group/doc">
                           <div className="flex items-center justify-between mb-6">
                             <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em]">EK DOSYALAR</h4>
-                            {canReport && (
-                              <button
-                                onClick={() => handleDeleteDocument(selectedReport)}
-                                className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 text-[10px] font-black tracking-widest transition-all"
-                                title="Dökümanı Sil"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                                DOSYAYI SİL
-                              </button>
-                            )}
+                            <div className="flex items-center gap-2">
+                              {canReport && (
+                                <button
+                                  onClick={() => handleDeleteDocument(selectedReport)}
+                                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 text-[10px] font-black tracking-widest transition-all"
+                                  title="Dökümanı Sil"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                  DOSYAYI SİL
+                                </button>
+                              )}
+                            </div>
                           </div>
-                          <a
-                            href={selectedReport.file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block relative p-1 rounded-[2.5rem] bg-gradient-to-br from-primary/30 via-white/5 to-white/5 group-hover/doc:from-primary/50 transition-all duration-500"
-                          >
+                          <div className="relative p-1 rounded-[2.5rem] bg-gradient-to-br from-primary/30 via-white/5 to-white/5 group-hover/doc:from-primary/50 transition-all duration-500">
                             <div className="bg-[#0c0c0c] rounded-[2.4rem] p-8 flex items-center gap-6">
                               <div className="w-20 h-20 rounded-[1.5rem] bg-white/5 border border-white/10 flex items-center justify-center group-hover/doc:scale-110 group-hover/doc:rotate-3 transition-transform duration-500 relative">
                                 <div className="absolute inset-0 bg-primary/20 blur-2xl opacity-0 group-hover/doc:opacity-100 transition-opacity" />
@@ -548,14 +720,34 @@ const WeeklyReports = () => {
                                 <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-[9px] font-black uppercase tracking-widest mb-2 border border-primary/20">
                                   {selectedReport.file_type?.toUpperCase()} BELGESİ
                                 </span>
-                                <h5 className="text-2xl font-display font-black text-white group-hover/doc:text-primary transition-colors">Faaliyet Dökümanı</h5>
-                                <p className="text-white/30 text-sm font-bold mt-1">Görüntülemek için tıklayın</p>
+                                <h5 className="text-2xl font-display font-black text-white">Faaliyet Dökümanı</h5>
+                                <p className="text-white/30 text-sm font-bold mt-1">Aşağıdan görüntüle veya indir</p>
                               </div>
-                              <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover/doc:bg-primary group-hover/doc:border-primary transition-all duration-500">
-                                <Download className="w-6 h-6 text-white group-hover/doc:text-black" />
+                              {/* Action buttons: view + download */}
+                              <div className="flex flex-col gap-3">
+                                <a
+                                  href={selectedReport.file_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title="Yeni sekmede görüntüle"
+                                  className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all duration-300"
+                                >
+                                  <FileText className="w-5 h-5 text-white/60" />
+                                </a>
+                                <button
+                                  onClick={() => {
+                                    const ext = selectedReport.file_type || 'file';
+                                    const safeTitle = selectedReport.title.replace(/[^a-zA-Z0-9_\-ğüşöçıĞÜŞÖÇİ ]/g, '').trim().replace(/\s+/g, '_');
+                                    downloadFile(selectedReport.file_url!, `${safeTitle}.${ext}`);
+                                  }}
+                                  title="Dosyayı indir"
+                                  className="w-14 h-14 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center hover:bg-primary hover:border-primary transition-all duration-300 group/dl"
+                                >
+                                  <Download className="w-5 h-5 text-primary group-hover/dl:text-black transition-colors" />
+                                </button>
                               </div>
                             </div>
-                          </a>
+                          </div>
                         </div>
                       )}
                     </div>
