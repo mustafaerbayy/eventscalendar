@@ -53,7 +53,7 @@ const Social = () => {
                             </div>
                         </div>
 
-                        <h1 className="text-2xl font-bold text-gray-900 mb-3 tracking-tight">Sosyal Akış'a Hoş Geldiniz</h1>
+                        <h1 className="text-2xl font-bold text-gray-900 mb-3 tracking-tight">Fikir Meydanı'na Hoş Geldiniz</h1>
                         <p className="text-gray-500 mb-8 leading-relaxed text-sm">
                             Paylaşımları görmek, topluluğumuzla etkileşim kurmak ve kendi anılarınızı paylaşmak için giriş yapmanız gerekmektedir.
                         </p>
@@ -135,14 +135,14 @@ const Social = () => {
                             
                             <h2 className="text-lg font-bold text-gray-900 mb-2">Profilinizi Tamamlayın</h2>
                             <p className="text-gray-500 mb-6 text-sm leading-relaxed max-w-[280px]">
-                                Lütfen Sosyal Profilinizdeki eksik bilgileri doldurunuz.
+                                Lütfen Fikir Meydanı profilinizdeki eksik bilgileri doldurunuz.
                             </p>
                             
                             <Button
                                 onClick={() => navigate("/profil?tab=social")}
                                 className="bg-primary hover:bg-primary/90 text-white font-bold h-11 px-8 rounded-xl text-sm flex items-center gap-2 transition-all shadow-lg shadow-primary/20"
                             >
-                                Sosyal Profil'e Git
+                                Fikir Meydanı Profili'ne Git
                                 <ArrowRight className="w-4 h-4" />
                             </Button>
                         </div>

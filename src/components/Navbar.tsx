@@ -136,7 +136,7 @@ const Navbar = () => {
               className="px-4 py-2 text-sm font-bold text-white/70 hover:text-white transition-all flex items-center gap-2 rounded-xl hover:bg-white/5 relative group"
             >
               <MessageSquare className="h-4 w-4" />
-              <span>Sosyal</span>
+              <span>Fikir Meydanı</span>
               <motion.div className="absolute inset-0 bg-primary/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
             </Link>
 
@@ -271,7 +271,7 @@ const Navbar = () => {
               />
               <MobileLink icon={<BarChart3 />} label="Raporlar" onClick={() => { navigate("/raporlar"); setMobileOpen(false); }} />
 
-              <MobileLink icon={<MessageSquare />} label="Sosyal Akış" onClick={() => { navigate("/sosyal"); setMobileOpen(false); }} />
+              <MobileLink icon={<MessageSquare />} label="Fikir Meydanı" onClick={() => { navigate("/sosyal"); setMobileOpen(false); }} />
 
               <MobileLink icon={<Info />} label="Biz Kimiz" onClick={() => { setAboutOpen(true); setMobileOpen(false); }} />
 

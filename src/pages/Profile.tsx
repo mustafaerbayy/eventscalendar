@@ -169,7 +169,7 @@ const Profile = () => {
 
   const sidebarItems = [
     { id: "account", label: "Hesap Bilgileri", icon: User },
-    { id: "social", label: "Sosyal Profil", icon: UserCircle },
+    { id: "social", label: "Fikir Meydanı Profili", icon: UserCircle },
     { id: "reminders", label: "Hatırlatıcılar", icon: Bell },
   ];
 
@@ -502,7 +502,7 @@ const Profile = () => {
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-widest mb-1 md:mb-2">
                               TOPLULUK
                             </div>
-                            <h2 className="text-2xl md:text-3xl font-display font-black text-white">Sosyal Profil</h2>
+                            <h2 className="text-2xl md:text-3xl font-display font-black text-white">Fikir Meydanı Profili</h2>
                           </div>
                         </div>
 

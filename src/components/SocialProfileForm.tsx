@@ -100,7 +100,7 @@ export default function SocialProfileForm({ hideCard = false }: SocialProfileFor
             if (error) throw error;
         },
         onSuccess: () => {
-            toast.success("Sosyal profiliniz güncellendi!");
+            toast.success("Fikir Meydanı profiliniz güncellendi!");
             queryClient.invalidateQueries({ queryKey: ["social_profile", user?.id] });
         },
         onError: (error) => {
@@ -276,7 +276,7 @@ export default function SocialProfileForm({ hideCard = false }: SocialProfileFor
                         <FormItem>
                             <FormLabel className="text-white flex items-center justify-between">
                                 Meslek / Ünvan
-                                <span className="text-[10px] text-red-500/60 font-normal italic">Sosyal Akış için lütfen doldurunuz</span>
+                                <span className="text-[10px] text-red-500/60 font-normal italic">Fikir Meydanı için lütfen doldurunuz</span>
                             </FormLabel>
                             <FormControl>
                                 <Input
@@ -298,7 +298,7 @@ export default function SocialProfileForm({ hideCard = false }: SocialProfileFor
                         <FormItem>
                             <FormLabel className="text-white flex items-center justify-between">
                                 Üniversite
-                                <span className="text-[10px] text-red-500/60 font-normal italic">Sosyal Akış için lütfen doldurunuz</span>
+                                <span className="text-[10px] text-red-500/60 font-normal italic">Fikir Meydanı için lütfen doldurunuz</span>
                             </FormLabel>
                             <FormControl>
                                 <Input
@@ -374,7 +374,7 @@ export default function SocialProfileForm({ hideCard = false }: SocialProfileFor
                                     <span className="text-primary font-medium">Sistemde sadece yaşınız ({currentAge}) gösterilecektir.</span>
                                 ) : (
 
-                                    "Girdiğiniz tarihe göre yaşınız hesaplanacak ve Sosyal Akış bölümünde diğer üyelere sadece yaşınız gösterilecektir."
+                                    "Girdiğiniz tarihe göre yaşınız hesaplanacak ve Fikir Meydanı bölümünde diğer üyelere sadece yaşınız gösterilecektir."
                                 )}
                             </FormDescription>
                             <FormMessage />
@@ -403,9 +403,9 @@ export default function SocialProfileForm({ hideCard = false }: SocialProfileFor
     return (
         <Card className="w-full max-w-2xl mx-auto shadow-sm border-gray-100">
             <CardHeader>
-                <CardTitle>Sosyal Profil</CardTitle>
+                <CardTitle>Fikir Meydanı Profili</CardTitle>
                 <CardDescription>
-                    Sosyal profiliniz başkalarıyla etkileşim kurarken görünür olur.
+                    Fikir Meydanı profiliniz başkalarıyla etkileşim kurarken görünür olur.
                 </CardDescription>
             </CardHeader>
             <CardContent>

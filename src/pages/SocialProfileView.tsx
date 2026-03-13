@@ -89,7 +89,7 @@ export default function SocialProfileView() {
                         <p className="text-gray-600 mb-6">Aradığınız kullanıcı profili mevcut değil veya silinmiş olabilir.</p>
                         <Button onClick={() => navigate("/sosyal")} variant="outline">
                             <ArrowLeft className="mr-2 h-4 w-4" />
-                            Sosyal Alana Dön
+                            Fikir Meydanı'na Dön
                         </Button>
                     </div>
                 </main>

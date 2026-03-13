@@ -599,78 +599,91 @@ const WeeklyReports = () => {
                   className="flex flex-col h-full"
                 >
                   {/* Detail Header - Minimalist & Compact */}
-                  <div className="p-3 md:p-5 pb-3 border-b border-white/5 flex flex-col md:flex-row md:items-start justify-between gap-3 bg-gradient-to-b from-white/[0.02] to-transparent pt-20 lg:pt-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
+                  <div className="p-3 md:p-5 border-b border-white/5 flex flex-col gap-3 bg-gradient-to-b from-white/[0.02] to-transparent pt-20 lg:pt-5">
+                    {/* Row 1: Mobile Back & Title & Date */}
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3 min-w-0">
                         <button
                           onClick={() => setIsMobileDetailOpen(false)}
-                          className="lg:hidden w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10"
+                          className="lg:hidden w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 active:scale-90 transition-transform shrink-0"
                         >
                           <ChevronRight className="w-4 h-4 rotate-180" />
                         </button>
+                        <h2 className="text-lg md:text-xl font-display font-black leading-tight text-white truncate">
+                          {selectedReport.title}
+                        </h2>
                       </div>
 
-                      <h2 className="text-lg md:text-xl font-display font-black leading-tight text-white mb-2">
-                        {selectedReport.title}
-                      </h2>
-
-                      <div className="flex items-center justify-between md:justify-start gap-4">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-primary to-accent p-[1px]">
-                            <div className="w-full h-full rounded-xl bg-black flex items-center justify-center text-[9px] font-black">
-                              {selectedReport.creator_name?.[0]?.toUpperCase()}
-                            </div>
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Hazırlayan</span>
-                            <span className="text-xs font-bold text-white/80">{selectedReport.creator_name}</span>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-2">
-                          {/* PDF Download – visible to all */}
-                          <button
-                            onClick={() => downloadReportAsPdf(selectedReport)}
-                            disabled={pdfLoading}
-                            title="Raporu PDF olarak indir"
-                            className="flex items-center gap-2 h-10 px-4 rounded-2xl bg-primary/10 hover:bg-primary/20 border border-primary/20 hover:border-primary/40 text-primary font-black text-[10px] tracking-widest transition-all disabled:opacity-50"
-                          >
-                            {pdfLoading ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Download className="w-4 h-4" />
-                            )}
-                            <span className="hidden sm:inline">PDF İNDİR</span>
-                          </button>
-
-                          {canReport && (
-                            <>
-                              <button
-                                onClick={() => handleArchive(selectedReport)}
-                                disabled={archiveLoading}
-                                className={`w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center transition-all ${selectedReport.is_archived ? 'text-amber-500 hover:bg-amber-500/10' : 'text-white/40 hover:text-primary'}`}
-                                title={selectedReport.is_archived ? "Arşivden Çıkar" : "Arşive Al"}
-                              >
-                                <Layers className={`w-4 h-4 ${archiveLoading ? 'animate-pulse' : ''}`} />
-                              </button>
-                              <button onClick={() => openEditDialog(selectedReport)} className="w-10 h-10 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/40 hover:text-primary transition-all">
-                                <Pencil className="w-4 h-4" />
-                              </button>
-                              <button onClick={() => handleDelete(selectedReport)} className="w-10 h-10 rounded-2xl bg-white/5 hover:bg-destructive/10 border border-white/10 flex items-center justify-center text-white/40 hover:text-destructive transition-all">
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </>
-                          )}
-                        </div>
+                      {/* Date Box - Compact version moved to top row */}
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 shrink-0">
+                        <Clock className="w-3 h-3 text-primary" />
+                        <span className="text-primary font-black text-[9px] md:text-[10px] tracking-tight uppercase">
+                          {new Date(selectedReport.week_start).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
                       </div>
                     </div>
 
-                    {/* Compact Date Box - Single line on mobile to save space */}
-                    <div className="flex items-center md:flex-col md:items-end gap-2 md:gap-1 shrink-0 px-3 md:px-4 py-1 md:py-2 rounded-2xl bg-white/5 border border-white/10 self-end md:self-center">
-                      <span className="hidden md:block text-[8px] font-black text-white/30 uppercase tracking-[0.2em]">RAPOR TARİHİ</span>
-                      <div className="flex items-center gap-1.5 md:gap-2 text-primary font-black text-[9px] md:text-[10px] tracking-widest uppercase">
-                        <Clock className="w-3 h-3" />
-                        {new Date(selectedReport.week_start).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    {/* Row 2: Creator & Action Buttons (Aligned to save vertical space) */}
+                    <div className="flex items-center justify-between gap-4 flex-wrap">
+                      {/* Creator Info */}
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-primary to-accent p-[1px]">
+                          <div className="w-full h-full rounded-lg bg-black flex items-center justify-center text-[8px] font-black">
+                            {selectedReport.creator_name?.[0]?.toUpperCase()}
+                          </div>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[8px] font-black text-white/30 uppercase tracking-[0.2em] leading-none mb-0.5">Yazar</span>
+                          <span className="text-[10px] font-bold text-white/80 leading-none">{selectedReport.creator_name}</span>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons Container - Scaled down */}
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={() => downloadReportAsPdf(selectedReport)}
+                          disabled={pdfLoading}
+                          className="flex items-center gap-1 h-7 px-2.5 rounded-lg bg-primary/10 hover:bg-primary/20 border border-primary/20 hover:border-primary/40 text-primary font-black text-[8px] md:text-[9px] tracking-tight transition-all disabled:opacity-50 active:scale-95 shrink-0"
+                          title="PDF İndir"
+                        >
+                          {pdfLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+                          <span>RAPORU İNDİR</span>
+                        </button>
+
+                        {canReport && (
+                          <>
+                            <button
+                              onClick={() => handleArchive(selectedReport)}
+                              disabled={archiveLoading}
+                              className={`flex items-center gap-1 h-7 px-2.5 rounded-lg border transition-all active:scale-95 text-[8px] md:text-[9px] tracking-tight shrink-0 ${selectedReport.is_archived
+                                ? 'bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20'
+                                : 'bg-white/5 border-white/10 text-white/40 hover:text-primary hover:border-primary/40'
+                                }`}
+                              title={selectedReport.is_archived ? "Arşivden Çıkar" : "Arşive Al"}
+                            >
+                              <Layers className={`w-3 h-3 ${archiveLoading ? 'animate-pulse' : ''}`} />
+                              <span>{selectedReport.is_archived ? "AÇ" : "ARŞİV"}</span>
+                            </button>
+
+                            <button
+                              onClick={() => openEditDialog(selectedReport)}
+                              className="flex items-center gap-1 h-7 px-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/40 hover:text-primary transition-all active:scale-95 text-[8px] md:text-[9px] tracking-tight shrink-0"
+                              title="Düzenle"
+                            >
+                              <Pencil className="w-3 h-3" />
+                              <span>DÜZENLE</span>
+                            </button>
+
+                            <button
+                              onClick={() => handleDelete(selectedReport)}
+                              className="flex items-center gap-1 h-7 px-2.5 rounded-lg bg-white/5 hover:bg-destructive/10 border border-white/10 text-white/40 hover:text-destructive transition-all active:scale-95 text-[8px] md:text-[9px] tracking-tight shrink-0"
+                              title="Sil"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                              <span>SİL</span>
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

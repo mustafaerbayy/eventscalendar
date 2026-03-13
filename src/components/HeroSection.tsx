@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Sparkles, CalendarDays, MapPin, Navigation, FileText } from "lucide-react";
+import { Sparkles, CalendarDays, MapPin, Navigation, FileText, MessageSquare } from "lucide-react";
 
 interface HeroSectionProps {
   onViewEvents?: () => void;
@@ -134,12 +134,31 @@ const HeroSection = ({ onViewEvents }: HeroSectionProps) => {
                 </Button>
               </div>
             </motion.div>
+
+            {/* Fikir Meydanı Button */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+            >
+              <div className="relative p-[2px] rounded-full overflow-hidden group/btn bg-gradient-to-r from-purple-600/50 via-purple-400/30 to-purple-600/50 hover:scale-105 active:scale-95 transition-transform">
+                <Button
+                  onClick={() => navigate('/sosyal')}
+                  className="relative z-10 h-14 px-10 rounded-full bg-black/80 backdrop-blur-lg border-none text-purple-500/90 font-black text-xs tracking-[0.2em] overflow-hidden group hover:text-purple-400 transition-all duration-500 w-64"
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-3 w-full">
+                    FİKİR MEYDANI'NA GİT
+                    <MessageSquare className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                  </span>
+                </Button>
+              </div>
+            </motion.div>
           </div>
         </div>
       </motion.div>
 
       {/* Bottom Transition */}
-      <div className="absolute bottom-0 left-0 right-0 h-96 pointer-events-none z-20 overflow-hidden">
+      <div className="absolute bottom-0 left-0 right-0 h-96 pointer-events-none z-10 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/10 to-transparent" />
         <div className="absolute -bottom-20 -left-20 w-full h-full bg-emerald-500/5 blur-[80px] opacity-40" />
         <div className="absolute -bottom-20 -right-20 w-full h-full bg-amber-500/5 blur-[80px] opacity-40" />
