@@ -2130,8 +2130,9 @@ export default function SocialFeed() {
                                                             )}
                                                             <div className="flex items-start gap-2.5">
                                                                 <Avatar className="h-7 w-7 mt-1 shrink-0 border border-primary/10">
+                                                                    <AvatarImage src={currentUserProfile?.profile_photo || undefined} />
                                                                     <AvatarFallback className="bg-gradient-to-br from-primary/15 to-primary/5 text-primary text-[10px] font-bold">
-                                                                        {getInitials(user?.user_metadata?.first_name)}
+                                                                        {getInitials(currentUserProfile?.social_name)}
                                                                     </AvatarFallback>
                                                                 </Avatar>
                                                                 <div className="flex-1 flex items-center gap-1.5 bg-gray-50/80 rounded-2xl border border-gray-100 focus-within:border-primary/30 focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(99,102,241,0.06)] transition-all duration-300">
