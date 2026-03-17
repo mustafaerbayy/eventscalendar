@@ -761,7 +761,15 @@ export default function SocialFeed() {
             const { data: rawPosts, error } = await supabase
                 .from("posts")
                 .select(`
-          *,
+          id,
+          user_id,
+          content,
+          image_url,
+          created_at,
+          linked_event_id,
+          linked_report_id,
+          linked_post_id,
+          poll_data,
           linked_event:linked_event_id(
             id,
             title,

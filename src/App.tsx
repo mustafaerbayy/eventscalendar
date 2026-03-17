@@ -7,6 +7,13 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import React, { Suspense, useEffect } from "react";
 import LoadingScreen from "@/components/LoadingScreen";
+import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
+import { NotificationPermission } from "@/components/NotificationPermission";
+
+const NotificationManager = () => {
+  useRealtimeNotifications();
+  return null;
+};
 
 // Supabase recovery token root'a düşerse /sifre-sifirla'ya yönlendir
 const AuthRedirectHandler = () => {
@@ -78,6 +85,8 @@ const App = () => (
       <BrowserRouter>
         <ScrollToTop />
         <AuthProvider>
+          <NotificationManager />
+          <NotificationPermission />
           <AuthRedirectHandler />
           <Suspense fallback={<LoadingScreen />}>
             <Routes>

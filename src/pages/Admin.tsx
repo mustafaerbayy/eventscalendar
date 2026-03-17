@@ -107,12 +107,12 @@ const Admin = () => {
   const fetchAll = async () => {
     try {
       const [citiesR, catsR, venuesR, eventsR, profilesR, announcementsR] = await Promise.all([
-        supabase.from("cities").select("*").order("name"),
-        supabase.from("categories").select("*").order("name"),
-        supabase.from("venues").select("*").order("name"),
-        supabase.from("events").select("*, cities(name), venues(name), categories(name)").order("date", { ascending: false }),
+        supabase.from("cities").select("id, name").order("name"),
+        supabase.from("categories").select("id, name").order("name"),
+        supabase.from("venues").select("id, name, city_id").order("name"),
+        supabase.from("events").select("id, title, description, date, time, city_id, venue_name, category_id, cities(name), venues(name), categories(name)").order("date", { ascending: false }),
         supabase.from("profiles").select("id, first_name, last_name, reminder_2h, reminder_1d, reminder_2d, reminder_3d, reminder_1w"),
-        supabase.from("announcements").select("*, announcement_recipients(status)").order("created_at", { ascending: false }),
+        supabase.from("announcements").select("id, subject, body, recipient_count, created_at, announcement_recipients(status)").order("created_at", { ascending: false }),
       ]);
       setCities(citiesR.data || []);
       setCategories(catsR.data || []);

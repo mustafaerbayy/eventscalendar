@@ -27,6 +27,7 @@ interface EventDetail {
   venue_name: string;
   cities: { name: string } | null;
   categories: { name: string } | null;
+  venues: { name: string } | null;
 }
 
 interface RsvpWithProfile {
@@ -53,7 +54,7 @@ const EventDetailPage = () => {
     const [eventRes, rsvpRes] = await Promise.all([
       supabase
         .from("events")
-        .select("*, cities(name), categories(name)")
+        .select("*, cities(name), categories(name), venues(name)")
         .eq("id", id)
         .single(),
       supabase
@@ -159,7 +160,7 @@ const EventDetailPage = () => {
             </div>
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-primary" />
-              <span>{[event.venue_name, event.cities?.name].filter(Boolean).join(", ")}</span>
+              <span>{[event.venue_name || event.venues?.name, event.cities?.name].filter(Boolean).join(", ")}</span>
             </div>
           </div>
 
