@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2, Send, Image as ImageIcon, X, FileText, Calendar, Link as LinkIcon, BarChart2, Plus, Trash2, MoreHorizontal, Pencil, Check, MessageCircle, ChevronDown, ChevronUp, Heart, Smile, Reply } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { MentionTextarea } from "./MentionTextarea";
 import {
     Dialog,
     DialogContent,
@@ -437,6 +438,49 @@ function CommentLikeButton({ commentId }: { commentId: string }) {
 }
 
 
+const renderContent = (content: string, navigate: (path: string) => void) => {
+    if (!content) return null;
+    
+    // Regex to match @[Name](uuid)
+    const mentionRegex = /@\[([^\]]+)\]\(([a-f0-9-]{36})\)/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+    
+    while ((match = mentionRegex.exec(content)) !== null) {
+        // Text before the match
+        if (match.index > lastIndex) {
+            parts.push(content.substring(lastIndex, match.index));
+        }
+        
+        const name = match[1];
+        const id = match[2];
+        
+        parts.push(
+            <span
+                key={`${id}-${match.index}`}
+                className="text-primary font-bold cursor-pointer hover:underline"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/sosyal/profil/${id}`);
+                }}
+            >
+                @{name}
+            </span>
+        );
+        
+        lastIndex = mentionRegex.lastIndex;
+    }
+    
+    // Remaining text
+    if (lastIndex < content.length) {
+        parts.push(content.substring(lastIndex));
+    }
+    
+    return parts.length > 0 ? parts : content;
+};
+
+
 // --- Comment Sub-Components ---
 
 function CommentsCount({ postId }: { postId: string }) {
@@ -455,6 +499,7 @@ function CommentsCount({ postId }: { postId: string }) {
 }
 
 function CommentsSection({ postId, onReplyClick }: { postId: string, onReplyClick?: (commentId: string, authorName: string, content: string) => void }) {
+    const navigate = useNavigate();
     const { user } = useAuth();
     const isSuperAdmin = user?.email === "admin@admin.com";
     const queryClient = useQueryClient();
@@ -553,6 +598,7 @@ function CommentsSection({ postId, onReplyClick }: { postId: string, onReplyClic
         return name.slice(0, 2).toUpperCase();
     };
 
+
     if (isLoading) {
         return (
             <div className="flex justify-center py-3">
@@ -604,49 +650,51 @@ function CommentsSection({ postId, onReplyClick }: { postId: string, onReplyClic
                                                     <MessageCircle className="w-3 h-3 text-primary/40" />
                                                     {quoted?.profile?.social_name || 'Anonim'}
                                                 </div>
-                                                <div className="line-clamp-2">{quoted?.content}</div>
+                                                <div className="line-clamp-2">
+                                                    {renderContent(quoted?.content, navigate)}
+                                                </div>
                                             </div>
                                         );
                                     })()}
 
                                     {isEditing ? (
-                                        <div className="flex items-center gap-1.5 mt-1">
-                                            <input
-                                                type="text"
+                                        <div className="flex flex-col gap-1.5 mt-1">
+                                            <MentionTextarea
                                                 value={editCommentText}
-                                                onChange={(e) => setEditCommentText(e.target.value)}
+                                                onChange={(val) => setEditCommentText(val)}
                                                 onKeyDown={(e) => {
-                                                    if (e.key === 'Enter' && editCommentText.trim()) {
+                                                    if (e.key === 'Enter' && !e.shiftKey && editCommentText.trim()) {
                                                         updateCommentMutation.mutate({ commentId: comment.id, content: editCommentText.trim() });
                                                     } else if (e.key === 'Escape') {
                                                         setEditingCommentId(null);
                                                         setEditCommentText("");
                                                     }
                                                 }}
-                                                autoFocus
-                                                className="flex-1 bg-white border border-primary/30 rounded-lg px-2 py-1 text-[13px] text-gray-700 outline-none focus:border-primary/50"
+                                                className="flex-1 bg-white border border-primary/30 rounded-lg px-2 py-1 text-[13px] text-gray-700 outline-none focus:border-primary/50 min-h-[40px]"
                                             />
-                                            <button
-                                                onClick={() => {
-                                                    if (editCommentText.trim()) {
-                                                        updateCommentMutation.mutate({ commentId: comment.id, content: editCommentText.trim() });
-                                                    }
-                                                }}
-                                                disabled={!editCommentText.trim() || updateCommentMutation.isPending}
-                                                className="text-primary hover:text-primary/80 disabled:text-gray-300 p-1"
-                                            >
-                                                <Check className="w-3.5 h-3.5" />
-                                            </button>
-                                            <button
-                                                onClick={() => { setEditingCommentId(null); setEditCommentText(""); }}
-                                                className="text-gray-400 hover:text-red-500 p-1"
-                                            >
-                                                <X className="w-3.5 h-3.5" />
-                                            </button>
+                                            <div className="flex justify-end gap-1">
+                                                <button
+                                                    onClick={() => {
+                                                        if (editCommentText.trim()) {
+                                                            updateCommentMutation.mutate({ commentId: comment.id, content: editCommentText.trim() });
+                                                        }
+                                                    }}
+                                                    disabled={!editCommentText.trim() || updateCommentMutation.isPending}
+                                                    className="text-primary hover:text-primary/80 disabled:text-gray-300 p-1"
+                                                >
+                                                    <Check className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => { setEditingCommentId(null); setEditCommentText(""); }}
+                                                    className="text-gray-400 hover:text-red-500 p-1"
+                                                >
+                                                    <X className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
                                         </div>
                                     ) : (
                                         <p className="text-[13px] text-gray-600 leading-relaxed break-words">
-                                            {comment.content}
+                                            {renderContent(comment.content, navigate)}
                                         </p>
                                     )}
                                 </div>
@@ -1424,11 +1472,11 @@ export default function SocialFeed() {
                                             {getInitials(currentUserProfile?.social_name)}
                                         </AvatarFallback>
                                     </Avatar>
-                                    <Textarea
+                                    <MentionTextarea
                                         placeholder="Aklından ne geçiyor?"
                                         className="resize-none min-h-[100px] flex-1 bg-gray-50 hover:bg-white focus:bg-white transition-colors"
                                         value={newPostContent}
-                                        onChange={(e) => setNewPostContent(e.target.value)}
+                                        onChange={(val) => setNewPostContent(val)}
                                     />
                                 </div>
 
@@ -1817,7 +1865,7 @@ export default function SocialFeed() {
                                                         {linkedPostAuthor?.social_name || "Gizli Kullanıcı"} alıntılandı
                                                     </span>
                                                     <p className="text-xs text-gray-500 truncate group-hover/quoted:text-gray-700 transition-colors font-medium">
-                                                        {linkedPost.content || "Bir görsel içeren gönderiyi alıntıladı."}
+                                                        {linkedPost.content ? renderContent(linkedPost.content, navigate) : "Bir görsel içeren gönderiyi alıntıladı."}
                                                     </p>
                                                 </div>
                                                 <Reply className="w-4 h-4 text-primary/30 group-hover/quoted:text-primary/60 transition-colors shrink-0" />
@@ -1828,7 +1876,7 @@ export default function SocialFeed() {
                                         {post.content ? (
                                             <div className="px-5 py-2">
                                                 <p className={`text-[15px] text-gray-700 leading-[1.7] whitespace-pre-wrap break-words font-[400] tracking-[-0.01em] ${!expandedPosts.has(post.id) ? 'line-clamp-4' : ''}`}>
-                                                    {post.content}
+                                                    {renderContent(post.content, navigate)}
                                                 </p>
                                                 {(post.content.length > 200 || post.content.split('\n').length > 4) && (
                                                     <button
@@ -2143,12 +2191,11 @@ export default function SocialFeed() {
                                                                         {getInitials(currentUserProfile?.social_name)}
                                                                     </AvatarFallback>
                                                                 </Avatar>
-                                                                <div className="flex-1 flex items-center gap-1.5 bg-gray-50/80 rounded-2xl border border-gray-100 focus-within:border-primary/30 focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(99,102,241,0.06)] transition-all duration-300">
-                                                                    <input
-                                                                        type="text"
+                                                                <div className="flex-1 flex items-center bg-gray-50/80 rounded-2xl border border-gray-100 focus-within:border-primary/30 focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(99,102,241,0.06)] transition-all duration-300">
+                                                                    <MentionTextarea
                                                                         placeholder={replyingTo[post.id] ? "Yanıt yaz..." : "Yorum yaz..."}
                                                                         value={commentTexts[post.id] || ''}
-                                                                        onChange={(e) => setCommentTexts(prev => ({ ...prev, [post.id]: e.target.value }))}
+                                                                        onChange={(val) => setCommentTexts(prev => ({ ...prev, [post.id]: val }))}
                                                                         onKeyDown={(e) => {
                                                                             if (e.key === 'Enter' && !e.shiftKey && commentTexts[post.id]?.trim()) {
                                                                                 e.preventDefault();
@@ -2163,7 +2210,7 @@ export default function SocialFeed() {
                                                                                 setReplyingTo(newReplyingTo);
                                                                             }
                                                                         }}
-                                                                        className="flex-1 bg-transparent border-none outline-none text-sm text-gray-700 placeholder:text-gray-400 px-4 py-2.5"
+                                                                        className="flex-1 bg-transparent border-none outline-none text-sm text-gray-700 placeholder:text-gray-400 px-4 py-2 min-h-[40px]"
                                                                     />
                                                                     <button
                                                                         onClick={() => {
