@@ -100,7 +100,7 @@ export default function SocialProfileView() {
     const age = calculateAge(profile.birth_date);
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="min-h-screen bg-gray-50 flex flex-col overflow-x-hidden">
             <Navbar />
 
             {/* Profil Header / Banner Alanı */}

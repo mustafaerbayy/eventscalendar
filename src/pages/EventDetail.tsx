@@ -17,6 +17,7 @@ import { Calendar, Clock, MapPin, Users, UserCheck, UserX, Info, AlertCircle } f
 import { formatTurkishDate, formatTurkishTime } from "@/lib/date-utils";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
+import { EventMemories } from "@/components/EventMemories";
 
 interface EventDetail {
   id: string;
@@ -141,10 +142,11 @@ const EventDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-32 md:pt-40">
+    <div className="min-h-screen bg-background pt-32 md:pt-40 overflow-x-hidden">
       <Navbar />
       <div className="container mx-auto px-4 py-10">
         <div className="max-w-3xl mx-auto">
+          
           {/* Event Info */}
           <Badge variant="secondary" className="mb-3">{event.categories?.name}</Badge>
           <h1 className="font-display text-3xl font-bold md:text-4xl">{event.title}</h1>
@@ -347,7 +349,16 @@ const EventDetailPage = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Media Archive Section */}
+          <EventMemories 
+            eventId={event.id} 
+            isAttendee={myRsvp?.status === "attending"} 
+            eventDate={event.date}
+          />
+
         </div>
+
       </div>
     </div>
   );

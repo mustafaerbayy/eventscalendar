@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, Send, Image as ImageIcon, X, FileText, Calendar, Link as LinkIcon, BarChart2, Plus, Trash2, MoreHorizontal, Pencil, Check, MessageCircle, ChevronDown, ChevronUp, Heart, Smile, Reply } from "lucide-react";
+import { Paperclip, Search, Loader2, Send, Image as ImageIcon, X, FileText, Calendar, Link as LinkIcon, BarChart2, Plus, Trash2, MoreHorizontal, Pencil, Check, MessageCircle, ChevronDown, ChevronUp, Heart, Smile, Reply } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MentionTextarea } from "./MentionTextarea";
 import {
@@ -1474,7 +1474,7 @@ export default function SocialFeed() {
                                     </Avatar>
                                     <MentionTextarea
                                         placeholder="Aklından ne geçiyor?"
-                                        className="resize-none min-h-[100px] flex-1 bg-gray-50 hover:bg-white focus:bg-white transition-colors"
+                                        className="resize-none min-h-[180px] sm:min-h-[200px] flex-1 bg-gray-50/50 hover:bg-white focus:bg-white transition-all duration-300 rounded-xl p-4 text-sm sm:text-base border-none shadow-inner focus:ring-1 focus:ring-primary/20"
                                         value={newPostContent}
                                         onChange={(val) => setNewPostContent(val)}
                                     />
@@ -1598,13 +1598,12 @@ export default function SocialFeed() {
                                             onClick={removeImage}
                                         >
                                             <Trash2 className="w-3 h-3" />
-                                            Sil
                                         </button>
                                     </div>
                                 )}
 
                                 <div className="flex justify-between items-center border-t border-gray-100 mt-2 pt-4 flex-wrap gap-2">
-                                    <div className="flex gap-2 flex-wrap">
+                                    <div className="flex gap-2 flex-wrap items-center">
                                         <input
                                             type="file"
                                             accept="image/*"
@@ -1612,109 +1611,163 @@ export default function SocialFeed() {
                                             ref={fileInputRef}
                                             onChange={handleImageSelect}
                                         />
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            className={`text-gray-600 ${selectedImage ? 'border-primary text-primary bg-primary/5' : ''}`}
-                                            onClick={() => fileInputRef.current?.click()}
-                                            disabled={isUploading || createPostMutation.isPending}
-                                        >
-                                            <ImageIcon className="mr-2 h-4 w-4" />
-                                            <span className="text-xs">Fotoğraf</span>
-                                        </Button>
+                                        
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="w-10 h-10 rounded-full hover:bg-primary/10 hover:text-primary text-gray-400 transition-all duration-300"
+                                                    disabled={isUploading || createPostMutation.isPending}
+                                                >
+                                                    <Paperclip className="h-5 w-5" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="start" className="w-56 p-2 rounded-2xl shadow-xl border-gray-100/50 backdrop-blur-xl bg-white/90">
+                                                <div className="px-2 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Ekle</div>
+                                                <DropdownMenuItem 
+                                                    onClick={() => fileInputRef.current?.click()}
+                                                    className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-primary/5 transition-colors group"
+                                                >
+                                                    <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-100 transition-colors">
+                                                        <ImageIcon className="h-4 w-4" />
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-semibold text-gray-700">Fotoğraf</span>
+                                                        <span className="text-[10px] text-gray-400">Görsel veya GIF paylaş</span>
+                                                    </div>
+                                                </DropdownMenuItem>
+                                                
+                                                <DropdownMenuItem 
+                                                    onClick={() => setIsPollMode(!isPollMode)}
+                                                    className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-primary/5 transition-colors group"
+                                                >
+                                                    <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-100 transition-colors">
+                                                        <BarChart2 className="h-4 w-4" />
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-semibold text-gray-700">Anket</span>
+                                                        <span className="text-[10px] text-gray-400">Topluluğa soru sor</span>
+                                                    </div>
+                                                </DropdownMenuItem>
 
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            className={`text-gray-600 ${isPollMode ? 'border-primary text-primary bg-primary/5' : ''}`}
-                                            onClick={() => setIsPollMode(!isPollMode)}
-                                        >
-                                            <BarChart2 className="mr-2 h-4 w-4" />
-                                            <span className="text-xs">Anket</span>
-                                        </Button>
+                                                <div className="h-px bg-gray-50 my-1 mx-2" />
+                                                <div className="px-2 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Alıntıla</div>
+
+                                                <DropdownMenuItem 
+                                                    onClick={() => { setQuoteType("event"); setIsQuoteDialogOpen(true); }}
+                                                    className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-primary/5 transition-colors group"
+                                                >
+                                                    <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-100 transition-colors">
+                                                        <Calendar className="h-4 w-4" />
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-semibold text-gray-700">Etkinlik</span>
+                                                        <span className="text-[10px] text-gray-400">Geçmiş bir etkinliği paylaş</span>
+                                                    </div>
+                                                </DropdownMenuItem>
+
+                                                <DropdownMenuItem 
+                                                    onClick={() => { setQuoteType("report"); setIsQuoteDialogOpen(true); }}
+                                                    className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-primary/5 transition-colors group"
+                                                >
+                                                    <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 group-hover:bg-purple-100 transition-colors">
+                                                        <FileText className="h-4 w-4" />
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-semibold text-gray-700">Rapor</span>
+                                                        <span className="text-[10px] text-gray-400">Haftalık bir raporu paylaş</span>
+                                                    </div>
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+
+                                        {/* Status Indicators */}
+                                        <div className="flex items-center gap-1.5 ml-2">
+                                            {selectedImage && (
+                                                <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-bold border border-emerald-100 animate-in fade-in zoom-in-95">
+                                                    <ImageIcon className="w-3 h-3" />
+                                                    Görsel Eklendi
+                                                </div>
+                                            )}
+                                            {isPollMode && (
+                                                <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-bold border border-blue-100 animate-in fade-in zoom-in-95">
+                                                    <BarChart2 className="w-3 h-3" />
+                                                    Anket Aktif
+                                                </div>
+                                            )}
+                                            {(selectedEventId || selectedReportId) && (
+                                                <div className="flex items-center gap-1.5 px-2 py-1 bg-amber-50 text-amber-600 rounded-lg text-[10px] font-bold border border-amber-100 animate-in fade-in zoom-in-95">
+                                                    <LinkIcon className="w-3 h-3" />
+                                                    Alıntı Eklendi
+                                                </div>
+                                            )}
+                                        </div>
 
                                         <Dialog open={isQuoteDialogOpen} onOpenChange={setIsQuoteDialogOpen}>
-                                            <DialogTrigger asChild>
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="text-gray-600"
-                                                    onClick={() => setQuoteType("event")}
-                                                    disabled={!!selectedEventId || !!selectedReportId}
-                                                >
-                                                    <Calendar className="mr-2 h-4 w-4" />
-                                                    <span className="text-xs">Etkinlik Alıntıla</span>
-                                                </Button>
-                                            </DialogTrigger>
-
-                                            <DialogTrigger asChild>
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="text-gray-600"
-                                                    onClick={() => setQuoteType("report")}
-                                                    disabled={!!selectedEventId || !!selectedReportId}
-                                                >
-                                                    <FileText className="mr-2 h-4 w-4" />
-                                                    <span className="text-xs">Rapor Alıntıla</span>
-                                                </Button>
-                                            </DialogTrigger>
-
-                                            <DialogContent>
-                                                <DialogHeader>
-                                                    <DialogTitle>
-                                                        {quoteType === "event" ? "Son Etkinliklerinden Alıntıla" : "Son Raporlarından Alıntıla"}
+                                            <DialogContent className="rounded-3xl border-none shadow-2xl p-0 overflow-hidden bg-white/95 backdrop-blur-xl max-w-md">
+                                                <DialogHeader className="p-6 bg-gradient-to-r from-primary/10 via-transparent to-transparent flex flex-row items-center justify-between space-y-0">
+                                                    <DialogTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
+                                                        <div className={`p-2 rounded-xl ${quoteType === "event" ? 'bg-amber-100 text-amber-600' : 'bg-purple-100 text-purple-600'}`}>
+                                                            {quoteType === "event" ? <Calendar className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
+                                                        </div>
+                                                        {quoteType === "event" ? "Etkinlik Alıntıla" : "Rapor Alıntıla"}
                                                     </DialogTitle>
                                                 </DialogHeader>
-                                                <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto mt-4">
+                                                <div className="p-4 flex flex-col gap-2 max-h-[400px] overflow-y-auto px-6 pb-8">
+                                                    <p className="text-gray-500 text-xs mb-2">Paylaşmak istediğiniz içeriği seçin:</p>
                                                     {quoteType === "event" && recentEvents && recentEvents.length > 0 ? (
                                                         recentEvents.map(event => (
-                                                            <Button
+                                                            <button
                                                                 key={event.id}
-                                                                variant="ghost"
-                                                                className="justify-start text-left h-auto py-3"
+                                                                className="flex items-center gap-4 p-4 rounded-2xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100 text-left group"
                                                                 onClick={() => handleSelectQuote("event", event.id, event.title)}
                                                             >
-                                                                <Calendar className="mr-3 h-4 w-4 shrink-0" />
-                                                                <div className="flex flex-col truncate">
-                                                                    <span className="font-medium truncate">{event.title}</span>
-                                                                    <span className="text-xs text-gray-500">
-                                                                        {new Date(event.date).toLocaleDateString("tr-TR")}
+                                                                <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-100 shrink-0">
+                                                                    <Calendar className="h-5 w-5" />
+                                                                </div>
+                                                                <div className="flex flex-col min-w-0">
+                                                                    <span className="font-bold text-gray-800 truncate">{event.title}</span>
+                                                                    <span className="text-[11px] text-gray-400">
+                                                                        {new Date(event.date).toLocaleDateString("tr-TR", { day: 'numeric', month: 'long', year: 'numeric' })}
                                                                     </span>
                                                                 </div>
-                                                            </Button>
+                                                            </button>
                                                         ))
                                                     ) : quoteType === "report" && recentReports && recentReports.length > 0 ? (
                                                         recentReports.map(report => (
-                                                            <Button
+                                                            <button
                                                                 key={report.id}
-                                                                variant="ghost"
-                                                                className="justify-start text-left h-auto py-3"
+                                                                className="flex items-center gap-4 p-4 rounded-2xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100 text-left group"
                                                                 onClick={() => handleSelectQuote("report", report.id, report.title)}
                                                             >
-                                                                <FileText className="mr-3 h-4 w-4 shrink-0" />
-                                                                <div className="flex flex-col truncate">
-                                                                    <span className="font-medium truncate">{report.title}</span>
-                                                                    <span className="text-xs text-gray-500">
-                                                                        {new Date(report.week_end).toLocaleDateString("tr-TR")}
+                                                                <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 group-hover:bg-purple-100 shrink-0">
+                                                                    <FileText className="h-5 w-5" />
+                                                                </div>
+                                                                <div className="flex flex-col min-w-0">
+                                                                    <span className="font-bold text-gray-800 truncate">{report.title}</span>
+                                                                    <span className="text-[11px] text-gray-400">
+                                                                        {new Date(report.week_end).toLocaleDateString("tr-TR", { day: 'numeric', month: 'long', year: 'numeric' })}
                                                                     </span>
                                                                 </div>
-                                                            </Button>
+                                                            </button>
                                                         ))
                                                     ) : (
-                                                        <div className="text-center py-6 text-gray-500 text-sm">
-                                                            {quoteType === "event" ? "Yakın zamanda eklenmiş etkinlik bulunamadı." : "Yakın zamanda eklenmiş rapor bulunamadı."}
+                                                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                                                            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                                                                <Search className="w-6 h-6 text-gray-300" />
+                                                            </div>
+                                                            <h3 className="font-bold text-gray-900 mb-1">İçerik Bulunamadı</h3>
+                                                            <p className="text-gray-500 text-xs px-8 leading-relaxed">
+                                                                {quoteType === "event" ? "Henüz katıldığınız veya oluşturduğunuz bir etkinlik bulunmuyor." : "Henüz oluşturulmuş bir raporunuz bulunmuyor."}
+                                                            </p>
                                                         </div>
                                                     )}
                                                 </div>
                                             </DialogContent>
                                         </Dialog>
                                     </div>
-
                                     <Button
                                         onClick={handleCreatePost}
                                         className="px-6"
@@ -1727,13 +1780,13 @@ export default function SocialFeed() {
                                         ) : (
                                             <Send className="mr-2 h-4 w-4" />
                                         )}
-                                        {editingPostId ? 'Güncelle' : 'Paylaş'}
-                                    </Button>
-                                </div>
+                                    {editingPostId ? 'Güncelle' : 'Paylaş'}
+                                </Button>
                             </div>
                         </div>
                     </div>
-                )}
+                </div>
+            )}
 
                 {/* Feed Area - Hidden when editing */}
                 {!editingPostId && <div className="space-y-5">

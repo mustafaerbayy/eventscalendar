@@ -115,7 +115,7 @@ const Social = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50/50 flex flex-col">
+        <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50/50 flex flex-col overflow-x-hidden">
             <Navbar />
             <main className="flex-1 container max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-6 mt-20">
                 {isProfileIncomplete && !isWarningDismissed && (
