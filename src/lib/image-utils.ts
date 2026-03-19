@@ -1,4 +1,4 @@
-export const compressImage = (file: File, maxWidth = 1920, maxHeight = 1920, quality = 0.8): Promise<File> => {
+export const compressImage = (file: File, maxWidth = 2400, maxHeight = 2400, quality = 0.9): Promise<File> => {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = () => {

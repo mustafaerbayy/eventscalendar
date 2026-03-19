@@ -44,6 +44,7 @@ import EventCard from "@/components/EventCard";
 import CalendarView from "@/components/CalendarView";
 import HeroSection from "@/components/HeroSection";
 import Navbar from "@/components/Navbar";
+import { EventMemories } from "@/components/EventMemories";
 
 interface EventWithRelations {
   id: string;
@@ -936,6 +937,13 @@ const Index = () => {
                   )}
                 </div>
               </div>
+
+              {/* Medya Arşivi */}
+              <EventMemories 
+                eventId={selectedEvent.id} 
+                isAttendee={myRsvp?.status === "attending"} 
+                eventDate={selectedEvent.date}
+              />
             </div>
           )}
         </DialogContent>

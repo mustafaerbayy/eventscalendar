@@ -12,6 +12,7 @@ import { FileText, Download, Plus, Pencil, Trash2, Calendar, Upload, Loader2, Se
 import Navbar from "@/components/Navbar";
 import jsPDF from "jspdf";
 import { robotoRegularB64, robotoBoldB64 } from "@/lib/robotoFont";
+import { generateUUID } from "@/lib/uuid";
 
 // ── Font helpers (module-level so it survives re-renders) ─────────────────────
 const loadRobotoFonts = () => ({ regular: robotoRegularB64, bold: robotoBoldB64 });
@@ -126,7 +127,7 @@ const WeeklyReports = () => {
 
       if (file) {
         const ext = file.name.split(".").pop()?.toLocaleLowerCase('tr-TR') || "pdf";
-        const fileName = `${crypto.randomUUID()}.${ext}`;
+        const fileName = `${generateUUID()}.${ext}`;
         const { error: uploadError } = await supabase.storage
           .from("weekly-reports")
           .upload(fileName, file, { contentType: file.type });

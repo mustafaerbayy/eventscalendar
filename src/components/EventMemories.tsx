@@ -5,9 +5,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Plus, Trash2, Image as ImageIcon, X, LayoutGrid, Camera, Clock } from "lucide-react";
+import { Loader2, Plus, Trash2, Image as ImageIcon, X, LayoutGrid, Camera, Clock, Download, Maximize2 } from "lucide-react";
 import { compressImage } from "@/lib/image-utils";
 import { getDaysUntilEvent } from "@/lib/date-utils";
+import { generateUUID } from "@/lib/uuid";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +46,7 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
+  const [selectedPhoto, setSelectedPhoto] = useState<MemoryWithProfile | null>(null);
   
   // Gallery is visible to everyone once the event starts or anytime if photos exist
   const isEventTodayOrPassed = getDaysUntilEvent(eventDate) <= 0;
@@ -76,7 +78,7 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
       setIsUploading(true);
       try {
         const compressedFile = await compressImage(selectedFile);
-        const fileName = `${user.id}/${crypto.randomUUID()}.webp`;
+        const fileName = `${user.id}/${generateUUID()}.webp`;
         const filePath = `memories/${fileName}`;
 
         // Ensure bucket and path are correct
@@ -181,6 +183,10 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
             Medya Arşivi
           </h2>
           <p className="text-gray-500 text-sm mt-1 font-medium">Bu etkinlikten unutulmaz anlar ve fotoğraflar.</p>
+          <div className="mt-3 flex items-center gap-2 text-amber-600 bg-amber-50/50 px-3 py-1.5 rounded-xl border border-amber-100/50 w-fit">
+            <Clock className="h-3.5 w-3.5 shrink-0" />
+            <p className="text-[10px] font-black uppercase tracking-widest leading-none">Medya içerikleri 1 ay sonra silinir. Lütfen saklamak istediklerinizi indiriniz.</p>
+          </div>
         </div>
 
         {user && isEventTodayOrPassed && (
@@ -190,26 +196,33 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
                 <Plus className="h-5 w-5 mr-2" /> Fotoğraf Ekle
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-lg rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden bg-white/95 backdrop-blur-xl">
-              <DialogHeader className="p-8 bg-gradient-to-r from-primary/10 to-transparent">
-                <DialogTitle className="text-2xl font-black text-gray-900 flex items-center gap-3">
-                  <div className="p-2.5 bg-white rounded-2xl shadow-sm text-primary">
-                    <Camera className="w-6 h-6" />
+            <DialogContent className="w-[95vw] sm:max-w-lg max-h-[95dvh] overflow-y-auto rounded-[2rem] border-none shadow-2xl p-0 bg-white/95 backdrop-blur-xl scrollbar-hide">
+              <DialogHeader className="p-6 sm:p-8 bg-gradient-to-r from-primary/10 to-transparent">
+                <DialogTitle className="text-xl sm:text-2xl font-black text-gray-900 flex items-center gap-3">
+                  <div className="p-2 sm:p-2.5 bg-white rounded-2xl shadow-sm text-primary">
+                    <Camera className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
                   Anını Paylaş
                 </DialogTitle>
               </DialogHeader>
-              <div className="p-8 pt-2">
+              <div className="p-6 sm:p-8 pt-2">
                 {!previewUrl ? (
                   <div 
                     onClick={() => fileInputRef.current?.click()}
-                    className="group border-2 border-dashed border-gray-200 rounded-[1.5rem] p-16 text-center cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all duration-300"
+                    className="group border-2 border-dashed border-gray-200 rounded-[1.5rem] p-8 sm:p-16 text-center cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all duration-300"
                   >
                     <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform text-gray-300 group-hover:text-primary/40">
                       <ImageIcon className="h-8 w-8" />
                     </div>
                     <p className="text-base font-bold text-gray-700">Fotoğraf Yüklemek İçin Tıklayın</p>
                     <p className="text-sm text-gray-400 mt-1">Sadece bu etkinliğe ait kareler.</p>
+                    <div className="mt-6 p-4 bg-amber-50 rounded-2xl border border-amber-100 flex items-start gap-3 text-left w-full mx-auto max-w-[90%]">
+                      <Clock className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-bold text-amber-800 uppercase tracking-widest mb-1">ÖNEMLi BiLGi</p>
+                        <p className="text-sm font-medium text-amber-700/80 leading-snug">Medya içerikleri yükleme tarihinden 1 ay sonra sistemden tamamen silinir. Lütfen saklamak istediğiniz fotoğrafları indiriniz.</p>
+                      </div>
+                    </div>
                     <input 
                       type="file" 
                       ref={fileInputRef} 
@@ -224,7 +237,7 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
                       <img 
                         src={previewUrl} 
                         alt="Önizleme" 
-                        className="w-full h-72 object-cover" 
+                        className="w-full h-52 sm:h-72 object-cover" 
                       />
                       <button 
                         onClick={resetUpload}
@@ -285,25 +298,64 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
                     )}
                     <div className="flex items-center gap-2">
                        <div className="w-6 h-6 rounded-full bg-primary/20 backdrop-blur-md flex items-center justify-center text-[10px] font-black text-white border border-white/20">
-                          {memory.profiles?.first_name?.[0].toUpperCase()}
+                          {memory.profiles?.first_name?.[0]?.toUpperCase()}
                        </div>
                        <span className="text-[11px] text-gray-200 font-bold tracking-wide">
                         {memory.profiles?.first_name} {memory.profiles?.last_name}
                       </span>
                     </div>
-                    {user && (user.id === memory.user_id || user.email === "admin@admin.com") && (
+
+                    <div className="absolute top-2 right-2 flex flex-row flex-wrap justify-end gap-1 max-w-[80%]">
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (confirm("Bu fotoğrafı arşivden silmek istediğinize emin misiniz?")) {
-                            deleteMutation.mutate(memory.id);
+                          setSelectedPhoto(memory);
+                        }}
+                        className="w-7 h-7 flex items-center justify-center bg-black/40 backdrop-blur-md rounded-lg text-white hover:bg-black/60 hover:scale-110 transition-all shadow-lg scale-0 group-hover:scale-100 duration-300"
+                        title="Tam Boyut Görüntüle"
+                      >
+                        <Maximize2 className="h-3.5 w-3.5" />
+                      </button>
+                      
+                      <button 
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          try {
+                            const response = await fetch(memory.image_url);
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.style.display = 'none';
+                            a.href = url;
+                            a.download = `event-memory-${memory.id}.webp`;
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                          } catch (err) {
+                            toast.error("İndirme başarısız oldu");
                           }
                         }}
-                        className="absolute top-4 right-4 p-2 bg-red-500/90 backdrop-blur-md rounded-xl text-white hover:bg-red-600 transition-all shadow-lg scale-0 group-hover:scale-100 duration-300"
+                        className="w-7 h-7 flex items-center justify-center bg-primary/80 backdrop-blur-md rounded-lg text-white hover:bg-primary hover:scale-110 transition-all shadow-lg scale-0 group-hover:scale-100 duration-300 delay-75"
+                        title="İndir"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Download className="h-3.5 w-3.5" />
                       </button>
-                    )}
+
+                      {user && (user.id === memory.user_id || user.email === "admin@admin.com") && (
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm("Bu fotoğrafı arşivden silmek istediğinize emin misiniz?")) {
+                              deleteMutation.mutate(memory.id);
+                            }
+                          }}
+                          className="w-7 h-7 flex items-center justify-center bg-red-500/90 backdrop-blur-md rounded-lg text-white hover:bg-red-600 hover:scale-110 transition-all shadow-lg scale-0 group-hover:scale-100 duration-300 delay-150"
+                          title="Sil"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </motion.div>
               ))}
@@ -334,6 +386,79 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
           </div>
         )}
       </div>
+
+      {/* Fullscreen Photo Lightbox Dialog */}
+      <Dialog open={!!selectedPhoto} onOpenChange={(open) => !open && setSelectedPhoto(null)}>
+        <DialogContent className="max-w-[90vw] md:max-w-[80vw] lg:max-w-5xl p-1 bg-black/95 backdrop-blur-3xl border-white/10 shadow-2xl overflow-hidden rounded-[2rem]">
+          {selectedPhoto && (
+            <div className="relative flex flex-col">
+              <div className="absolute top-4 right-4 z-50 flex items-center gap-3">
+                <button
+                  onClick={async () => {
+                    try {
+                      // Trigger download with fetch
+                      const response = await fetch(selectedPhoto.image_url);
+                      const blob = await response.blob();
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.style.display = 'none';
+                      a.href = url;
+                      a.download = `event-memory-${selectedPhoto.id}.webp`;
+                      document.body.appendChild(a);
+                      a.click();
+                      window.URL.revokeObjectURL(url);
+                      toast.success("Fotoğraf indiriliyor...");
+                    } catch (err) {
+                      toast.error("İndirme başarısız oldu");
+                    }
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-white text-black font-black text-xs uppercase tracking-widest rounded-full hover:scale-105 active:scale-95 transition-all shadow-xl"
+                >
+                  <Download className="w-4 h-4" />
+                  İndir
+                </button>
+                <button
+                  onClick={() => setSelectedPhoto(null)}
+                  className="w-10 h-10 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full flex items-center justify-center text-white backdrop-blur-md transition-all hover:rotate-90"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="w-full flex items-center justify-center min-h-[50vh] max-h-[85vh] p-2 md:p-8">
+                <img 
+                  src={selectedPhoto.image_url} 
+                  alt="Full size memory" 
+                  className="max-w-full max-h-[80vh] object-contain rounded-2xl drop-shadow-2xl" 
+                />
+              </div>
+
+              <div className="absolute bottom-0 inset-x-0 p-6 md:p-8 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none">
+                <div className="flex items-end justify-between">
+                  <div className="flex items-center gap-3 pointer-events-auto">
+                    <div className="w-10 h-10 rounded-full bg-primary/20 border-2 border-primary/50 flex items-center justify-center text-sm font-black text-white shadow-lg backdrop-blur-md">
+                      {selectedPhoto.profiles?.first_name?.[0]?.toUpperCase()}
+                    </div>
+                    <div>
+                      <h4 className="text-white font-bold leading-none mb-1 shadow-black drop-shadow-md">
+                        {selectedPhoto.profiles?.first_name} {selectedPhoto.profiles?.last_name}
+                      </h4>
+                      <p className="text-white/60 text-xs font-medium">
+                        {new Date(selectedPhoto.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                {selectedPhoto.caption && (
+                  <p className="mt-4 text-white/90 text-sm md:text-base max-w-2xl font-medium leading-relaxed drop-shadow-md pointer-events-auto">
+                    {selectedPhoto.caption}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };

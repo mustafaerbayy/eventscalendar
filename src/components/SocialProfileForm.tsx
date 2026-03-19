@@ -22,6 +22,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2, UserCircle, Camera, Upload, Trash2, Linkedin } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { compressImage } from "@/lib/image-utils";
+import { generateUUID } from "@/lib/uuid";
 
 const profileSchema = z.object({
     birth_date: z.string().optional().nullable(),
@@ -127,7 +128,7 @@ export default function SocialProfileForm({ hideCard = false }: SocialProfileFor
             const compressedFile = await compressImage(file, 800, 800, 0.7); // Smaller for profile photo
 
             const fileExt = compressedFile.name.split('.').pop();
-            const fileName = `${user.id}/${crypto.randomUUID()}.${fileExt}`;
+            const fileName = `${user.id}/${generateUUID()}.${fileExt}`;
             const bucketName = "social_posts"; // Using existing bucket to be safe, or create new one if you have access
 
             const { error: uploadError } = await supabase.storage

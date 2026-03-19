@@ -105,6 +105,7 @@ function PollVotersList({ voterIds }: { voterIds: string[] }) {
 }
 
 import { compressImage } from "@/lib/image-utils";
+import { generateUUID } from "@/lib/uuid";
 
 // --- Reaction & Like Sub-Components ---
 
@@ -974,7 +975,7 @@ export default function SocialFeed() {
 
     const handleAddPollOption = () => {
         if (pollOptions.length >= 10) return;
-        setPollOptions([...pollOptions, { id: crypto.randomUUID(), text: '' }]);
+        setPollOptions([...pollOptions, { id: generateUUID(), text: '' }]);
     };
 
     const handleRemovePollOption = (id: string) => {
@@ -1349,7 +1350,7 @@ export default function SocialFeed() {
             try {
                 // Compress image before upload (converts all formats to WebP)
                 const compressedFile = await compressImage(selectedImage);
-                const filePath = `${user?.id}/${crypto.randomUUID()}.webp`;
+                const filePath = `${user?.id}/${generateUUID()}.webp`;
 
                 const { error: uploadError, data } = await supabase.storage
                     .from("social_posts")
@@ -2288,8 +2289,20 @@ export default function SocialFeed() {
                                                             </div>
                                                         </div>
                                                     )}
-                                                </div>
-                                            )}
+                                                            {/* Yorumları Kapat Butonu */}
+                                                            <button
+                                                                onClick={() => setExpandedComments(prev => {
+                                                                    const next = new Set(prev);
+                                                                    next.delete(post.id);
+                                                                    return next;
+                                                                })}
+                                                                className="w-full flex items-center justify-center gap-2 py-2 mt-2 text-xs font-semibold text-gray-400 hover:text-primary transition-all duration-300 group/close-comments"
+                                                            >
+                                                                <ChevronUp className="w-3.5 h-3.5 group-hover/close-comments:-translate-y-0.5 transition-transform" />
+                                                                Yorumları Kapat
+                                                            </button>
+                                                        </div>
+                                                    )}
                                         </div>
                                     </div>
                                 </div>
