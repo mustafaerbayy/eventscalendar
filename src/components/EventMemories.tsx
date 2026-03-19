@@ -43,8 +43,8 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [caption, setCaption] = useState("");
   const [selectedPhoto, setSelectedPhoto] = useState<MemoryWithProfile | null>(null);
   
@@ -73,42 +73,46 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
 
   const uploadMutation = useMutation({
     mutationFn: async () => {
-      if (!user || !selectedFile) return;
+      if (!user || selectedFiles.length === 0) return;
 
       setIsUploading(true);
+      let successCount = 0;
       try {
-        const compressedFile = await compressImage(selectedFile);
-        const fileName = `${user.id}/${generateUUID()}.webp`;
-        const filePath = `memories/${fileName}`;
+        for (const file of selectedFiles) {
+          const compressedFile = await compressImage(file);
+          const fileName = `${user.id}/${generateUUID()}.webp`;
+          const filePath = `memories/${fileName}`;
 
-        // Ensure bucket and path are correct
-        const { error: uploadError } = await supabase.storage
-          .from("event_memories")
-          .upload(filePath, compressedFile, {
-            contentType: "image/webp",
+          // Ensure bucket and path are correct
+          const { error: uploadError } = await supabase.storage
+            .from("event_memories")
+            .upload(filePath, compressedFile, {
+              contentType: "image/webp",
+            });
+
+          if (uploadError) throw uploadError;
+
+          const { data: publicUrlData } = supabase.storage
+            .from("event_memories")
+            .getPublicUrl(filePath);
+
+          const { error: insertError } = await supabase.from("event_memories").insert({
+            event_id: eventId,
+            user_id: user.id,
+            image_url: publicUrlData.publicUrl,
+            caption: caption.trim() || null,
           });
 
-        if (uploadError) throw uploadError;
+          if (insertError) throw insertError;
+          successCount++;
+        }
 
-        const { data: publicUrlData } = supabase.storage
-          .from("event_memories")
-          .getPublicUrl(filePath);
-
-        const { error: insertError } = await supabase.from("event_memories").insert({
-          event_id: eventId,
-          user_id: user.id,
-          image_url: publicUrlData.publicUrl,
-          caption: caption.trim() || null,
-        });
-
-        if (insertError) throw insertError;
-
-        toast.success("Fotoğraf başarıyla yüklendi!");
+        toast.success(`${successCount} fotoğraf başarıyla yüklendi!`);
         setUploadDialogOpen(false);
         resetUpload();
       } catch (err: any) {
         console.error("Upload error details:", err);
-        toast.error("Yükleme başarısız: " + (err.message || "Bilinmeyen hata"));
+        toast.error(`Yükleme başarısız (${successCount} yüklendi): ` + (err.message || "Bilinmeyen hata"));
       } finally {
         setIsUploading(false);
       }
@@ -133,20 +137,37 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
   });
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 15 * 1024 * 1024) {
-        toast.error("Dosya boyutu 15MB'dan küçük olmalıdır.");
-        return;
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      const validFiles: File[] = [];
+      const newUrls: string[] = [];
+
+      files.forEach(file => {
+        if (file.size > 15 * 1024 * 1024) {
+          toast.error(`${file.name} 15MB'dan büyük olduğu için eklenmedi.`);
+        } else {
+          validFiles.push(file);
+          newUrls.push(URL.createObjectURL(file));
+        }
+      });
+
+      if (validFiles.length > 0) {
+        setSelectedFiles(prev => [...prev, ...validFiles]);
+        setPreviewUrls(prev => [...prev, ...newUrls]);
       }
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
     }
   };
 
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    URL.revokeObjectURL(previewUrls[index]);
+    setPreviewUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
   const resetUpload = () => {
-    setSelectedFile(null);
-    setPreviewUrl(null);
+    setSelectedFiles([]);
+    previewUrls.forEach(url => URL.revokeObjectURL(url));
+    setPreviewUrls([]);
     setCaption("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -206,7 +227,7 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
                 </DialogTitle>
               </DialogHeader>
               <div className="p-6 sm:p-8 pt-2">
-                {!previewUrl ? (
+                {previewUrls.length === 0 ? (
                   <div 
                     onClick={() => fileInputRef.current?.click()}
                     className="group border-2 border-dashed border-gray-200 rounded-[1.5rem] p-8 sm:p-16 text-center cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all duration-300"
@@ -223,28 +244,32 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
                         <p className="text-sm font-medium text-amber-700/80 leading-snug">Medya içerikleri yükleme tarihinden 1 ay sonra sistemden tamamen silinir. Lütfen saklamak istediğiniz fotoğrafları indiriniz.</p>
                       </div>
                     </div>
-                    <input 
-                      type="file" 
-                      ref={fileInputRef} 
-                      onChange={handleFileSelect} 
-                      accept="image/*" 
-                      className="hidden" 
-                    />
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    <div className="relative group rounded-[1.5rem] overflow-hidden shadow-xl">
-                      <img 
-                        src={previewUrl} 
-                        alt="Önizleme" 
-                        className="w-full h-52 sm:h-72 object-cover" 
-                      />
-                      <button 
-                        onClick={resetUpload}
-                        className="absolute top-4 right-4 p-2.5 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-red-500 transition-all shadow-lg"
+                    <div className="grid grid-cols-2 gap-3 max-h-[40vh] overflow-y-auto p-1 scrollbar-hide">
+                      {previewUrls.map((url, index) => (
+                        <div key={index} className="relative group rounded-2xl overflow-hidden shadow-md aspect-square">
+                          <img 
+                            src={url} 
+                            alt={`Önizleme ${index + 1}`} 
+                            className="w-full h-full object-cover" 
+                          />
+                          <button 
+                            onClick={() => removeFile(index)}
+                            className="absolute top-2 right-2 p-1.5 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-red-500 transition-all shadow-lg opacity-0 group-hover:opacity-100"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                      <div 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-2xl aspect-square cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all text-gray-300 hover:text-primary/40"
                       >
-                        <X className="h-5 w-5" />
-                      </button>
+                        <Plus className="h-8 w-8" />
+                        <span className="text-[10px] font-bold mt-1">Daha Fazla</span>
+                      </div>
                     </div>
                     <div>
                       <label className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Açıklama</label>
@@ -258,14 +283,24 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
                     </div>
                   </div>
                 )}
+
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileSelect} 
+                  accept="image/*" 
+                  className="hidden" 
+                  multiple
+                />
+
                 <div className="flex justify-end gap-3 mt-8">
                   <Button variant="ghost" onClick={() => { setUploadDialogOpen(false); resetUpload(); }} className="rounded-xl font-bold text-gray-400 hover:text-gray-600">İptal</Button>
                   <Button 
-                    disabled={!selectedFile || isUploading} 
+                    disabled={selectedFiles.length === 0 || isUploading} 
                     onClick={() => uploadMutation.mutate()}
                     className="rounded-xl font-black px-8 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
                   >
-                    {isUploading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Paylaş"}
+                    {isUploading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : `Paylaş (${selectedFiles.length})`}
                   </Button>
                 </div>
               </div>
