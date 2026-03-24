@@ -943,6 +943,7 @@ const Index = () => {
                 eventId={selectedEvent.id} 
                 isAttendee={myRsvp?.status === "attending"} 
                 eventDate={selectedEvent.date}
+                eventTitle={selectedEvent.title}
               />
             </div>
           )}

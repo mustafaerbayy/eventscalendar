@@ -355,6 +355,7 @@ const EventDetailPage = () => {
             eventId={event.id} 
             isAttendee={myRsvp?.status === "attending"} 
             eventDate={event.date}
+            eventTitle={event.title}
           />
 
         </div>

@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Plus, Trash2, Image as ImageIcon, X, LayoutGrid, Camera, Clock, Download, Maximize2 } from "lucide-react";
-import { compressImage } from "@/lib/image-utils";
 import { getDaysUntilEvent } from "@/lib/date-utils";
 import { generateUUID } from "@/lib/uuid";
 import {
@@ -22,6 +21,7 @@ interface EventMemoriesProps {
   eventId: string;
   isAttendee: boolean;
   eventDate: string;
+  eventTitle: string;
 }
 
 interface MemoryWithProfile {
@@ -37,7 +37,7 @@ interface MemoryWithProfile {
   } | null;
 }
 
-export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttendee, eventDate }) => {
+export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttendee, eventDate, eventTitle }) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -79,15 +79,15 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
       let successCount = 0;
       try {
         for (const file of selectedFiles) {
-          const compressedFile = await compressImage(file);
-          const fileName = `${user.id}/${generateUUID()}.webp`;
+          const fileExt = file.name.includes('.') ? file.name.split('.').pop() : 'jpg';
+          const fileName = `${user.id}/${generateUUID()}.${fileExt}`;
           const filePath = `memories/${fileName}`;
 
           // Ensure bucket and path are correct
           const { error: uploadError } = await supabase.storage
             .from("event_memories")
-            .upload(filePath, compressedFile, {
-              contentType: "image/webp",
+            .upload(filePath, file, {
+              contentType: file.type || "image/jpeg",
             });
 
           if (uploadError) throw uploadError;
@@ -162,6 +162,53 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
     URL.revokeObjectURL(previewUrls[index]);
     setPreviewUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDownload = async (photo: MemoryWithProfile) => {
+    const response = await fetch(photo.image_url);
+    if (!response.ok) throw new Error("Ağ hatası");
+    const blob = await response.blob();
+    
+    let finalBlob = blob;
+    let fileExt = photo.image_url.split('.').pop()?.split('?')[0] || 'jpg';
+    
+    // iOS and Safari compatibility for old .webp photos
+    if (blob.type === 'image/webp' || fileExt.toLowerCase() === 'webp') {
+      finalBlob = await new Promise<Blob>((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return reject(new Error("Canvas context hatası"));
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0);
+          canvas.toBlob((b) => {
+            if (b) resolve(b);
+            else reject(new Error("Canvas toBlob hatası"));
+          }, 'image/jpeg', 0.95);
+        };
+        img.onerror = () => reject(new Error("Görsel yüklenemedi"));
+        img.src = URL.createObjectURL(blob);
+      });
+      fileExt = 'jpg';
+    }
+
+    const safeTitle = eventTitle.replace(/[^a-z0-9ğüşöçİĞÜŞÖÇ]/gi, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    const photoIndex = memories?.findIndex(m => m.id === photo.id) ?? 0;
+    const imageNumber = (memories?.length || 1) - photoIndex;
+    
+    const url = window.URL.createObjectURL(finalBlob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = `${safeTitle}-foto-${imageNumber}.${fileExt}`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   const resetUpload = () => {
@@ -353,22 +400,13 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
                       </button>
                       
                       <button 
-                        onClick={async (e) => {
+                        onClick={(e) => {
                           e.stopPropagation();
-                          try {
-                            const response = await fetch(memory.image_url);
-                            const blob = await response.blob();
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.style.display = 'none';
-                            a.href = url;
-                            a.download = `event-memory-${memory.id}.webp`;
-                            document.body.appendChild(a);
-                            a.click();
-                            window.URL.revokeObjectURL(url);
-                          } catch (err) {
-                            toast.error("İndirme başarısız oldu");
-                          }
+                          toast.promise(handleDownload(memory), {
+                            loading: 'Fotoğraf hazırlanıyor...',
+                            success: 'İndirme başladı!',
+                            error: 'İndirme başarısız oldu.'
+                          });
                         }}
                         className="w-7 h-7 flex items-center justify-center bg-primary/80 backdrop-blur-md rounded-lg text-white hover:bg-primary hover:scale-110 transition-all shadow-lg scale-0 group-hover:scale-100 duration-300 delay-75"
                         title="İndir"
@@ -427,36 +465,19 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
         <DialogContent className="max-w-[90vw] md:max-w-[80vw] lg:max-w-5xl p-1 bg-black/95 backdrop-blur-3xl border-white/10 shadow-2xl overflow-hidden rounded-[2rem]">
           {selectedPhoto && (
             <div className="relative flex flex-col">
-              <div className="absolute top-4 right-4 z-50 flex items-center gap-3">
+              <div className="absolute top-6 right-20 z-50 flex items-center gap-3">
                 <button
-                  onClick={async () => {
-                    try {
-                      // Trigger download with fetch
-                      const response = await fetch(selectedPhoto.image_url);
-                      const blob = await response.blob();
-                      const url = window.URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.style.display = 'none';
-                      a.href = url;
-                      a.download = `event-memory-${selectedPhoto.id}.webp`;
-                      document.body.appendChild(a);
-                      a.click();
-                      window.URL.revokeObjectURL(url);
-                      toast.success("Fotoğraf indiriliyor...");
-                    } catch (err) {
-                      toast.error("İndirme başarısız oldu");
-                    }
+                  onClick={() => {
+                    toast.promise(handleDownload(selectedPhoto), {
+                      loading: 'Fotoğraf hazırlanıyor...',
+                      success: 'İndirme başladı!',
+                      error: 'İndirme başarısız oldu.'
+                    });
                   }}
                   className="flex items-center gap-2 px-4 py-2 bg-white text-black font-black text-xs uppercase tracking-widest rounded-full hover:scale-105 active:scale-95 transition-all shadow-xl"
                 >
                   <Download className="w-4 h-4" />
                   İndir
-                </button>
-                <button
-                  onClick={() => setSelectedPhoto(null)}
-                  className="w-10 h-10 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full flex items-center justify-center text-white backdrop-blur-md transition-all hover:rotate-90"
-                >
-                  <X className="w-5 h-5" />
                 </button>
               </div>
 
