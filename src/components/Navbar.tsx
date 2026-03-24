@@ -5,6 +5,7 @@ import { LogOut, Menu, X, User, Settings, Calendar, BarChart3, Info, Shield, Sea
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import AboutModal from "@/components/AboutModal";
+import { NotificationsMenu } from "@/components/NotificationsMenu";
 
 const Navbar = () => {
   const { user, profile, isAdmin, signOut } = useAuth();
@@ -153,6 +154,9 @@ const Navbar = () => {
           {/* Action Bar / User Section */}
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex h-8 w-px bg-white/10 mx-1" />
+
+            {/* Notifications Menu */}
+            <NotificationsMenu />
 
             {/* Desktop-only User Section */}
             <div className="hidden md:flex items-center gap-3">

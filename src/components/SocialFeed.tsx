@@ -441,22 +441,22 @@ function CommentLikeButton({ commentId }: { commentId: string }) {
 
 const renderContent = (content: string, navigate: (path: string) => void) => {
     if (!content) return null;
-    
+
     // Regex to match @[Name](uuid)
     const mentionRegex = /@\[([^\]]+)\]\(([a-f0-9-]{36})\)/g;
     const parts = [];
     let lastIndex = 0;
     let match;
-    
+
     while ((match = mentionRegex.exec(content)) !== null) {
         // Text before the match
         if (match.index > lastIndex) {
             parts.push(content.substring(lastIndex, match.index));
         }
-        
+
         const name = match[1];
         const id = match[2];
-        
+
         parts.push(
             <span
                 key={`${id}-${match.index}`}
@@ -469,15 +469,15 @@ const renderContent = (content: string, navigate: (path: string) => void) => {
                 @{name}
             </span>
         );
-        
+
         lastIndex = mentionRegex.lastIndex;
     }
-    
+
     // Remaining text
     if (lastIndex < content.length) {
         parts.push(content.substring(lastIndex));
     }
-    
+
     return parts.length > 0 ? parts : content;
 };
 
@@ -707,7 +707,7 @@ function CommentsSection({ postId, onReplyClick }: { postId: string, onReplyClic
                                             className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-primary transition-colors py-0.5 px-1 -mx-1 rounded"
                                         >
                                             <Reply className="w-3.5 h-3.5" />
-                                            Alıntıla
+                                            Cevapla
                                         </button>
                                         {isOwner && (
                                             <button
@@ -1069,8 +1069,52 @@ export default function SocialFeed() {
                 if (error) throw error;
             }
         },
-        onSuccess: () => {
+        onSuccess: async () => {
             const wasEditing = !!editingPostId;
+
+            // Create mention notifications for new posts (not edits)
+            if (!wasEditing && newPostContent) {
+                try {
+                    const mentionRegex = /@\[([^\]]+)\]\(([a-f0-9-]{36})\)/g;
+                    let mentionMatch;
+                    const mentionedUserIds: { id: string; name: string }[] = [];
+                    while ((mentionMatch = mentionRegex.exec(newPostContent)) !== null) {
+                        const mentionedName = mentionMatch[1];
+                        const mentionedId = mentionMatch[2];
+                        if (mentionedId !== user?.id) {
+                            mentionedUserIds.push({ id: mentionedId, name: mentionedName });
+                        }
+                    }
+
+                    if (mentionedUserIds.length > 0) {
+                        const authorName = `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim() || "Biri";
+
+                        // Get the ID of the just-created post
+                        const { data: latestPost } = await supabase
+                            .from("posts")
+                            .select("id")
+                            .eq("user_id", user!.id)
+                            .order("created_at", { ascending: false })
+                            .limit(1);
+
+                        const postDbId = latestPost?.[0]?.id;
+
+                        const mentionNotifs = mentionedUserIds.map((m) => ({
+                            user_id: m.id,
+                            type: "mention",
+                            title: "Sizden Bahsedildi",
+                            description: `${authorName} bir gönderide sizden bahsetti!`,
+                            link: "/sosyal",
+                            post_id: postDbId || null,
+                        }));
+
+                        await (supabase.from("notifications" as any).insert(mentionNotifs as any) as any);
+                    }
+                } catch (e) {
+                    console.error("Mention notification error:", e);
+                }
+            }
+
             setNewPostContent("");
             removeImage();
             removeQuote();
@@ -1612,7 +1656,7 @@ export default function SocialFeed() {
                                             ref={fileInputRef}
                                             onChange={handleImageSelect}
                                         />
-                                        
+
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button
@@ -1627,7 +1671,7 @@ export default function SocialFeed() {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="start" className="w-56 p-2 rounded-2xl shadow-xl border-gray-100/50 backdrop-blur-xl bg-white/90">
                                                 <div className="px-2 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Ekle</div>
-                                                <DropdownMenuItem 
+                                                <DropdownMenuItem
                                                     onClick={() => fileInputRef.current?.click()}
                                                     className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-primary/5 transition-colors group"
                                                 >
@@ -1639,8 +1683,8 @@ export default function SocialFeed() {
                                                         <span className="text-[10px] text-gray-400">Görsel veya GIF paylaş</span>
                                                     </div>
                                                 </DropdownMenuItem>
-                                                
-                                                <DropdownMenuItem 
+
+                                                <DropdownMenuItem
                                                     onClick={() => setIsPollMode(!isPollMode)}
                                                     className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-primary/5 transition-colors group"
                                                 >
@@ -1656,7 +1700,7 @@ export default function SocialFeed() {
                                                 <div className="h-px bg-gray-50 my-1 mx-2" />
                                                 <div className="px-2 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Alıntıla</div>
 
-                                                <DropdownMenuItem 
+                                                <DropdownMenuItem
                                                     onClick={() => { setQuoteType("event"); setIsQuoteDialogOpen(true); }}
                                                     className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-primary/5 transition-colors group"
                                                 >
@@ -1669,7 +1713,7 @@ export default function SocialFeed() {
                                                     </div>
                                                 </DropdownMenuItem>
 
-                                                <DropdownMenuItem 
+                                                <DropdownMenuItem
                                                     onClick={() => { setQuoteType("report"); setIsQuoteDialogOpen(true); }}
                                                     className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-primary/5 transition-colors group"
                                                 >
@@ -1781,13 +1825,13 @@ export default function SocialFeed() {
                                         ) : (
                                             <Send className="mr-2 h-4 w-4" />
                                         )}
-                                    {editingPostId ? 'Güncelle' : 'Paylaş'}
-                                </Button>
+                                        {editingPostId ? 'Güncelle' : 'Paylaş'}
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
                 {/* Feed Area - Hidden when editing */}
                 {!editingPostId && <div className="space-y-5">
@@ -2289,20 +2333,20 @@ export default function SocialFeed() {
                                                             </div>
                                                         </div>
                                                     )}
-                                                            {/* Yorumları Kapat Butonu */}
-                                                            <button
-                                                                onClick={() => setExpandedComments(prev => {
-                                                                    const next = new Set(prev);
-                                                                    next.delete(post.id);
-                                                                    return next;
-                                                                })}
-                                                                className="w-full flex items-center justify-center gap-2 py-2 mt-2 text-xs font-semibold text-gray-400 hover:text-primary transition-all duration-300 group/close-comments"
-                                                            >
-                                                                <ChevronUp className="w-3.5 h-3.5 group-hover/close-comments:-translate-y-0.5 transition-transform" />
-                                                                Yorumları Kapat
-                                                            </button>
-                                                        </div>
-                                                    )}
+                                                    {/* Yorumları Kapat Butonu */}
+                                                    <button
+                                                        onClick={() => setExpandedComments(prev => {
+                                                            const next = new Set(prev);
+                                                            next.delete(post.id);
+                                                            return next;
+                                                        })}
+                                                        className="w-full flex items-center justify-center gap-2 py-2 mt-2 text-xs font-semibold text-gray-400 hover:text-primary transition-all duration-300 group/close-comments"
+                                                    >
+                                                        <ChevronUp className="w-3.5 h-3.5 group-hover/close-comments:-translate-y-0.5 transition-transform" />
+                                                        Yorumları Kapat
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

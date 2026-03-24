@@ -24,7 +24,7 @@ export function scrollToNearestEvent(viewMode: "list" | "calendar", upcomingEven
 }
 
 import { useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -153,7 +153,7 @@ const Index = () => {
           // Clean up the URL
           navigate('/', { replace: true });
 
-          // Scroll page down so it doesn't open at the very top of the hero section
+  // Scroll page down so it doesn't open at the very top of the hero section
           setTimeout(() => {
             const element = document.querySelector(`[data-event-id="${eventId}"]`);
             if (element) {
@@ -168,6 +168,39 @@ const Index = () => {
       }
     }
   }, [loading, events.length, user, navigate]);
+
+  const hasAutoOpenedRef = useRef(false);
+
+  useEffect(() => {
+    // Check if we should automatically open an event dialog
+    if (!loading && events.length > 0 && user && !hasAutoOpenedRef.current) {
+      hasAutoOpenedRef.current = true;
+      
+      const searchParams = new URLSearchParams(window.location.search);
+      // Do nothing if we're already opening an event from the URL
+      if (searchParams.get('eventId')) return;
+
+      const today = new Date().toISOString().split("T")[0];
+      
+      // Find all upcoming events sorted by date
+      const allUpcoming = [...events].filter(e => e.date >= today).sort((a, b) => a.date.localeCompare(b.date));
+      
+      // Find the first upcoming event the user hasn't RSVP'd to
+      const unRsvpedEvent = allUpcoming.find(e => !e.rsvps?.some(r => r.user_id === user.id));
+      
+      if (unRsvpedEvent) {
+        // Automatically open this event's dialog
+        const eventData = events.find((e) => e.id === unRsvpedEvent.id);
+        if (eventData) {
+          setSelectedEvent(eventData);
+          const rsvpData = eventData.rsvps || [];
+          setSelectedEventRsvps(rsvpData);
+          setMyRsvp(null);
+          setGuestCount(0);
+        }
+      }
+    }
+  }, [loading, events, user]);
 
   const today = new Date().toISOString().split("T")[0];
 
