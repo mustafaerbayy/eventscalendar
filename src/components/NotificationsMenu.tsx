@@ -23,10 +23,12 @@ const timeAgo = (dateStr: string): string => {
 };
 
 export const NotificationsMenu = () => {
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+
+  const isSuperAdmin = user?.email === "admin@admin.com";
 
   // Fetch notifications from Supabase table
   const { data: notifications, isLoading } = useQuery({
@@ -207,8 +209,8 @@ export const NotificationsMenu = () => {
                 {notifications && notifications.length > 0 && (
                   <button
                     onClick={() => {
-                      if (isAdmin) {
-                        if (confirm("Tüm kullanıcıların bildirimlerini silmek istiyor musunuz?")) {
+                      if (isSuperAdmin) {
+                        if (confirm("Tüm kullanıcıların bildirimlerini silmek istiyor musunuz? (Süper Admin)")) {
                           clearAllGlobalMutation.mutate();
                         }
                       } else {
@@ -216,7 +218,7 @@ export const NotificationsMenu = () => {
                       }
                     }}
                     className="text-[10px] font-bold text-red-400 hover:text-red-300 uppercase tracking-widest flex items-center gap-1 transition-colors"
-                    title={isAdmin ? "Tüm bildirimleri sil (admin)" : "Bildirimlerimi temizle"}
+                    title={isSuperAdmin ? "Tüm bildirimleri sil (Süper Admin)" : "Bildirimlerimi temizle"}
                   >
                     <Trash2 className="w-3 h-3" />
                     Temizle
@@ -262,16 +264,16 @@ export const NotificationsMenu = () => {
                           {isUnread && (
                             <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-3" />
                           )}
-                          {isAdmin && (
+                          {isSuperAdmin && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                if (confirm("Bu bildirimi tüm kullanıcılardan silmek istediğinizden emin misiniz?")) {
+                                if (confirm("Bu bildirimi tüm kullanıcılardan silmek istediğinizden emin misiniz? (Süper Admin)")) {
                                   deleteGlobalNotificationMutation.mutate(item);
                                 }
                               }}
                               className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-red-500/20 rounded-xl text-white/20 hover:text-red-400 shrink-0"
-                              title="Tüm kullanıcılardan sil (Admin)"
+                              title="Tüm kullanıcılardan sil (Süper Admin)"
                             >
                               <X className="w-4 h-4" />
                             </button>
