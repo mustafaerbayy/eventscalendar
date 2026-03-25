@@ -167,7 +167,7 @@ const Index = () => {
         }
       }
     }
-  }, [loading, events.length, user, navigate]);
+  }, [loading, events.length, user, navigate, location.search]);
 
   const hasAutoOpenedRef = useRef(false);
 

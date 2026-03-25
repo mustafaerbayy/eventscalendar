@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +27,24 @@ export const NotificationsMenu = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const outsideRef = useRef<HTMLDivElement>(null);
+
+  // Close when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (outsideRef.current && !outsideRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [open]);
 
   const isSuperAdmin = user?.email === "admin@admin.com";
 
@@ -162,7 +180,7 @@ export const NotificationsMenu = () => {
   if (!user) return null;
 
   return (
-    <div className="relative">
+    <div className="relative" ref={outsideRef}>
       <button
         onClick={() => setOpen(!open)}
         className="relative flex items-center justify-center w-10 h-10 rounded-full bg-white/5 border border-white/10 hover:border-primary/50 transition-all duration-300"
@@ -175,10 +193,6 @@ export const NotificationsMenu = () => {
         )}
       </button>
 
-      {/* Dropdown Overlay */}
-      {open && (
-        <div className="fixed inset-0 z-[190]" onClick={() => setOpen(false)} />
-      )}
 
       {/* Notifications Panel */}
       <AnimatePresence>
@@ -188,7 +202,7 @@ export const NotificationsMenu = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-full right-0 mt-3 w-[320px] sm:w-[380px] bg-black/85 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-[1.5rem] z-[200] overflow-hidden"
+            className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-[85px] sm:top-full mt-0 sm:mt-3 sm:w-[380px] bg-black/85 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-[1.5rem] z-[200] overflow-hidden"
           >
             {/* Header */}
             <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
