@@ -13,7 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Calendar, Clock, MapPin, Users, UserCheck, UserX, Info, AlertCircle } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, UserCheck, UserX, Info, AlertCircle, ExternalLink } from "lucide-react";
 import { formatTurkishDate, formatTurkishTime } from "@/lib/date-utils";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
@@ -26,6 +26,7 @@ interface EventDetail {
   date: string;
   time: string;
   venue_name: string;
+  location_url: string | null;
   cities: { name: string } | null;
   categories: { name: string } | null;
   venues: { name: string } | null;
@@ -160,9 +161,22 @@ const EventDetailPage = () => {
               <Clock className="h-4 w-4 text-primary" />
               <span>{formatTurkishTime(event.time)}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-primary" />
-              <span>{[event.venue_name || event.venues?.name, event.cities?.name].filter(Boolean).join(", ")}</span>
+            <div className="flex items-center gap-3">
+              <MapPin className="h-4 w-4 text-primary shrink-0" />
+              <span className="text-foreground/80">{[event.venue_name || event.venues?.name, event.cities?.name].filter(Boolean).join(", ")}</span>
+              {event.location_url && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-8 gap-2 bg-primary/5 border-primary/20 text-primary hover:bg-primary/10"
+                  asChild
+                >
+                  <a href={event.location_url} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4" />
+                    Haritalar'da Aç
+                  </a>
+                </Button>
+              )}
             </div>
           </div>
 

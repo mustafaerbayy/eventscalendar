@@ -160,6 +160,7 @@ export type Database = {
           time: string
           title: string
           venue_id: string | null
+          location_url: string | null
         }
         Insert: {
           category_id: string
@@ -171,6 +172,7 @@ export type Database = {
           time: string
           title: string
           venue_id?: string | null
+          location_url?: string | null
         }
         Update: {
           category_id?: string
@@ -182,6 +184,7 @@ export type Database = {
           time?: string
           title?: string
           venue_id?: string | null
+          location_url?: string | null
         }
         Relationships: [
           {

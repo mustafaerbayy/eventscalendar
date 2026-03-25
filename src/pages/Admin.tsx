@@ -26,7 +26,7 @@ interface Category { id: string; name: string }
 interface Venue { id: string; name: string; city_id: string }
 interface Event {
   id: string; title: string; description: string; date: string; time: string;
-  city_id: string; venue_name: string; category_id: string;
+  city_id: string; venue_name: string; category_id: string; location_url?: string | null;
   cities: { name: string } | null; venues: { name: string } | null; categories: { name: string } | null;
 }
 interface Profile { id: string; first_name: string; last_name: string; email?: string }
@@ -110,7 +110,7 @@ const Admin = () => {
         supabase.from("cities").select("id, name").order("name"),
         supabase.from("categories").select("id, name").order("name"),
         supabase.from("venues").select("id, name, city_id").order("name"),
-        supabase.from("events").select("id, title, description, date, time, city_id, venue_name, category_id, cities(name), venues(name), categories(name)").order("date", { ascending: false }),
+        supabase.from("events").select("id, title, description, date, time, city_id, venue_name, category_id, location_url, cities(name), venues(name), categories(name)").order("date", { ascending: false }),
         supabase.from("profiles").select("id, first_name, last_name, reminder_2h, reminder_1d, reminder_2d, reminder_3d, reminder_1w"),
         supabase.from("announcements").select("id, subject, body, recipient_count, created_at, announcement_recipients(status)").order("created_at", { ascending: false }),
       ]);
@@ -369,6 +369,7 @@ const Admin = () => {
     else if (type === "event") setFormData({
       title: item?.title || "", description: item?.description || "", date: item?.date || "",
       time: item?.time || "", city_id: item?.city_id || "", venue_name: item?.venue_name || item?.venues?.name || "", category_id: item?.category_id || "",
+      location_url: item?.location_url || "",
     });
     setDialogOpen(true);
   };
@@ -1297,6 +1298,15 @@ const Admin = () => {
                         placeholder="Mekan adını girin..."
                         value={formData.venue_name || ""}
                         onChange={(e) => setFormData({ ...formData, venue_name: e.target.value })}
+                        className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white placeholder:text-white/40"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Harita Bağlantısı (Opsiyonel)</Label>
+                      <Input
+                        placeholder="Bağlantıyı yapıştırın..."
+                        value={formData.location_url || ""}
+                        onChange={(e) => setFormData({ ...formData, location_url: e.target.value })}
                         className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white placeholder:text-white/40"
                       />
                     </div>

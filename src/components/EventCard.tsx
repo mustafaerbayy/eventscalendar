@@ -24,6 +24,7 @@ interface EventCardProps {
   onDelete?: (id: string) => void;
   onClick?: (eventId: string, e?: React.MouseEvent) => void;
   isAuthenticated?: boolean;
+  locationUrl?: string | null;
 }
 
 // Category color mapping - Modern vibrant theme
@@ -68,7 +69,7 @@ const getColorByCategory = (category: string) => {
   };
 };
 
-const EventCard = ({ id, title, date, time, cityName, venueName, categoryName, attendeeCount, description, index = 0, isPast = false, viewMode = "card", isAdmin = false, onEdit, onDelete, onClick, isAuthenticated = true }: EventCardProps) => {
+const EventCard = ({ id, title, date, time, cityName, venueName, categoryName, attendeeCount, description, index = 0, isPast = false, viewMode = "card", isAdmin = false, onEdit, onDelete, onClick, isAuthenticated = true, locationUrl }: EventCardProps) => {
   const navigate = useNavigate();
   const colors = getColorByCategory(categoryName);
 
@@ -96,10 +97,10 @@ const EventCard = ({ id, title, date, time, cityName, venueName, categoryName, a
         onClick={handleCardClick}
       >
         <Card
-          className="relative overflow-hidden border border-white/20 bg-white/10 backdrop-blur-xl md:backdrop-blur-2xl transition-all duration-500 hover:bg-white/15 hover:border-white/30 hover:shadow-2xl rounded-2xl transform-gpu"
+          className={`relative overflow-hidden border bg-white/10 backdrop-blur-xl md:backdrop-blur-2xl transition-all duration-500 hover:bg-white/15 hover:border-white/40 hover:shadow-2xl rounded-2xl transform-gpu ${colors.bg.replace('bg-', 'border-').replace('/15', '/30')}`}
         >
           {/* Subtle Glow */}
-          <div className={`absolute inset-0 bg-gradient-to-r ${colors.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
+          <div className={`absolute inset-0 bg-gradient-to-r ${colors.gradient} opacity-[0.03] group-hover:opacity-10 transition-opacity duration-500`} />
 
           <CardContent className="py-4 px-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
@@ -169,7 +170,7 @@ const EventCard = ({ id, title, date, time, cityName, venueName, categoryName, a
       className={isPast ? "opacity-50" : ""}
     >
       <Card
-        className="group cursor-pointer overflow-hidden border border-white/20 bg-white/10 backdrop-blur-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(0,0,0,0.4)] hover:border-white/30 relative rounded-[2.5rem] h-full transform-gpu"
+        className={`group cursor-pointer overflow-hidden border bg-white/10 backdrop-blur-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(0,0,0,0.4)] hover:border-white/40 relative rounded-[2.5rem] h-full transform-gpu ${colors.bg.replace('bg-', 'border-').replace('/15', '/30')}`}
         onClick={handleCardClick}
       >
         {/* Background Orbs */}

@@ -31,6 +31,7 @@ interface CalendarEvent {
   categoryName: string;
   attendeeCount: number;
   isPast?: boolean;
+  locationUrl?: string | null;
 }
 
 interface CalendarViewProps {

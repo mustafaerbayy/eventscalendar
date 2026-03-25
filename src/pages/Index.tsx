@@ -36,7 +36,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, CalendarDays, Loader, Clock, Plus, Minus, Calendar, MapPin, Users, UserCheck, UserX, List, LayoutGrid, Sparkles, ChevronDown, Pencil } from "lucide-react";
+import { Search, CalendarDays, Loader, Clock, Plus, Minus, Calendar, MapPin, Users, UserCheck, UserX, List, LayoutGrid, Sparkles, ChevronDown, Pencil, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatTurkishDate, formatTurkishTime } from "@/lib/date-utils";
@@ -56,6 +56,7 @@ interface EventWithRelations {
   venue_id: string;
   venue_name?: string | null;
   category_id: string;
+  location_url: string | null;
   cities: { name: string } | null;
   venues: { name: string } | null;
   categories: { name: string } | null;
@@ -108,6 +109,7 @@ const Index = () => {
     city_id: "",
     venue_name: "",
     category_id: "",
+    location_url: "",
   });
   const [isPastEventsOpen, setIsPastEventsOpen] = useState(false);
   const fetchData = async () => {
@@ -153,7 +155,7 @@ const Index = () => {
           // Clean up the URL
           navigate('/', { replace: true });
 
-  // Scroll page down so it doesn't open at the very top of the hero section
+          // Scroll page down so it doesn't open at the very top of the hero section
           setTimeout(() => {
             const element = document.querySelector(`[data-event-id="${eventId}"]`);
             if (element) {
@@ -175,19 +177,19 @@ const Index = () => {
     // Check if we should automatically open an event dialog
     if (!loading && events.length > 0 && user && !hasAutoOpenedRef.current) {
       hasAutoOpenedRef.current = true;
-      
+
       const searchParams = new URLSearchParams(window.location.search);
       // Do nothing if we're already opening an event from the URL
       if (searchParams.get('eventId')) return;
 
       const today = new Date().toISOString().split("T")[0];
-      
+
       // Find all upcoming events sorted by date
       const allUpcoming = [...events].filter(e => e.date >= today).sort((a, b) => a.date.localeCompare(b.date));
-      
+
       // Find the first upcoming event the user hasn't RSVP'd to
       const unRsvpedEvent = allUpcoming.find(e => !e.rsvps?.some(r => r.user_id === user.id));
-      
+
       if (unRsvpedEvent) {
         // Automatically open this event's dialog
         const eventData = events.find((e) => e.id === unRsvpedEvent.id);
@@ -330,6 +332,7 @@ const Index = () => {
       city_id: "",
       venue_name: "",
       category_id: "",
+      location_url: "",
     });
     setDialogOpen(true);
   };
@@ -344,6 +347,7 @@ const Index = () => {
       city_id: event.city_id,
       venue_name: event.venue_name || event.venues?.name || "",
       category_id: event.category_id,
+      location_url: event.location_url || "",
     });
     setDialogOpen(true);
   };
@@ -364,6 +368,7 @@ const Index = () => {
         city_id: formData.city_id,
         venue_name: formData.venue_name,
         category_id: formData.category_id,
+        location_url: formData.location_url,
       };
 
       if (editingEvent) {
@@ -648,6 +653,16 @@ const Index = () => {
                     />
                   </div>
 
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">HARİTA BAĞLANTISI (OPSİYONEL)</Label>
+                    <Input
+                      value={formData.location_url}
+                      onChange={(e) => setFormData({ ...formData, location_url: e.target.value })}
+                      placeholder="Bağlantıyı yapıştırın..."
+                      className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white placeholder:text-white/40"
+                    />
+                  </div>
+
                   <motion.button
                     whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}
@@ -705,6 +720,7 @@ const Index = () => {
                     categoryName: event.categories?.name || "",
                     attendeeCount: getAttendeeCount(event.rsvps || []),
                     isPast: false,
+                    locationUrl: event.location_url,
                   })),
                   ...pastEvents.map((event) => ({
                     id: event.id,
@@ -716,6 +732,7 @@ const Index = () => {
                     categoryName: event.categories?.name || "",
                     attendeeCount: getAttendeeCount(event.rsvps || []),
                     isPast: true,
+                    locationUrl: event.location_url,
                   })),
                 ]}
                 onEventClick={(eventId) => handleCardClick(eventId)}
@@ -765,6 +782,7 @@ const Index = () => {
                     onDelete={handleDeleteEvent}
                     onClick={handleCardClick}
                     isAuthenticated={!!user}
+                    locationUrl={event.location_url}
                   />
                 </div>
               ))}
@@ -825,6 +843,7 @@ const Index = () => {
                         onEdit={(eventData) => openEditDialog(event)}
                         onDelete={handleDeleteEvent}
                         onClick={handleCardClick}
+                        locationUrl={event.location_url}
                       />
                     ))}
                   </div>
@@ -837,7 +856,7 @@ const Index = () => {
 
       {/* Event Detail Dialog */}
       <Dialog open={!!selectedEvent} onOpenChange={(open) => !open && setSelectedEvent(null)}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-[2rem]">
           <DialogHeader>
             <DialogTitle>{selectedEvent?.title}</DialogTitle>
           </DialogHeader>
@@ -854,9 +873,22 @@ const Index = () => {
                   <Clock className="h-4 w-4 text-primary" />
                   <span>{formatTurkishTime(selectedEvent.time)}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  <span>{[selectedEvent.venue_name || selectedEvent.venues?.name, selectedEvent.cities?.name].filter(Boolean).join(", ")}</span>
+                <div className="flex items-center gap-3">
+                  <MapPin className="h-4 w-4 text-primary shrink-0" />
+                  <span className="text-foreground/80">{[selectedEvent.venue_name || selectedEvent.venues?.name, selectedEvent.cities?.name].filter(Boolean).join(", ")}</span>
+                  {selectedEvent.location_url && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 gap-1 bg-primary/5 border-primary/20 text-primary hover:bg-primary/10 ml-1 text-[11px]"
+                      asChild
+                    >
+                      <a href={selectedEvent.location_url} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-3 w-3" />
+                        Haritalar'da Aç
+                      </a>
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -972,9 +1004,9 @@ const Index = () => {
               </div>
 
               {/* Medya Arşivi */}
-              <EventMemories 
-                eventId={selectedEvent.id} 
-                isAttendee={myRsvp?.status === "attending"} 
+              <EventMemories
+                eventId={selectedEvent.id}
+                isAttendee={myRsvp?.status === "attending"}
                 eventDate={selectedEvent.date}
                 eventTitle={selectedEvent.title}
               />
