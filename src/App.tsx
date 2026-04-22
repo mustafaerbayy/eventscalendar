@@ -59,6 +59,7 @@ const WeeklyReports = React.lazy(() => import("./pages/WeeklyReports"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 const Social = React.lazy(() => import("./pages/Social"));
 const SocialProfileView = React.lazy(() => import("./pages/SocialProfileView"));
+const Budget = React.lazy(() => import("./pages/Budget"));
 
 const queryClient = new QueryClient();
 
@@ -92,6 +93,7 @@ const App = () => (
               <Route path="/sosyal/profil/:id" element={<ProtectedRoute><SocialProfileView /></ProtectedRoute>} />
               <Route path="/yonetim" element={<ProtectedRoute adminOnly><Admin /></ProtectedRoute>} />
               <Route path="/raporlar" element={<ProtectedRoute><WeeklyReports /></ProtectedRoute>} />
+              <Route path="/butce" element={<ProtectedRoute><Budget /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

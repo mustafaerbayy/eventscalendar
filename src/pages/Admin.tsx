@@ -31,7 +31,7 @@ interface Event {
 }
 interface Profile { id: string; first_name: string; last_name: string; email?: string }
 interface AdminUser { id: string; email: string; first_name: string; last_name: string; has_announcement_access?: boolean; has_report_access?: boolean }
-interface ManagedUser { id: string; email: string; first_name: string; last_name: string; created_at: string; has_report_role?: boolean }
+interface ManagedUser { id: string; email: string; first_name: string; last_name: string; created_at: string; has_report_role?: boolean; has_budget_role?: boolean }
 interface Announcement {
   id: string; subject: string; body: string; recipient_count: number; created_at: string;
   announcement_recipients?: { status: string }[];
@@ -223,7 +223,21 @@ const Admin = () => {
         setAllUsers([]);
         return;
       }
-      setAllUsers((data || []) as ManagedUser[]);
+      
+      let users = (data || []) as ManagedUser[];
+      
+      // Fetch budget roles
+      const { data: budgetRolesData, error: budgetRolesError } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "manage_budget");
+        
+      if (!budgetRolesError && budgetRolesData) {
+        const budgetUserIds = new Set(budgetRolesData.map(r => r.user_id));
+        users = users.map(u => ({ ...u, has_budget_role: budgetUserIds.has(u.id) }));
+      }
+      
+      setAllUsers(users);
     } catch (err: any) {
       console.error("Failed to fetch users error:", err);
       toast.error(getErrorMessage(err));
@@ -348,6 +362,18 @@ const Admin = () => {
       if ((data as any)?.error) { toast.error((data as any).error); return; }
       toast.success("Rapor yetkisi güncellendi.");
       setAllUsers(prev => prev.map(u => u.id === userId ? { ...u, has_report_role: (data as any).has_role } : u));
+    } catch (err: any) { toast.error(getErrorMessage(err)); }
+    finally { setUsersLoading(false); }
+  };
+
+  const handleToggleBudgetRole = async (userId: string) => {
+    setUsersLoading(true);
+    try {
+      const { data, error } = await supabase.rpc("toggle_budget_role" as any, { target_user_id: userId });
+      if (error) { toast.error(getErrorMessage(error)); return; }
+      if ((data as any)?.error) { toast.error((data as any).error); return; }
+      toast.success("Bütçe yetkisi güncellendi.");
+      setAllUsers(prev => prev.map(u => u.id === userId ? { ...u, has_budget_role: (data as any).has_role } : u));
     } catch (err: any) { toast.error(getErrorMessage(err)); }
     finally { setUsersLoading(false); }
   };
@@ -1078,6 +1104,7 @@ const Admin = () => {
                           <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 py-8">KAYIT</TableHead>
                           <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 py-8 text-center">DUYURU YETKİSİ</TableHead>
                           <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 py-8 text-center">RAPOR YETKİSİ</TableHead>
+                          <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400/50 py-8 text-center">BÜTÇE YETKİSİ</TableHead>
                           <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 py-8 text-right pr-10">AKSİYONLAR</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -1149,6 +1176,24 @@ const Admin = () => {
                                       )}
                                     >
                                       {admin.has_report_access ? "AKTİF" : "PASİF"}
+                                    </motion.button>
+                                  ) : <span className="text-white/10 font-bold">—</span>}
+                                </TableCell>
+                                <TableCell className="py-8 text-center">
+                                  {user?.email === "admin@admin.com" ? (
+                                    <motion.button
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                      onClick={() => handleToggleBudgetRole(u.id)}
+                                      disabled={usersLoading}
+                                      className={cn(
+                                        "px-6 py-2 rounded-xl text-[10px] font-black tracking-widest transition-all",
+                                        u.has_budget_role
+                                          ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-[0_5px_15px_rgba(16,185,129,0.1)]"
+                                          : "bg-white/5 text-white/30 border border-white/10"
+                                      )}
+                                    >
+                                      {u.has_budget_role ? "AKTİF" : "PASİF"}
                                     </motion.button>
                                   ) : <span className="text-white/10 font-bold">—</span>}
                                 </TableCell>

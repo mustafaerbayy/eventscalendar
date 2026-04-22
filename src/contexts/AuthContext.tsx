@@ -17,6 +17,7 @@ interface AuthContextType {
   user: User | null;
   profile: Profile | null;
   isAdmin: boolean;
+  hasBudgetRole: boolean;
   loading: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -26,6 +27,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   profile: null,
   isAdmin: false,
+  hasBudgetRole: false,
   loading: true,
   signOut: async () => {},
   refreshProfile: async () => {},
@@ -37,6 +39,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [hasBudgetRole, setHasBudgetRole] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
@@ -169,24 +172,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user?.email === "admin@admin.com") {
         setIsAdmin(true);
+        setHasBudgetRole(true);
         return;
       }
       
-      const { data, error } = await supabase.rpc("has_role_text", {
+      const { data: adminData, error: adminError } = await supabase.rpc("has_role_text", {
         _user_id: userId,
         _role: "admin",
       });
       
-      if (error) {
-        console.error("Error checking admin role:", error);
-        setIsAdmin(false);
-        return;
+      if (!adminError) {
+        setIsAdmin(!!adminData);
       }
+
+      const { data: budgetData, error: budgetError } = await supabase.rpc("has_role_text", {
+        _user_id: userId,
+        _role: "manage_budget",
+      });
       
-      setIsAdmin(!!data);
+      if (!budgetError) {
+        setHasBudgetRole(!!budgetData);
+      } else {
+        setHasBudgetRole(false);
+      }
     } catch (err) {
       console.error("Exception in checkAdmin:", err);
       setIsAdmin(false);
+      setHasBudgetRole(false);
     }
   };
 
@@ -217,6 +229,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } else {
           setProfile(null);
           setIsAdmin(false);
+          setHasBudgetRole(false);
           if (initialized) setLoading(false);
         }
       }
@@ -245,10 +258,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setProfile(null);
     setIsAdmin(false);
+    setHasBudgetRole(false);
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, isAdmin, loading, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, isAdmin, hasBudgetRole, loading, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

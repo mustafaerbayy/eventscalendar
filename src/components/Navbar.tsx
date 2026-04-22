@@ -1,14 +1,14 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, Menu, X, User, Settings, Calendar, BarChart3, Info, Shield, Search, MessageSquare } from "lucide-react";
+import { LogOut, Menu, X, User, Settings, Calendar, BarChart3, Info, Shield, Search, MessageSquare, Wallet } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import AboutModal from "@/components/AboutModal";
 import { NotificationsMenu } from "@/components/NotificationsMenu";
 
 const Navbar = () => {
-  const { user, profile, isAdmin, signOut } = useAuth();
+  const { user, profile, isAdmin, hasBudgetRole, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -139,6 +139,15 @@ const Navbar = () => {
               <MessageSquare className="h-4 w-4" />
               <span>Fikir Meydanı</span>
               <motion.div className="absolute inset-0 bg-primary/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+            </Link>
+
+            <Link
+              to="/butce"
+              className="px-4 py-2 text-sm font-bold text-emerald-400/90 hover:text-emerald-400 transition-all flex items-center gap-2 rounded-xl hover:bg-emerald-500/10 relative group"
+            >
+              <Wallet className="h-4 w-4" />
+              <span>Bütçe</span>
+              <motion.div className="absolute inset-0 bg-emerald-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
             </Link>
 
             <button
@@ -276,6 +285,8 @@ const Navbar = () => {
               <MobileLink icon={<BarChart3 />} label="Raporlar" onClick={() => { navigate("/raporlar"); setMobileOpen(false); }} />
 
               <MobileLink icon={<MessageSquare />} label="Fikir Meydanı" onClick={() => { navigate("/sosyal"); setMobileOpen(false); }} />
+
+              <MobileLink icon={<Wallet />} label="Bütçe" onClick={() => { navigate("/butce"); setMobileOpen(false); }} />
 
               <MobileLink icon={<Info />} label="Biz Kimiz" onClick={() => { setAboutOpen(true); setMobileOpen(false); }} />
 

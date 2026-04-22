@@ -182,10 +182,22 @@ const Index = () => {
       // Do nothing if we're already opening an event from the URL
       if (searchParams.get('eventId')) return;
 
-      const today = new Date().toISOString().split("T")[0];
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+      const currentDay = String(now.getDate()).padStart(2, '0');
+      const todayLocal = `${currentYear}-${currentMonth}-${currentDay}`;
+      
+      const currentHours = String(now.getHours()).padStart(2, '0');
+      const currentMinutes = String(now.getMinutes()).padStart(2, '0');
+      const currentTime = `${currentHours}:${currentMinutes}`;
 
-      // Find all upcoming events sorted by date
-      const allUpcoming = [...events].filter(e => e.date >= today).sort((a, b) => a.date.localeCompare(b.date));
+      // Find all upcoming events sorted by date (excluding events whose date/time has passed locally)
+      const allUpcoming = [...events].filter(e => {
+        if (e.date < todayLocal) return false;
+        if (e.date === todayLocal && e.time && e.time < currentTime) return false;
+        return true;
+      }).sort((a, b) => a.date.localeCompare(b.date));
 
       // Find the first upcoming event the user hasn't RSVP'd to
       const unRsvpedEvent = allUpcoming.find(e => !e.rsvps?.some(r => r.user_id === user.id));
