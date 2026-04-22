@@ -602,7 +602,7 @@ export default function Budget() {
               <div className="divide-y divide-white/5">
                 {combinedHistory.map((item) => {
                   if (item.isExpense) {
-                    const expense = item as any;
+                    const expense = item as Extract<typeof combinedHistory[number], { isExpense: true }>;
                     const spentUser = Array.isArray(expense.profiles) ? expense.profiles[0] : expense.profiles;
                     const canModify = expense.created_by === user?.id || isAdmin || hasBudgetRole;
                     
@@ -661,7 +661,7 @@ export default function Budget() {
                       </div>
                     );
                   } else {
-                    const dueItem = item as any;
+                    const dueItem = item as Extract<typeof combinedHistory[number], { isExpense: false }>;
                     const dueUser = users?.find(u => u.id === dueItem.user_id);
                     const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
                     
