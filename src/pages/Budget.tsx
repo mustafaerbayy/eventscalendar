@@ -43,6 +43,17 @@ export default function Budget() {
 
   // Budget form state
   const [newTotalBudget, setNewTotalBudget] = useState("");
+  const [historyFilter, setHistoryFilter] = useState<"all" | "income" | "expense">("all");
+
+  // Dues payment dialog state
+  const [isDuesPaymentDialogOpen, setIsDuesPaymentDialogOpen] = useState(false);
+  const [pendingDuesPayment, setPendingDuesPayment] = useState<{ userId: string, month: number } | null>(null);
+  const [duesPaymentAmount, setDuesPaymentAmount] = useState("");
+  const [distributePayment, setDistributePayment] = useState(true);
+
+  // Cancel payment dialog state
+  const [isCancelPaymentDialogOpen, setIsCancelPaymentDialogOpen] = useState(false);
+  const [paymentToCancel, setPaymentToCancel] = useState<{ userId: string, month: number } | null>(null);
 
   useEffect(() => {
     if (profile?.id && !spentBy) {
@@ -130,7 +141,12 @@ export default function Budget() {
     },
   });
 
-  const combinedHistory = [...(expenses || []).map(e => ({ ...e, isExpense: true as const })), ...(allDuesPaymentsHistory || []).map(d => ({ ...d, isExpense: false as const }))].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  const combinedHistory = [
+    ...(expenses || []).map(e => ({ ...e, isExpense: true as const })), 
+    ...(allDuesPaymentsHistory || [])
+      .filter(d => d.created_by === d.user_id)
+      .map(d => ({ ...d, isExpense: false as const }))
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
 
   // Fetch Users for Select
@@ -169,16 +185,21 @@ export default function Budget() {
   const relevantSpent = relevantExpenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
   const totalSpentAllTime = expenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
   
-  // Calculate total dues collected (only count ones collected AFTER budgetStartDate to be consistent, or maybe count all? The requirement is: "bütçeye +100 eklensin otomatik olarak". So it should definitely be added to currentBudget.)
-  // We'll count dues payments made after the budget start date for the "current budget".
-  // Note: the prompt says "ilgili ayın aidat kutucuğuna eğer tik atarsa bütçeye +100 eklensin otomatik olarak".
-  // So we add it to the available budget.
-  const relevantDues = duesPayments?.filter(d => {
+  // Calculate total dues collected (only count ones collected AFTER budgetStartDate to be consistent)
+  // Note: The requirement is that if an admin checks a user's dues, it shouldn't add to the budget.
+  // If the user checks it themselves, it adds to the budget.
+  const relevantDues = allDuesPaymentsHistory?.filter(d => {
     if (!budgetStartDate) return true;
     return new Date(d.created_at) >= new Date(budgetStartDate);
   }) || [];
   
-  const relevantDuesCollected = relevantDues.reduce((sum, d) => sum + Number(d.amount), 0);
+  const relevantDuesCollected = relevantDues.reduce((sum, d) => {
+    // Only add to budget if the user marked it themselves (created_by === user_id)
+    if (d.created_by === d.user_id) {
+      return sum + Number(d.amount);
+    }
+    return sum;
+  }, 0);
   
   const currentBudget = Number(budgetSettings?.total_budget || 0) + relevantDuesCollected - relevantSpent;
 
@@ -275,20 +296,71 @@ export default function Budget() {
   });
 
   const toggleDuesMutation = useMutation({
-    mutationFn: async ({ userId, month }: { userId: string, month: number }) => {
+    mutationFn: async ({ userId, month, amount, distribute }: { userId: string, month: number, amount?: number, distribute?: boolean }) => {
       const existing = duesPayments?.find(p => p.user_id === userId && p.year === selectedYear && p.month === month);
       if (existing) {
         const { error } = await supabase.from("dues_payments").delete().eq("id", existing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("dues_payments").insert([{
-          user_id: userId,
-          year: selectedYear,
-          month,
-          amount: budgetSettings?.dues_amount || 100,
-          created_by: user?.id
-        }]);
-        if (error) throw error;
+        const baseDues = budgetSettings?.dues_amount || 100;
+        const totalAmount = amount !== undefined ? amount : baseDues;
+        const inserts = [];
+
+        if (distribute && totalAmount > baseDues) {
+          let remainingAmount = totalAmount;
+          let currentMonth = month;
+          let currentYear = selectedYear;
+
+          while (remainingAmount >= baseDues) {
+            const isAlreadyPaid = allDuesPaymentsHistory?.some(p => p.user_id === userId && p.year === currentYear && p.month === currentMonth);
+            
+            if (!isAlreadyPaid) {
+              inserts.push({
+                user_id: userId,
+                year: currentYear,
+                month: currentMonth,
+                amount: baseDues,
+                created_by: user?.id
+              });
+              remainingAmount -= baseDues;
+            }
+            
+            currentMonth++;
+            if (currentMonth > 12) {
+              currentMonth = 1;
+              currentYear++;
+            }
+            if (currentYear > selectedYear + 10) break; // safety
+          }
+
+          // Kalan küsurat varsa son ödenen aya ekle ki para kaybolmasın ama yarım tik atılmasın
+          if (remainingAmount > 0) {
+            if (inserts.length > 0) {
+              inserts[inserts.length - 1].amount += remainingAmount;
+            } else {
+              inserts.push({
+                user_id: userId,
+                year: selectedYear,
+                month,
+                amount: remainingAmount,
+                created_by: user?.id
+              });
+            }
+          }
+        } else {
+          inserts.push({
+            user_id: userId,
+            year: selectedYear,
+            month,
+            amount: totalAmount,
+            created_by: user?.id
+          });
+        }
+
+        if (inserts.length > 0) {
+          const { error } = await supabase.from("dues_payments").insert(inserts);
+          if (error) throw error;
+        }
       }
     },
     onSuccess: () => {
@@ -415,6 +487,12 @@ export default function Budget() {
     return <Navigate to="/" replace />;
   }
 
+  const filteredHistory = combinedHistory.filter(item => {
+    if (historyFilter === "income" && item.isExpense) return false;
+    if (historyFilter === "expense" && !item.isExpense) return false;
+    return true;
+  });
+
   return (
     <div className="min-h-screen bg-black text-white pt-24 pb-20 px-4 sm:px-6">
       <Navbar />
@@ -487,7 +565,23 @@ export default function Budget() {
         {/* Expenses List */}
         <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
           <div className="p-6 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <h3 className="text-xl font-bold">İşlem Geçmişi</h3>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <h3 className="text-xl font-bold">İşlem Geçmişi</h3>
+              <div className="flex bg-black/50 p-1 rounded-xl border border-white/10">
+                <button 
+                  onClick={() => setHistoryFilter("all")}
+                  className={cn("px-3 py-1 text-sm font-medium rounded-lg transition-colors", historyFilter === "all" ? "bg-white/10 text-white" : "text-white/50 hover:text-white")}
+                >Tümü</button>
+                <button 
+                  onClick={() => setHistoryFilter("income")}
+                  className={cn("px-3 py-1 text-sm font-medium rounded-lg transition-colors", historyFilter === "income" ? "bg-white/10 text-white" : "text-white/50 hover:text-white")}
+                >Gelirler</button>
+                <button 
+                  onClick={() => setHistoryFilter("expense")}
+                  className={cn("px-3 py-1 text-sm font-medium rounded-lg transition-colors", historyFilter === "expense" ? "bg-white/10 text-white" : "text-white/50 hover:text-white")}
+                >Giderler</button>
+              </div>
+            </div>
             
             <Dialog open={isExpenseDialogOpen} onOpenChange={(open) => {
               setIsExpenseDialogOpen(open);
@@ -598,9 +692,9 @@ export default function Budget() {
           <div className="p-0">
             {loadingExpenses || loadingAllDuesHistory ? (
               <div className="p-8 text-center text-white/50">Yükleniyor...</div>
-            ) : combinedHistory && combinedHistory.length > 0 ? (
+            ) : filteredHistory && filteredHistory.length > 0 ? (
               <div className="divide-y divide-white/5">
-                {combinedHistory.map((item) => {
+                {filteredHistory.map((item) => {
                   if (item.isExpense) {
                     const expense = item as Extract<typeof combinedHistory[number], { isExpense: true }>;
                     const spentUser = Array.isArray(expense.profiles) ? expense.profiles[0] : expense.profiles;
@@ -664,21 +758,25 @@ export default function Budget() {
                     const dueItem = item as Extract<typeof combinedHistory[number], { isExpense: false }>;
                     const dueUser = users?.find(u => u.id === dueItem.user_id);
                     const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+                    const isSelfPaid = dueItem.created_by === dueItem.user_id;
                     
                     return (
                       <div key={`due-${dueItem.id}`} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/[0.02] transition-colors">
                         <div className="flex items-start gap-4">
-                          <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl shrink-0 mt-1 sm:mt-0">
+                          <div className={cn("p-3 rounded-xl shrink-0 mt-1 sm:mt-0", isSelfPaid ? "bg-emerald-500/10 text-emerald-400" : "bg-white/5 text-white/40")}>
                             <Wallet className="w-5 h-5" />
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-lg text-emerald-400">+₺{Number(dueItem.amount).toLocaleString("tr-TR")}</span>
+                              <span className={cn("font-bold text-lg", isSelfPaid ? "text-emerald-400" : "text-white/40")}>
+                                {isSelfPaid ? `+₺${Number(dueItem.amount).toLocaleString("tr-TR")}` : `₺0`}
+                              </span>
+                              {!isSelfPaid && <span className="text-xs border border-white/10 bg-white/5 px-2 py-0.5 rounded-md text-white/50">Admin İşareti</span>}
                               <span className="text-white/40 text-sm">•</span>
                               <span className="text-white/60 text-sm">{new Date(dueItem.created_at).toLocaleDateString("tr-TR")}</span>
                             </div>
                             <p className="text-white/80 mt-1 text-sm font-medium">
-                              <span className="text-emerald-400">{dueUser?.first_name} {dueUser?.last_name}</span> {dueItem.year} {months[dueItem.month - 1]} ayı aidatını ödedi.
+                              <span className={isSelfPaid ? "text-emerald-400" : "text-white/60"}>{dueUser?.first_name} {dueUser?.last_name}</span> {dueItem.year} {months[dueItem.month - 1]} ayı aidatını {isSelfPaid ? 'ödedi' : 'ödendi olarak işaretlendi'}.
                             </p>
                           </div>
                         </div>
@@ -703,12 +801,12 @@ export default function Budget() {
 
           <TabsContent value="dues" className="space-y-8 animate-in fade-in-50 duration-500">
             <div className="bg-white/[0.02] border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-xl">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 sm:gap-4 mb-8">
                 <div>
                   <h3 className="text-2xl font-bold">Aidat Tablosu</h3>
                   <p className="text-white/60 text-sm mt-1">Kullanıcıların aylık aidat ödemelerini takip edin</p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                   <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-4 py-2 rounded-xl">
                     <span className="font-bold text-lg">₺{Number(budgetSettings?.dues_amount || 100).toLocaleString("tr-TR")}</span>
                     <span className="text-xs uppercase tracking-wider opacity-80">/ AY</span>
@@ -787,56 +885,254 @@ export default function Budget() {
                 </div>
               </div>
 
-              <ScrollArea className="w-full whitespace-nowrap rounded-2xl border border-white/10 bg-black/20">
-                <div className="flex w-max min-w-full">
-                  <table className="w-full text-sm text-left">
-                    <thead className="text-xs text-white/50 uppercase bg-white/5 border-b border-white/10 sticky top-0">
-                      <tr>
-                        <th className="px-6 py-4 font-bold sticky left-0 z-20 bg-[#121212] border-r border-white/10">Kullanıcı</th>
-                        {['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'].map((m, i) => (
-                          <th key={i} className="px-4 py-4 text-center font-bold min-w-[80px]">{m}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {users?.filter(u => duesMembers?.includes(u.id) && (canManageBudget || u.id === user?.id)).map(u => (
-                        <tr key={u.id} className="hover:bg-white/[0.02] transition-colors">
-                          <td className="px-6 py-3 font-medium sticky left-0 z-10 bg-[#0a0a0a] border-r border-white/10 shadow-[2px_0_10px_rgba(0,0,0,0.5)]">
-                            {u.first_name} {u.last_name}
-                          </td>
-                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(month => {
-                            const isPaid = duesPayments?.some(p => p.user_id === u.id && p.year === selectedYear && p.month === month);
-                            const isPending = toggleDuesMutation.variables?.userId === u.id && toggleDuesMutation.variables?.month === month && toggleDuesMutation.isPending;
-                            
-                            return (
-                              <td key={month} className="px-2 py-3 text-center">
-                                <button
-                                  onClick={() => toggleDuesMutation.mutate({ userId: u.id, month })}
-                                  disabled={toggleDuesMutation.isPending && isPending}
-                                  className={cn(
-                                    "flex items-center justify-center w-full py-2 rounded-xl transition-all duration-200",
-                                    isPaid 
-                                      ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30" 
-                                      : "bg-white/5 text-white/20 hover:bg-white/10 hover:text-white/50",
-                                    isPending && "opacity-50 cursor-wait"
-                                  )}
-                                >
-                                  {isPaid ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
-                                </button>
+              {users?.some(u => u.id === user?.id && duesMembers?.includes(u.id)) && (
+                <div className="mb-8">
+                  <h4 className="text-lg font-bold mb-4 text-emerald-400">Benim Aidat Durumum</h4>
+                  <ScrollArea className="w-full whitespace-nowrap rounded-2xl border border-emerald-500/30 bg-emerald-500/5">
+                    <div className="flex w-max min-w-full">
+                      <table className="w-full text-base sm:text-sm text-left">
+                        <thead className="text-xs text-emerald-400/50 uppercase bg-emerald-500/10 border-b border-emerald-500/20 sticky top-0">
+                          <tr>
+                            <th className="px-4 sm:px-6 py-4 font-bold sticky left-0 z-20 bg-[#0a1510] border-r border-emerald-500/20 min-w-[140px] sm:min-w-[150px]">Kullanıcı</th>
+                            {['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'].map((m, i) => {
+                              const isCurrentMonth = i === new Date().getMonth() && selectedYear === new Date().getFullYear();
+                              return (
+                                <th key={i} className={cn("px-2 sm:px-4 py-4 text-center font-bold min-w-[80px] sm:min-w-[90px] transition-colors", isCurrentMonth && "bg-emerald-500/20")}>
+                                  <span className={cn(isCurrentMonth ? "bg-emerald-500 text-black px-2 py-1 rounded-md" : "")}>{m}</span>
+                                </th>
+                              )
+                            })}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-emerald-500/10">
+                          {users?.filter(u => u.id === user?.id && duesMembers?.includes(u.id)).map(u => (
+                            <tr key={u.id} className="hover:bg-emerald-500/10 transition-colors">
+                              <td className="px-4 sm:px-6 py-4 font-bold text-emerald-400 sticky left-0 z-10 bg-[#0a1510] border-r border-emerald-500/20 shadow-[2px_0_10px_rgba(0,0,0,0.5)] min-w-[140px] sm:min-w-[150px]">
+                                {u.first_name} {u.last_name}
                               </td>
+                              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(month => {
+                                const isPaid = duesPayments?.some(p => p.user_id === u.id && p.year === selectedYear && p.month === month);
+                                const isPending = toggleDuesMutation.variables?.userId === u.id && toggleDuesMutation.variables?.month === month && toggleDuesMutation.isPending;
+                                const isCurrentMonthCol = (month - 1) === new Date().getMonth() && selectedYear === new Date().getFullYear();
+                                
+                                return (
+                                  <td key={month} className={cn("px-2 py-3 text-center transition-colors", isCurrentMonthCol && "bg-emerald-500/10")}>
+                                    <button
+                                      onClick={() => {
+                                        if (isPaid) {
+                                          setPaymentToCancel({ userId: u.id, month });
+                                          setIsCancelPaymentDialogOpen(true);
+                                        } else {
+                                          setPendingDuesPayment({ userId: u.id, month });
+                                          setDuesPaymentAmount(budgetSettings?.dues_amount?.toString() || "100");
+                                          setIsDuesPaymentDialogOpen(true);
+                                        }
+                                      }}
+                                      disabled={(toggleDuesMutation.isPending && isPending) || !canManageBudget}
+                                      className={cn(
+                                        "flex items-center justify-center w-full py-3 sm:py-2 rounded-xl transition-all duration-200",
+                                        isPaid ? "bg-emerald-500/20 text-emerald-400" : "bg-emerald-500/5 text-emerald-400/20",
+                                        canManageBudget && isPaid && "hover:bg-emerald-500/30",
+                                        canManageBudget && !isPaid && "hover:bg-emerald-500/10 hover:text-emerald-400/50",
+                                        isPending && "opacity-50 cursor-wait",
+                                        !canManageBudget && "cursor-default"
+                                      )}
+                                    >
+                                      {isPaid ? <CheckCircle2 className="w-6 h-6 sm:w-5 sm:h-5" /> : <Circle className="w-6 h-6 sm:w-5 sm:h-5" />}
+                                    </button>
+                                  </td>
+                                )
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <ScrollBar orientation="horizontal" className="bg-white/5" />
+                  </ScrollArea>
+                </div>
+              )}
+
+              <div>
+                <h4 className="text-lg font-bold mb-4 text-white">Diğer Kullanıcılar</h4>
+                <ScrollArea className="w-full whitespace-nowrap rounded-2xl border border-white/10 bg-black/20">
+                  <div className="flex w-max min-w-full">
+                    <table className="w-full text-[10px] sm:text-sm text-left">
+                      <thead className="text-[9px] sm:text-xs text-white/50 uppercase bg-white/5 border-b border-white/10 sticky top-0">
+                        <tr>
+                          <th className="px-2 sm:px-6 py-2 sm:py-4 font-bold sticky left-0 z-20 bg-[#121212] border-r border-white/10 min-w-[80px] sm:min-w-[150px]">Kullanıcı</th>
+                          {['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'].map((m, i) => {
+                            const isCurrentMonth = i === new Date().getMonth() && selectedYear === new Date().getFullYear();
+                            return (
+                              <th key={i} className={cn("px-1 sm:px-4 py-2 sm:py-4 text-center font-bold min-w-[24px] sm:min-w-[90px] transition-colors", isCurrentMonth && "bg-emerald-500/20")}>
+                                <span className={cn(isCurrentMonth ? "bg-emerald-500 text-black px-1 sm:px-2 py-0.5 sm:py-1 rounded-sm sm:rounded-md" : "")}>{m}</span>
+                              </th>
                             )
                           })}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <ScrollBar orientation="horizontal" className="bg-white/5" />
-              </ScrollArea>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {users?.filter(u => duesMembers?.includes(u.id) && u.id !== user?.id).map(u => (
+                          <tr key={u.id} className="hover:bg-white/[0.02] transition-colors">
+                            <td className="px-2 sm:px-6 py-2 sm:py-4 font-medium sticky left-0 z-10 bg-[#0a0a0a] border-r border-white/10 shadow-[2px_0_10px_rgba(0,0,0,0.5)] min-w-[80px] sm:min-w-[150px] whitespace-normal leading-tight">
+                              {u.first_name} {u.last_name}
+                            </td>
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(month => {
+                              const isPaid = duesPayments?.some(p => p.user_id === u.id && p.year === selectedYear && p.month === month);
+                              const isPending = toggleDuesMutation.variables?.userId === u.id && toggleDuesMutation.variables?.month === month && toggleDuesMutation.isPending;
+                              const isCurrentMonthCol = (month - 1) === new Date().getMonth() && selectedYear === new Date().getFullYear();
+                              
+                              return (
+                                <td key={month} className={cn("px-0.5 sm:px-2 py-1 sm:py-3 text-center transition-colors", isCurrentMonthCol && "bg-emerald-500/5")}>
+                                  <button
+                                    onClick={() => {
+                                      if (isPaid) {
+                                        setPaymentToCancel({ userId: u.id, month });
+                                        setIsCancelPaymentDialogOpen(true);
+                                      } else {
+                                        setPendingDuesPayment({ userId: u.id, month });
+                                        setDuesPaymentAmount(budgetSettings?.dues_amount?.toString() || "100");
+                                        setIsDuesPaymentDialogOpen(true);
+                                      }
+                                    }}
+                                    disabled={(toggleDuesMutation.isPending && isPending) || !canManageBudget}
+                                    className={cn(
+                                      "flex items-center justify-center w-full py-1.5 sm:py-2 rounded-md sm:rounded-xl transition-all duration-200",
+                                      isPaid ? "bg-emerald-500/20 text-emerald-400" : "bg-white/5 text-white/20",
+                                      canManageBudget && isPaid && "hover:bg-emerald-500/30",
+                                      canManageBudget && !isPaid && "hover:bg-white/10 hover:text-white/50",
+                                      isPending && "opacity-50 cursor-wait",
+                                      !canManageBudget && "cursor-default"
+                                    )}
+                                  >
+                                    {isPaid ? <CheckCircle2 className="w-3.5 h-3.5 sm:w-5 sm:h-5" /> : <Circle className="w-3.5 h-3.5 sm:w-5 sm:h-5" />}
+                                  </button>
+                                </td>
+                              )
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <ScrollBar orientation="horizontal" className="bg-white/5" />
+                </ScrollArea>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
       </div>
+
+      <Dialog open={isDuesPaymentDialogOpen} onOpenChange={setIsDuesPaymentDialogOpen}>
+        <DialogContent className="bg-zinc-950 border border-white/10 text-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Ödenen Tutarı Girin</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>Tutar (₺)</Label>
+              <Input 
+                type="number" 
+                value={duesPaymentAmount} 
+                onChange={(e) => setDuesPaymentAmount(e.target.value)} 
+                className="bg-black/50 border-white/10"
+              />
+            </div>
+
+            {Number(duesPaymentAmount) > (budgetSettings?.dues_amount || 100) && (
+              <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl space-y-4 mt-2">
+                <Label className="text-emerald-400 block leading-snug">Fazla Ödediğiniz Tutarı Bir Sonraki Aylara Yansıtmak İstiyor Musunuz?</Label>
+                <div className="flex items-center gap-3">
+                   <button 
+                     type="button"
+                     onClick={() => setDistributePayment(true)}
+                     className={cn("px-3 py-2 rounded-lg text-sm font-bold transition-colors w-full", distributePayment ? "bg-emerald-500 text-black" : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white")}
+                   >Evet</button>
+                   <button 
+                     type="button"
+                     onClick={() => setDistributePayment(false)}
+                     className={cn("px-3 py-2 rounded-lg text-sm font-bold transition-colors w-full", !distributePayment ? "bg-emerald-500 text-black" : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white")}
+                   >Hayır</button>
+                </div>
+                <div className="space-y-2 mt-3">
+                  <p className="text-xs text-white/50">
+                    {distributePayment 
+                      ? "Girilen fazla tutar sıradaki ödenmemiş aylara otomatik dağıtılacaktır." 
+                      : "Girdiğiniz tutarın tamamı sadece seçtiğiniz ayın ödemesi olarak kaydedilecektir."}
+                  </p>
+                  {distributePayment && (
+                    <p className="text-[11px] text-emerald-400/80 bg-emerald-500/10 p-2 rounded-lg leading-snug">
+                      Not: Dağıtılacak olan son pay 1 tam aidat tutarını karşılamıyorsa o aya yarım tik atılmaz. Kalan miktar bütçeye dahil edilmek üzere son tam ödenen ayın üzerine eklenir.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <Button 
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold mt-4" 
+              disabled={toggleDuesMutation.isPending}
+              onClick={() => {
+                if (pendingDuesPayment) {
+                  toggleDuesMutation.mutate({ 
+                    userId: pendingDuesPayment.userId, 
+                    month: pendingDuesPayment.month, 
+                    amount: Number(duesPaymentAmount),
+                    distribute: distributePayment
+                  }, {
+                    onSuccess: () => {
+                      setIsDuesPaymentDialogOpen(false);
+                      setPendingDuesPayment(null);
+                    }
+                  });
+                }
+              }}
+            >
+              {toggleDuesMutation.isPending ? "Kaydediliyor..." : "Onayla"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isCancelPaymentDialogOpen} onOpenChange={setIsCancelPaymentDialogOpen}>
+        <DialogContent className="bg-zinc-950 border border-white/10 text-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-400">Ödemeyi İptal Et</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <p className="text-white/70">Bu aya ait ödemeyi iptal etmek istediğinize emin misiniz? Bu işlem bütçeden ilgili tutarı düşecektir.</p>
+            <div className="flex items-center gap-3 mt-6">
+              <Button 
+                variant="outline" 
+                className="w-full bg-white/5 border-white/10 hover:bg-white/10 text-white" 
+                onClick={() => setIsCancelPaymentDialogOpen(false)}
+                disabled={toggleDuesMutation.isPending}
+              >
+                Vazgeç
+              </Button>
+              <Button 
+                className="w-full bg-red-500 hover:bg-red-600 text-white font-bold" 
+                disabled={toggleDuesMutation.isPending}
+                onClick={() => {
+                  if (paymentToCancel) {
+                    toggleDuesMutation.mutate({ 
+                      userId: paymentToCancel.userId, 
+                      month: paymentToCancel.month 
+                    }, {
+                      onSuccess: () => {
+                        setIsCancelPaymentDialogOpen(false);
+                        setPaymentToCancel(null);
+                      }
+                    });
+                  }
+                }}
+              >
+                {toggleDuesMutation.isPending ? "İptal Ediliyor..." : "İptal Et"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
