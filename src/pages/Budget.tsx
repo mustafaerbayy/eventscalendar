@@ -18,6 +18,7 @@ import { Navigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import LoadingScreen from "@/components/LoadingScreen";
 import Navbar from "@/components/Navbar";
 
@@ -40,6 +41,7 @@ export default function Budget() {
   const [isEditDuesOpen, setIsEditDuesOpen] = useState(false);
   const [isEditMembersOpen, setIsEditMembersOpen] = useState(false);
   const [newDuesAmount, setNewDuesAmount] = useState("");
+  const [isEditMode, setIsEditMode] = useState(false);
 
   // Budget form state
   const [newTotalBudget, setNewTotalBudget] = useState("");
@@ -320,7 +322,7 @@ export default function Budget() {
                 year: currentYear,
                 month: currentMonth,
                 amount: baseDues,
-                created_by: user?.id
+                created_by: isEditMode ? user?.id : userId
               });
               remainingAmount -= baseDues;
             }
@@ -343,7 +345,7 @@ export default function Budget() {
                 year: selectedYear,
                 month,
                 amount: remainingAmount,
-                created_by: user?.id
+                created_by: isEditMode ? user?.id : userId
               });
             }
           }
@@ -353,7 +355,7 @@ export default function Budget() {
             year: selectedYear,
             month,
             amount: totalAmount,
-            created_by: user?.id
+            created_by: isEditMode ? user?.id : userId
           });
         }
 
@@ -807,6 +809,18 @@ export default function Budget() {
                   <p className="text-white/60 text-sm mt-1">Kullanıcıların aylık aidat ödemelerini takip edin</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                  {canManageBudget && (
+                    <div className="flex items-center gap-2 bg-black/50 border border-white/10 px-3 py-2 rounded-xl">
+                      <Switch 
+                        id="edit-mode" 
+                        checked={isEditMode}
+                        onCheckedChange={setIsEditMode}
+                      />
+                      <Label htmlFor="edit-mode" className="text-sm cursor-pointer whitespace-nowrap">
+                        Düzenleme Modu
+                      </Label>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-4 py-2 rounded-xl">
                     <span className="font-bold text-lg">₺{Number(budgetSettings?.dues_amount || 100).toLocaleString("tr-TR")}</span>
                     <span className="text-xs uppercase tracking-wider opacity-80">/ AY</span>
@@ -928,14 +942,12 @@ export default function Budget() {
                                           setIsDuesPaymentDialogOpen(true);
                                         }
                                       }}
-                                      disabled={(toggleDuesMutation.isPending && isPending) || !canManageBudget}
+                                      disabled={toggleDuesMutation.isPending && isPending}
                                       className={cn(
                                         "flex items-center justify-center w-full py-3 sm:py-2 rounded-xl transition-all duration-200",
                                         isPaid ? "bg-emerald-500/20 text-emerald-400" : "bg-emerald-500/5 text-emerald-400/20",
-                                        canManageBudget && isPaid && "hover:bg-emerald-500/30",
-                                        canManageBudget && !isPaid && "hover:bg-emerald-500/10 hover:text-emerald-400/50",
-                                        isPending && "opacity-50 cursor-wait",
-                                        !canManageBudget && "cursor-default"
+                                        isPaid ? "hover:bg-emerald-500/30" : "hover:bg-emerald-500/10 hover:text-emerald-400/50",
+                                        isPending && "opacity-50 cursor-wait"
                                       )}
                                     >
                                       {isPaid ? <CheckCircle2 className="w-6 h-6 sm:w-5 sm:h-5" /> : <Circle className="w-6 h-6 sm:w-5 sm:h-5" />}
