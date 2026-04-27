@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Wallet, Plus, Trash2, Edit2, Info, User as UserIcon, CalendarDays } from "lucide-react";
+import { Wallet, Plus, Trash2, Edit2, Info, User as UserIcon, CalendarDays, Users, TrendingUp, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -74,7 +74,7 @@ export default function Budget() {
         .select("*")
         .limit(1)
         .single();
-      
+
       if (error && error.code !== "PGRST116") throw error; // ignore no rows error
       return data || { total_budget: 0, dues_amount: 100, id: null as unknown as string, updated_at: null, updated_by: null };
     },
@@ -144,7 +144,7 @@ export default function Budget() {
   });
 
   const combinedHistory = [
-    ...(expenses || []).map(e => ({ ...e, isExpense: true as const })), 
+    ...(expenses || []).map(e => ({ ...e, isExpense: true as const })),
     ...(allDuesPaymentsHistory || [])
       .filter(d => d.created_by === d.user_id)
       .map(d => ({ ...d, isExpense: false as const }))
@@ -178,15 +178,15 @@ export default function Budget() {
   });
 
   const budgetStartDate = budgetSettings?.updated_at;
-  
+
   const relevantExpenses = expenses?.filter(exp => {
     if (!budgetStartDate) return true;
     return new Date(exp.created_at) >= new Date(budgetStartDate);
   }) || [];
-  
+
   const relevantSpent = relevantExpenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
   const totalSpentAllTime = expenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
-  
+
   // Calculate total dues collected (only count ones collected AFTER budgetStartDate to be consistent)
   // Note: The requirement is that if an admin checks a user's dues, it shouldn't add to the budget.
   // If the user checks it themselves, it adds to the budget.
@@ -194,7 +194,7 @@ export default function Budget() {
     if (!budgetStartDate) return true;
     return new Date(d.created_at) >= new Date(budgetStartDate);
   }) || [];
-  
+
   const relevantDuesCollected = relevantDues.reduce((sum, d) => {
     // Only add to budget if the user marked it themselves (created_by === user_id)
     if (d.created_by === d.user_id) {
@@ -202,7 +202,7 @@ export default function Budget() {
     }
     return sum;
   }, 0);
-  
+
   const currentBudget = Number(budgetSettings?.total_budget || 0) + relevantDuesCollected - relevantSpent;
 
   // Mutations
@@ -315,7 +315,7 @@ export default function Budget() {
 
           while (remainingAmount >= baseDues) {
             const isAlreadyPaid = allDuesPaymentsHistory?.some(p => p.user_id === userId && p.year === currentYear && p.month === currentMonth);
-            
+
             if (!isAlreadyPaid) {
               inserts.push({
                 user_id: userId,
@@ -326,7 +326,7 @@ export default function Budget() {
               });
               remainingAmount -= baseDues;
             }
-            
+
             currentMonth++;
             if (currentMonth > 12) {
               currentMonth = 1;
@@ -446,21 +446,21 @@ export default function Budget() {
   const openEditExpense = (expense: { id: string; amount: number | string; description: string | null; created_by: string; profiles?: { id?: string } | { id?: string }[]; events?: { id?: string } | { id?: string }[] }) => {
     setAmount(expense.amount.toString());
     setDescription(expense.description || "");
-    
+
     // Extract user ID from relation properly
     let userId = "";
     if (expense.profiles) {
       userId = Array.isArray(expense.profiles) ? expense.profiles[0]?.id : expense.profiles?.id;
     }
     setSpentBy(userId || expense.created_by);
-    
+
     // Extract event ID properly
     let evId = "none";
     if (expense.events) {
       evId = Array.isArray(expense.events) ? expense.events[0]?.id : expense.events?.id;
     }
     setEventId(evId || "none");
-    
+
     setEditingExpenseId(expense.id);
     setIsExpenseDialogOpen(true);
   };
@@ -499,7 +499,7 @@ export default function Budget() {
     <div className="min-h-screen bg-black text-white pt-24 pb-20 px-4 sm:px-6">
       <Navbar />
       <div className="max-w-5xl mx-auto space-y-8">
-        
+
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -515,378 +515,221 @@ export default function Budget() {
 
         <Tabs defaultValue="expenses" className="w-full">
           <TabsList className="bg-white/5 border border-white/10 p-1 rounded-2xl mb-8 grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="expenses" className="rounded-xl data-[state=active]:bg-emerald-500 data-[state=active]:text-black font-bold py-2">Harcamalar</TabsTrigger>
+            <TabsTrigger value="expenses" className="rounded-xl data-[state=active]:bg-emerald-500 data-[state=active]:text-black font-bold py-2">Bütçe</TabsTrigger>
             <TabsTrigger value="dues" className="rounded-xl data-[state=active]:bg-emerald-500 data-[state=active]:text-black font-bold py-2">Aidat Takibi</TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="expenses" className="space-y-8 animate-in fade-in-50 duration-500">
-            {/* Overview Cards */}
-        <div className="grid grid-cols-1 gap-4">
-          <div className="bg-gradient-to-br from-emerald-500/20 to-emerald-900/20 border border-emerald-500/30 rounded-3xl p-6 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <Wallet className="h-24 w-24 text-emerald-400" />
-            </div>
-            <p className="text-emerald-400/80 font-medium mb-1">Mevcut Bütçe</p>
-            <div className="flex items-baseline gap-2">
-              <h2 className="text-4xl font-black text-emerald-400">
-                ₺{currentBudget.toLocaleString("tr-TR")}
-              </h2>
-            </div>
-            {canManageBudget && (
-              <Dialog open={isEditBudgetOpen} onOpenChange={setIsEditBudgetOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="link" className="px-0 text-emerald-400/80 hover:text-emerald-300 mt-2 h-auto py-0">
-                    <Edit2 className="w-3 h-3 mr-1" /> Bütçeyi Düzenle
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="bg-zinc-950 border border-white/10 text-white">
-                  <DialogHeader>
-                    <DialogTitle>Mevcut Bütçeyi Güncelle</DialogTitle>
-                  </DialogHeader>
-                  <form onSubmit={handleUpdateBudget} className="space-y-4 pt-4">
-                    <div className="space-y-2">
-                      <Label>Yeni Mevcut Bütçe (₺)</Label>
-                      <Input 
-                        type="number" 
-                        value={newTotalBudget} 
-                        onChange={(e) => setNewTotalBudget(e.target.value)} 
-                        placeholder="0"
-                        className="bg-black/50 border-white/10"
-                      />
-                    </div>
-                    <Button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold" disabled={updateBudgetMutation.isPending}>
-                      {updateBudgetMutation.isPending ? "Kaydediliyor..." : "Kaydet"}
-                    </Button>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            )}
-          </div>
-        </div>
 
-        {/* Expenses List */}
-        <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
-          <div className="p-6 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <h3 className="text-xl font-bold">İşlem Geçmişi</h3>
-              <div className="flex bg-black/50 p-1 rounded-xl border border-white/10">
-                <button 
-                  onClick={() => setHistoryFilter("all")}
-                  className={cn("px-3 py-1 text-sm font-medium rounded-lg transition-colors", historyFilter === "all" ? "bg-white/10 text-white" : "text-white/50 hover:text-white")}
-                >Tümü</button>
-                <button 
-                  onClick={() => setHistoryFilter("income")}
-                  className={cn("px-3 py-1 text-sm font-medium rounded-lg transition-colors", historyFilter === "income" ? "bg-white/10 text-white" : "text-white/50 hover:text-white")}
-                >Gelirler</button>
-                <button 
-                  onClick={() => setHistoryFilter("expense")}
-                  className={cn("px-3 py-1 text-sm font-medium rounded-lg transition-colors", historyFilter === "expense" ? "bg-white/10 text-white" : "text-white/50 hover:text-white")}
-                >Giderler</button>
-              </div>
-            </div>
-            
-            <Dialog open={isExpenseDialogOpen} onOpenChange={(open) => {
-              setIsExpenseDialogOpen(open);
-              if (!open) resetExpenseForm();
-            }}>
-              <DialogTrigger asChild>
-                <Button onClick={openAddExpense} className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold rounded-xl gap-2">
-                  <Plus className="w-4 h-4" />
-                  Yeni Harcama Ekle
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-zinc-950 border border-white/10 text-white sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>{editingExpenseId ? "Harcamayı Düzenle" : "Yeni Harcama Gir"}</DialogTitle>
-                  </DialogHeader>
-                  <form onSubmit={handleAddExpense} className="space-y-4 pt-4">
-                    <div className="space-y-2">
-                      <Label>Harcama Tutarı (₺)</Label>
-                      <Input 
-                        type="number" 
-                        value={amount} 
-                        onChange={(e) => setAmount(e.target.value)} 
-                        placeholder="Örn: 500"
-                        className="bg-black/50 border-white/10"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Açıklama</Label>
-                      <Textarea 
-                        value={description} 
-                        onChange={(e) => setDescription(e.target.value)} 
-                        placeholder="Harcama detayları..."
-                        className="bg-black/50 border-white/10 min-h-[80px]"
-                      />
-                    </div>
-                    <div className="space-y-2 flex flex-col">
-                      <Label>Kim Tarafından Harcandı?</Label>
-                      <Popover open={isSpentByOpen} onOpenChange={setIsSpentByOpen}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={isSpentByOpen}
-                            className="w-full justify-between bg-black/50 border-white/10 text-white font-normal hover:bg-white/5 hover:text-white"
-                          >
-                            {spentBy && users
-                              ? `${users.find((u) => u.id === spentBy)?.first_name} ${users.find((u) => u.id === spentBy)?.last_name}`
-                              : "Kişi arayın veya seçin..."}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-[#0c0c0c] border-white/10 !z-[9999]">
-                          <Command className="bg-transparent border-none">
-                            <CommandInput placeholder="Kişi ara..." className="text-white border-none focus:ring-0" />
-                            <CommandList className="custom-scrollbar">
-                              <CommandEmpty className="py-6 text-center text-sm text-white/50">Kişi bulunamadı.</CommandEmpty>
-                              <CommandGroup>
-                                {users?.map((u) => (
-                                  <CommandItem
-                                    key={u.id}
-                                    value={`${u.first_name} ${u.last_name}`}
-                                    onSelect={() => {
-                                      setSpentBy(u.id);
-                                      setIsSpentByOpen(false);
-                                    }}
-                                    className="text-white hover:bg-white/10 cursor-pointer rounded-xl font-bold py-3 px-4 my-1 data-[selected=true]:bg-white/10 data-[selected=true]:text-white"
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4 text-emerald-400",
-                                        spentBy === u.id ? "opacity-100" : "opacity-0"
-                                      )}
-                                    />
-                                    {u.first_name} {u.last_name}
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>İlgili Etkinlik (Opsiyonel)</Label>
-                      <Select value={eventId} onValueChange={setEventId}>
-                        <SelectTrigger className="bg-black/50 border-white/10">
-                          <SelectValue placeholder="Etkinlik seçin" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-[#0c0c0c] border-white/10 max-h-60 !z-[9999] !opacity-100 !visible p-2 rounded-2xl">
-                          <SelectItem value="none" className="rounded-xl py-3 font-bold !text-white hover:bg-white/10 cursor-pointer">Etkinlik Bağımsız</SelectItem>
-                          {eventList?.map((ev) => (
-                            <SelectItem key={ev.id} value={ev.id} className="rounded-xl py-3 font-bold !text-white hover:bg-white/10 cursor-pointer">
-                              {ev.title} ({new Date(ev.date).toLocaleDateString("tr-TR")})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <Button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold mt-2" disabled={addExpenseMutation.isPending || updateExpenseMutation.isPending}>
-                      {addExpenseMutation.isPending || updateExpenseMutation.isPending ? "Kaydediliyor..." : (editingExpenseId ? "Güncelle" : "Harcama Ekle")}
-                    </Button>
-                  </form>
-                </DialogContent>
-              </Dialog>
-          </div>
-
-          <div className="p-0">
-            {loadingExpenses || loadingAllDuesHistory ? (
-              <div className="p-8 text-center text-white/50">Yükleniyor...</div>
-            ) : filteredHistory && filteredHistory.length > 0 ? (
-              <div className="divide-y divide-white/5">
-                {filteredHistory.map((item) => {
-                  if (item.isExpense) {
-                    const expense = item as Extract<typeof combinedHistory[number], { isExpense: true }>;
-                    const spentUser = Array.isArray(expense.profiles) ? expense.profiles[0] : expense.profiles;
-                    const canModify = expense.created_by === user?.id || isAdmin || hasBudgetRole;
-                    
-                    return (
-                      <div key={`exp-${expense.id}`} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/[0.02] transition-colors">
-                        <div className="flex items-start gap-4">
-                          <div className="p-3 bg-red-500/10 text-red-400 rounded-xl shrink-0 mt-1 sm:mt-0">
-                            <Wallet className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-lg">₺{Number(expense.amount).toLocaleString("tr-TR")}</span>
-                              <span className="text-white/40 text-sm">•</span>
-                              <span className="text-white/60 text-sm">{new Date(expense.created_at).toLocaleDateString("tr-TR")}</span>
-                            </div>
-                            {expense.description && (
-                              <p className="text-white/80 mt-1">{expense.description}</p>
-                            )}
-                            <div className="flex items-center gap-2 mt-2 text-xs text-emerald-400/80 bg-emerald-500/10 px-2 py-1 rounded-lg w-fit">
-                              <UserIcon className="w-3 h-3" />
-                              <span>{spentUser?.first_name} {spentUser?.last_name} tarafından harcandı</span>
-                            </div>
-                            {expense.events && (
-                              <div className="flex items-center gap-2 mt-1 text-xs text-blue-400/80 bg-blue-500/10 px-2 py-1 rounded-lg w-fit">
-                                <CalendarDays className="w-3 h-3" />
-                                <span>{Array.isArray(expense.events) ? expense.events[0]?.title : expense.events?.title}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {canModify && (
-                          <div className="flex sm:flex-col justify-end gap-1">
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              className="text-white/40 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl h-8 w-8"
-                              onClick={() => openEditExpense(expense)}
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              className="text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-xl h-8 w-8"
-                              onClick={() => {
-                                if (window.confirm("Bu harcamayı silmek istediğinize emin misiniz?")) {
-                                  deleteExpenseMutation.mutate(expense.id);
-                                }
-                              }}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  } else {
-                    const dueItem = item as Extract<typeof combinedHistory[number], { isExpense: false }>;
-                    const dueUser = users?.find(u => u.id === dueItem.user_id);
-                    const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-                    const isSelfPaid = dueItem.created_by === dueItem.user_id;
-                    
-                    return (
-                      <div key={`due-${dueItem.id}`} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/[0.02] transition-colors">
-                        <div className="flex items-start gap-4">
-                          <div className={cn("p-3 rounded-xl shrink-0 mt-1 sm:mt-0", isSelfPaid ? "bg-emerald-500/10 text-emerald-400" : "bg-white/5 text-white/40")}>
-                            <Wallet className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className={cn("font-bold text-lg", isSelfPaid ? "text-emerald-400" : "text-white/40")}>
-                                {isSelfPaid ? `+₺${Number(dueItem.amount).toLocaleString("tr-TR")}` : `₺0`}
-                              </span>
-                              {!isSelfPaid && <span className="text-xs border border-white/10 bg-white/5 px-2 py-0.5 rounded-md text-white/50">Admin İşareti</span>}
-                              <span className="text-white/40 text-sm">•</span>
-                              <span className="text-white/60 text-sm">{new Date(dueItem.created_at).toLocaleDateString("tr-TR")}</span>
-                            </div>
-                            <p className="text-white/80 mt-1 text-sm font-medium">
-                              <span className={isSelfPaid ? "text-emerald-400" : "text-white/60"}>{dueUser?.first_name} {dueUser?.last_name}</span> {dueItem.year} {months[dueItem.month - 1]} ayı aidatını {isSelfPaid ? 'ödedi' : 'ödendi olarak işaretlendi'}.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }
-                })}
-              </div>
-            ) : (
-              <div className="p-12 text-center flex flex-col items-center justify-center">
-                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 text-white/20">
-                  <Wallet className="w-8 h-8" />
-                </div>
-                <h4 className="text-lg font-bold text-white mb-2">Henüz İşlem Yok</h4>
-                <p className="text-white/50 max-w-sm">Burada sisteme girilen tüm harcamalar ve ödenen aidatlar listelenecektir.</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-          </TabsContent>
-
-          <TabsContent value="dues" className="space-y-8 animate-in fade-in-50 duration-500">
-            <div className="bg-white/[0.02] border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-xl">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 sm:gap-4 mb-8">
+          <TabsContent value="expenses" className="space-y-6 animate-in fade-in-50 duration-500">
+            {/* Summary Stats */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-900/10 border border-emerald-500/20 rounded-2xl p-5 flex items-center gap-4 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity"><Wallet className="h-16 w-16 text-emerald-400" /></div>
+                <div className="p-3 bg-emerald-500/20 rounded-xl"><Wallet className="w-5 h-5 text-emerald-400" /></div>
                 <div>
-                  <h3 className="text-2xl font-bold">Aidat Tablosu</h3>
-                  <p className="text-white/60 text-sm mt-1">Kullanıcıların aylık aidat ödemelerini takip edin</p>
-                </div>
-                <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                  <p className="text-white/50 text-xs font-medium uppercase tracking-wider">Mevcut Bütçe</p>
+                  <p className={cn("text-2xl font-black", currentBudget >= 0 ? "text-emerald-400" : "text-red-400")}>₺{currentBudget.toLocaleString("tr-TR")}</p>
                   {canManageBudget && (
-                    <div className="flex items-center gap-2 bg-black/50 border border-white/10 px-3 py-2 rounded-xl">
-                      <Switch 
-                        id="edit-mode" 
-                        checked={isEditMode}
-                        onCheckedChange={setIsEditMode}
-                      />
-                      <Label htmlFor="edit-mode" className="text-sm cursor-pointer whitespace-nowrap">
-                        Düzenleme Modu
-                      </Label>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-4 py-2 rounded-xl">
-                    <span className="font-bold text-lg">₺{Number(budgetSettings?.dues_amount || 100).toLocaleString("tr-TR")}</span>
-                    <span className="text-xs uppercase tracking-wider opacity-80">/ AY</span>
-                    {canManageBudget && (
-                      <Dialog open={isEditDuesOpen} onOpenChange={setIsEditDuesOpen}>
-                        <DialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="w-6 h-6 ml-2 hover:bg-emerald-500/20 text-emerald-400 rounded-lg">
-                            <Edit2 className="w-3 h-3" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="bg-zinc-950 border border-white/10 text-white sm:max-w-md">
-                          <DialogHeader>
-                            <DialogTitle>Aidat Ücretini Güncelle</DialogTitle>
-                          </DialogHeader>
-                          <form onSubmit={handleUpdateDuesAmount} className="space-y-4 pt-4">
-                            <div className="space-y-2">
-                              <Label>Yeni Aidat Tutarı (₺)</Label>
-                              <Input 
-                                type="number" 
-                                value={newDuesAmount} 
-                                onChange={(e) => setNewDuesAmount(e.target.value)} 
-                                placeholder={budgetSettings?.dues_amount?.toString() || "100"}
-                                className="bg-black/50 border-white/10"
-                                required
-                              />
-                            </div>
-                            <Button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold" disabled={updateDuesAmountMutation.isPending}>
-                              {updateDuesAmountMutation.isPending ? "Güncelleniyor..." : "Güncelle"}
-                            </Button>
-                          </form>
-                        </DialogContent>
-                      </Dialog>
-                    )}
-                  </div>
-                  
-                  {canManageBudget && (
-                    <Dialog open={isEditMembersOpen} onOpenChange={setIsEditMembersOpen}>
+                    <Dialog open={isEditBudgetOpen} onOpenChange={setIsEditBudgetOpen}>
                       <DialogTrigger asChild>
-                        <Button variant="outline" className="bg-black/50 border-white/10 hover:bg-white/5">
-                          Üyeleri Seç
-                        </Button>
+                        <button className="text-emerald-400/60 hover:text-emerald-400 text-[10px] font-medium mt-0.5 flex items-center gap-1 transition-colors"><Edit2 className="w-2.5 h-2.5" /> Düzenle</button>
                       </DialogTrigger>
-                      <DialogContent className="bg-zinc-950 border border-white/10 text-white sm:max-w-md">
-                        <DialogHeader>
-                          <DialogTitle>Aidat Ödeyenleri Belirle</DialogTitle>
-                        </DialogHeader>
-                        <ScrollArea className="h-[300px] w-full rounded-md border border-white/10 p-4 mt-4">
-                          {users?.map(u => (
-                            <div key={u.id} className="flex items-center space-x-3 mb-4">
-                              <Checkbox 
-                                id={`user-${u.id}`} 
-                                checked={duesMembers?.includes(u.id)}
-                                onCheckedChange={() => toggleDuesMemberMutation.mutate(u.id)}
-                                disabled={toggleDuesMemberMutation.isPending && toggleDuesMemberMutation.variables === u.id}
-                                className="border-white/20 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
-                              />
-                              <Label htmlFor={`user-${u.id}`} className="cursor-pointer">{u.first_name} {u.last_name}</Label>
-                            </div>
-                          ))}
-                        </ScrollArea>
+                      <DialogContent className="bg-zinc-950 border border-white/10 text-white">
+                        <DialogHeader><DialogTitle>Mevcut Bütçeyi Güncelle</DialogTitle></DialogHeader>
+                        <form onSubmit={handleUpdateBudget} className="space-y-4 pt-4">
+                          <div className="space-y-2"><Label>Yeni Mevcut Bütçe (₺)</Label><Input type="number" value={newTotalBudget} onChange={(e) => setNewTotalBudget(e.target.value)} placeholder="0" className="bg-black/50 border-white/10" /></div>
+                          <Button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold" disabled={updateBudgetMutation.isPending}>{updateBudgetMutation.isPending ? "Kaydediliyor..." : "Kaydet"}</Button>
+                        </form>
                       </DialogContent>
                     </Dialog>
                   )}
+                </div>
+              </div>
+              <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 flex items-center gap-4">
+                <div className="p-3 bg-red-500/20 rounded-xl"><TrendingUp className="w-5 h-5 text-red-400 rotate-180" /></div>
+                <div>
+                  <p className="text-white/50 text-xs font-medium uppercase tracking-wider">Toplam Harcama</p>
+                  <p className="text-2xl font-black text-white">₺{totalSpentAllTime.toLocaleString("tr-TR")}</p>
+                </div>
+              </div>
+            </div>
 
+            {/* Transaction History */}
+            <div className="bg-white/[0.02] border border-white/10 rounded-2xl overflow-hidden backdrop-blur-xl">
+              <div className="p-4 sm:p-5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-white/5 rounded-lg"><CalendarDays className="w-4 h-4 text-white/60" /></div>
+                    <h3 className="text-base font-bold">İşlem Geçmişi</h3>
+                  </div>
+                  <div className="flex bg-black/50 p-0.5 rounded-lg border border-white/10">
+                    {[{ key: "all" as const, label: "Tümü" }, { key: "income" as const, label: "Gelirler" }, { key: "expense" as const, label: "Giderler" }].map(f => (
+                      <button key={f.key} onClick={() => setHistoryFilter(f.key)} className={cn("px-3 py-1.5 text-xs font-bold rounded-md transition-all", historyFilter === f.key ? "bg-emerald-500 text-black" : "text-white/40 hover:text-white/70")}>{f.label}</button>
+                    ))}
+                  </div>
+                </div>
+                <Dialog open={isExpenseDialogOpen} onOpenChange={(open) => { setIsExpenseDialogOpen(open); if (!open) resetExpenseForm(); }}>
+                  <DialogTrigger asChild>
+                    <Button onClick={openAddExpense} size="sm" className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold rounded-xl gap-1.5 text-xs"><Plus className="w-3.5 h-3.5" /> Yeni Harcama</Button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-zinc-950 border border-white/10 text-white sm:max-w-md">
+                    <DialogHeader><DialogTitle>{editingExpenseId ? "Harcamayı Düzenle" : "Yeni Harcama Gir"}</DialogTitle></DialogHeader>
+                    <form onSubmit={handleAddExpense} className="space-y-4 pt-4">
+                      <div className="space-y-2"><Label>Harcama Tutarı (₺)</Label><Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Örn: 500" className="bg-black/50 border-white/10" required /></div>
+                      <div className="space-y-2"><Label>Açıklama</Label><Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Harcama detayları..." className="bg-black/50 border-white/10 min-h-[80px]" /></div>
+                      <div className="space-y-2 flex flex-col">
+                        <Label>Kim Tarafından Harcandı?</Label>
+                        <Popover open={isSpentByOpen} onOpenChange={setIsSpentByOpen}>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" role="combobox" aria-expanded={isSpentByOpen} className="w-full justify-between bg-black/50 border-white/10 text-white font-normal hover:bg-white/5 hover:text-white">
+                              {spentBy && users ? `${users.find((u) => u.id === spentBy)?.first_name} ${users.find((u) => u.id === spentBy)?.last_name}` : "Kişi arayın veya seçin..."}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-[#0c0c0c] border-white/10 !z-[9999]">
+                            <Command className="bg-transparent border-none">
+                              <CommandInput placeholder="Kişi ara..." className="text-white border-none focus:ring-0" />
+                              <CommandList className="custom-scrollbar">
+                                <CommandEmpty className="py-6 text-center text-sm text-white/50">Kişi bulunamadı.</CommandEmpty>
+                                <CommandGroup>
+                                  {users?.map((u) => (
+                                    <CommandItem key={u.id} value={`${u.first_name} ${u.last_name}`} onSelect={() => { setSpentBy(u.id); setIsSpentByOpen(false); }} className="text-white hover:bg-white/10 cursor-pointer rounded-xl font-bold py-3 px-4 my-1 data-[selected=true]:bg-white/10 data-[selected=true]:text-white">
+                                      <Check className={cn("mr-2 h-4 w-4 text-emerald-400", spentBy === u.id ? "opacity-100" : "opacity-0")} />
+                                      {u.first_name} {u.last_name}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>İlgili Etkinlik (Opsiyonel)</Label>
+                        <Select value={eventId} onValueChange={setEventId}>
+                          <SelectTrigger className="bg-black/50 border-white/10"><SelectValue placeholder="Etkinlik seçin" /></SelectTrigger>
+                          <SelectContent className="bg-[#0c0c0c] border-white/10 max-h-60 !z-[9999] !opacity-100 !visible p-2 rounded-2xl">
+                            <SelectItem value="none" className="rounded-xl py-3 font-bold !text-white hover:bg-white/10 cursor-pointer">Etkinlik Bağımsız</SelectItem>
+                            {eventList?.map((ev) => (<SelectItem key={ev.id} value={ev.id} className="rounded-xl py-3 font-bold !text-white hover:bg-white/10 cursor-pointer">{ev.title} ({new Date(ev.date).toLocaleDateString("tr-TR")})</SelectItem>))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold mt-2" disabled={addExpenseMutation.isPending || updateExpenseMutation.isPending}>{addExpenseMutation.isPending || updateExpenseMutation.isPending ? "Kaydediliyor..." : (editingExpenseId ? "Güncelle" : "Harcama Ekle")}</Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <div className="p-0">
+                {loadingExpenses || loadingAllDuesHistory ? (
+                  <div className="p-10 text-center text-white/40 text-sm">Yükleniyor...</div>
+                ) : filteredHistory && filteredHistory.length > 0 ? (
+                  <div className="divide-y divide-white/[0.04]">
+                    {filteredHistory.map((item) => {
+                      if (item.isExpense) {
+                        const expense = item as Extract<typeof combinedHistory[number], { isExpense: true }>;
+                        const spentUser = Array.isArray(expense.profiles) ? expense.profiles[0] : expense.profiles;
+                        const canModify = expense.created_by === user?.id || isAdmin || hasBudgetRole;
+                        return (
+                          <div key={`exp-${expense.id}`} className="p-4 sm:p-5 flex items-start justify-between gap-3 hover:bg-white/[0.02] transition-colors group border-l-2 border-transparent hover:border-red-500/50">
+                            <div className="flex items-start gap-3 min-w-0">
+                              <div className="p-2.5 bg-red-500/10 text-red-400 rounded-xl shrink-0"><Wallet className="w-4 h-4" /></div>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-bold text-base text-red-400">-₺{Number(expense.amount).toLocaleString("tr-TR")}</span>
+                                  <span className="text-white/30 text-xs">{new Date(expense.created_at).toLocaleDateString("tr-TR")}</span>
+                                </div>
+                                {expense.description && <p className="text-white/60 text-sm mt-1 line-clamp-2">{expense.description}</p>}
+                                <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                                  <span className="inline-flex items-center gap-1 text-[10px] text-white/50 bg-white/5 px-2 py-0.5 rounded-full"><UserIcon className="w-2.5 h-2.5" />{spentUser?.first_name} {spentUser?.last_name}</span>
+                                  {expense.events && <span className="inline-flex items-center gap-1 text-[10px] text-blue-400/70 bg-blue-500/10 px-2 py-0.5 rounded-full"><CalendarDays className="w-2.5 h-2.5" />{Array.isArray(expense.events) ? expense.events[0]?.title : expense.events?.title}</span>}
+                                </div>
+                              </div>
+                            </div>
+                            {canModify && (
+                              <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                <Button variant="ghost" size="icon" className="text-white/30 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg h-7 w-7" onClick={() => openEditExpense(expense)}><Edit2 className="w-3.5 h-3.5" /></Button>
+                                <Button variant="ghost" size="icon" className="text-white/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg h-7 w-7" onClick={() => { if (window.confirm("Bu harcamayı silmek istediğinize emin misiniz?")) deleteExpenseMutation.mutate(expense.id); }}><Trash2 className="w-3.5 h-3.5" /></Button>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      } else {
+                        const dueItem = item as Extract<typeof combinedHistory[number], { isExpense: false }>;
+                        const dueUser = users?.find(u => u.id === dueItem.user_id);
+                        const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+                        const isSelfPaid = dueItem.created_by === dueItem.user_id;
+                        return (
+                          <div key={`due-${dueItem.id}`} className={cn("p-4 sm:p-5 flex items-start gap-3 hover:bg-white/[0.02] transition-colors border-l-2 border-transparent", isSelfPaid ? "hover:border-emerald-500/50" : "hover:border-white/20")}>
+                            <div className={cn("p-2.5 rounded-xl shrink-0", isSelfPaid ? "bg-emerald-500/10 text-emerald-400" : "bg-white/5 text-white/30")}><Wallet className="w-4 h-4" /></div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className={cn("font-bold text-base", isSelfPaid ? "text-emerald-400" : "text-white/30")}>{isSelfPaid ? `+₺${Number(dueItem.amount).toLocaleString("tr-TR")}` : `₺0`}</span>
+                                {!isSelfPaid && <span className="text-[10px] border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-white/40">Admin</span>}
+                                <span className="text-white/30 text-xs">{new Date(dueItem.created_at).toLocaleDateString("tr-TR")}</span>
+                              </div>
+                              <p className="text-white/50 mt-1 text-sm">
+                                <span className={isSelfPaid ? "text-emerald-400/80" : "text-white/50"}>{dueUser?.first_name} {dueUser?.last_name}</span> — {dueItem.year} {months[dueItem.month - 1]} aidatı {isSelfPaid ? 'ödendi' : 'işaretlendi'}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      }
+                    })}
+                  </div>
+                ) : (
+                  <div className="p-14 text-center flex flex-col items-center justify-center">
+                    <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center mb-4 text-white/15"><Wallet className="w-6 h-6" /></div>
+                    <h4 className="text-sm font-bold text-white/70 mb-1">Henüz İşlem Yok</h4>
+                    <p className="text-white/30 text-xs max-w-[250px]">Sisteme girilen harcamalar ve ödenen aidatlar burada listelenecektir.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+          </TabsContent>
+
+          <TabsContent value="dues" className="space-y-6 animate-in fade-in-50 duration-500">
+            {/* Summary Stats */}
+            {(() => {
+              const totalDuesMembers = users?.filter(u => duesMembers?.includes(u.id)).length || 0;
+              const currentMonth = new Date().getMonth() + 1;
+              const currentYear = new Date().getFullYear();
+              const paidThisMonth = new Set(duesPayments?.filter(p => p.month === currentMonth && p.year === currentYear).map(p => p.user_id)).size;
+              const paymentRate = totalDuesMembers > 0 ? Math.round((paidThisMonth / totalDuesMembers) * 100) : 0;
+              const currentMonthDuesCollected = allDuesPaymentsHistory?.filter(d => d.month === currentMonth && d.year === currentYear).reduce((sum, d) => sum + Number(d.amount), 0) || 0;
+              const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-900/10 border border-emerald-500/20 rounded-2xl p-5 flex items-center gap-4">
+                    <div className="p-3 bg-emerald-500/20 rounded-xl"><Wallet className="w-5 h-5 text-emerald-400" /></div>
+                    <div>
+                      <p className="text-white/50 text-xs font-medium uppercase tracking-wider">{monthNames[currentMonth - 1]} Ayında Toplanan Aidat</p>
+                      <p className="text-2xl font-black text-emerald-400">₺{currentMonthDuesCollected.toLocaleString("tr-TR")}</p>
+                      <p className="text-white/30 text-[10px] mt-0.5">Aylık aidat: ₺{Number(budgetSettings?.dues_amount || 100).toLocaleString("tr-TR")}</p>
+                    </div>
+                  </div>
+                  <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 flex items-center gap-4">
+                    <div className="p-3 bg-amber-500/20 rounded-xl"><TrendingUp className="w-5 h-5 text-amber-400" /></div>
+                    <div>
+                      <p className="text-white/50 text-xs font-medium uppercase tracking-wider">{monthNames[currentMonth - 1]} Ayı Tahsilat Oranı</p>
+                      <div className="flex items-center gap-3">
+                        <p className="text-2xl font-black text-white">%{paymentRate}</p>
+                        <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden min-w-[60px]">
+                          <div className="h-full bg-gradient-to-r from-amber-500 to-emerald-500 rounded-full transition-all duration-700" style={{ width: `${paymentRate}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Toolbar */}
+            <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-4 backdrop-blur-xl">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <Select value={selectedYear.toString()} onValueChange={(val) => setSelectedYear(Number(val))}>
-                    <SelectTrigger className="bg-black/50 border-white/10 w-28">
+                    <SelectTrigger className="bg-black/50 border-white/10 w-28 rounded-xl">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-[#0c0c0c] border-white/10 !z-[9999] rounded-2xl">
@@ -896,140 +739,195 @@ export default function Budget() {
                       })}
                     </SelectContent>
                   </Select>
-                </div>
-              </div>
-
-              {users?.some(u => u.id === user?.id && duesMembers?.includes(u.id)) && (
-                <div className="mb-8">
-                  <h4 className="text-lg font-bold mb-4 text-emerald-400">Benim Aidat Durumum</h4>
-                  <ScrollArea className="w-full whitespace-nowrap rounded-2xl border border-emerald-500/30 bg-emerald-500/5">
-                    <div className="flex w-max min-w-full">
-                      <table className="w-full text-base sm:text-sm text-left">
-                        <thead className="text-xs text-emerald-400/50 uppercase bg-emerald-500/10 border-b border-emerald-500/20 sticky top-0">
-                          <tr>
-                            <th className="px-4 sm:px-6 py-4 font-bold sticky left-0 z-20 bg-[#0a1510] border-r border-emerald-500/20 min-w-[140px] sm:min-w-[150px]">Kullanıcı</th>
-                            {['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'].map((m, i) => {
-                              const isCurrentMonth = i === new Date().getMonth() && selectedYear === new Date().getFullYear();
-                              return (
-                                <th key={i} className={cn("px-2 sm:px-4 py-4 text-center font-bold min-w-[80px] sm:min-w-[90px] transition-colors", isCurrentMonth && "bg-emerald-500/20")}>
-                                  <span className={cn(isCurrentMonth ? "bg-emerald-500 text-black px-2 py-1 rounded-md" : "")}>{m}</span>
-                                </th>
-                              )
-                            })}
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-emerald-500/10">
-                          {users?.filter(u => u.id === user?.id && duesMembers?.includes(u.id)).map(u => (
-                            <tr key={u.id} className="hover:bg-emerald-500/10 transition-colors">
-                              <td className="px-4 sm:px-6 py-4 font-bold text-emerald-400 sticky left-0 z-10 bg-[#0a1510] border-r border-emerald-500/20 shadow-[2px_0_10px_rgba(0,0,0,0.5)] min-w-[140px] sm:min-w-[150px]">
-                                {u.first_name} {u.last_name}
-                              </td>
-                              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(month => {
-                                const isPaid = duesPayments?.some(p => p.user_id === u.id && p.year === selectedYear && p.month === month);
-                                const isPending = toggleDuesMutation.variables?.userId === u.id && toggleDuesMutation.variables?.month === month && toggleDuesMutation.isPending;
-                                const isCurrentMonthCol = (month - 1) === new Date().getMonth() && selectedYear === new Date().getFullYear();
-                                
-                                return (
-                                  <td key={month} className={cn("px-2 py-3 text-center transition-colors", isCurrentMonthCol && "bg-emerald-500/10")}>
-                                    <button
-                                      onClick={() => {
-                                        if (isPaid) {
-                                          setPaymentToCancel({ userId: u.id, month });
-                                          setIsCancelPaymentDialogOpen(true);
-                                        } else {
-                                          setPendingDuesPayment({ userId: u.id, month });
-                                          setDuesPaymentAmount(budgetSettings?.dues_amount?.toString() || "100");
-                                          setIsDuesPaymentDialogOpen(true);
-                                        }
-                                      }}
-                                      disabled={toggleDuesMutation.isPending && isPending}
-                                      className={cn(
-                                        "flex items-center justify-center w-full py-3 sm:py-2 rounded-xl transition-all duration-200",
-                                        isPaid ? "bg-emerald-500/20 text-emerald-400" : "bg-emerald-500/5 text-emerald-400/20",
-                                        isPaid ? "hover:bg-emerald-500/30" : "hover:bg-emerald-500/10 hover:text-emerald-400/50",
-                                        isPending && "opacity-50 cursor-wait"
-                                      )}
-                                    >
-                                      {isPaid ? <CheckCircle2 className="w-6 h-6 sm:w-5 sm:h-5" /> : <Circle className="w-6 h-6 sm:w-5 sm:h-5" />}
-                                    </button>
-                                  </td>
-                                )
-                              })}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                  {canManageBudget && (
+                    <div className={cn("flex items-center gap-2 px-3 py-2 rounded-xl border transition-colors", isEditMode ? "bg-amber-500/10 border-amber-500/30" : "bg-black/50 border-white/10")}>
+                      <Switch id="edit-mode" checked={isEditMode} onCheckedChange={setIsEditMode} />
+                      <Label htmlFor="edit-mode" className={cn("text-sm cursor-pointer whitespace-nowrap font-medium", isEditMode ? "text-amber-400" : "text-white/70")}>
+                        Düzenleme Modu
+                      </Label>
                     </div>
-                    <ScrollBar orientation="horizontal" className="bg-white/5" />
-                  </ScrollArea>
+                  )}
+                </div>
+                {canManageBudget && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Dialog open={isEditDuesOpen} onOpenChange={setIsEditDuesOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="bg-black/50 border-white/10 hover:bg-white/5 rounded-xl gap-1.5 text-xs">
+                          <Edit2 className="w-3 h-3" /> Aidat Tutarı
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-zinc-950 border border-white/10 text-white sm:max-w-md">
+                        <DialogHeader><DialogTitle>Aidat Ücretini Güncelle</DialogTitle></DialogHeader>
+                        <form onSubmit={handleUpdateDuesAmount} className="space-y-4 pt-4">
+                          <div className="space-y-2">
+                            <Label>Yeni Aidat Tutarı (₺)</Label>
+                            <Input type="number" value={newDuesAmount} onChange={(e) => setNewDuesAmount(e.target.value)} placeholder={budgetSettings?.dues_amount?.toString() || "100"} className="bg-black/50 border-white/10" required />
+                          </div>
+                          <Button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold" disabled={updateDuesAmountMutation.isPending}>
+                            {updateDuesAmountMutation.isPending ? "Güncelleniyor..." : "Güncelle"}
+                          </Button>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                    <Dialog open={isEditMembersOpen} onOpenChange={setIsEditMembersOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="bg-black/50 border-white/10 hover:bg-white/5 rounded-xl gap-1.5 text-xs">
+                          <Users className="w-3 h-3" /> Üyeleri Seç
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-zinc-950 border border-white/10 text-white sm:max-w-md">
+                        <DialogHeader><DialogTitle>Aidat Ödeyenleri Belirle</DialogTitle></DialogHeader>
+                        <ScrollArea className="h-[300px] w-full rounded-md border border-white/10 p-4 mt-4">
+                          {users?.map(u => (
+                            <div key={u.id} className="flex items-center space-x-3 mb-4">
+                              <Checkbox id={`user-${u.id}`} checked={duesMembers?.includes(u.id)} onCheckedChange={() => toggleDuesMemberMutation.mutate(u.id)} disabled={toggleDuesMemberMutation.isPending && toggleDuesMemberMutation.variables === u.id} className="border-white/20 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500" />
+                              <Label htmlFor={`user-${u.id}`} className="cursor-pointer">{u.first_name} {u.last_name}</Label>
+                            </div>
+                          ))}
+                        </ScrollArea>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                )}
+              </div>
+              {isEditMode && (
+                <div className="mt-3 flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 text-amber-400 px-4 py-2.5 rounded-xl text-sm">
+                  <ShieldCheck className="w-4 h-4 shrink-0" />
+                  <span>Düzenleme modu aktif — yapılan değişiklikler bütçeye ve işlem geçmişine yansımayacaktır.</span>
                 </div>
               )}
+            </div>
 
-              <div>
-                <h4 className="text-lg font-bold mb-4 text-white">Diğer Kullanıcılar</h4>
-                <ScrollArea className="w-full whitespace-nowrap rounded-2xl border border-white/10 bg-black/20">
-                  <div className="flex w-max min-w-full">
-                    <table className="w-full text-[10px] sm:text-sm text-left">
-                      <thead className="text-[9px] sm:text-xs text-white/50 uppercase bg-white/5 border-b border-white/10 sticky top-0">
-                        <tr>
-                          <th className="px-2 sm:px-6 py-2 sm:py-4 font-bold sticky left-0 z-20 bg-[#121212] border-r border-white/10 min-w-[80px] sm:min-w-[150px]">Kullanıcı</th>
-                          {['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'].map((m, i) => {
-                            const isCurrentMonth = i === new Date().getMonth() && selectedYear === new Date().getFullYear();
-                            return (
-                              <th key={i} className={cn("px-1 sm:px-4 py-2 sm:py-4 text-center font-bold min-w-[24px] sm:min-w-[90px] transition-colors", isCurrentMonth && "bg-emerald-500/20")}>
-                                <span className={cn(isCurrentMonth ? "bg-emerald-500 text-black px-1 sm:px-2 py-0.5 sm:py-1 rounded-sm sm:rounded-md" : "")}>{m}</span>
-                              </th>
-                            )
-                          })}
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5">
-                        {users?.filter(u => duesMembers?.includes(u.id) && u.id !== user?.id).map(u => (
-                          <tr key={u.id} className="hover:bg-white/[0.02] transition-colors">
-                            <td className="px-2 sm:px-6 py-2 sm:py-4 font-medium sticky left-0 z-10 bg-[#0a0a0a] border-r border-white/10 shadow-[2px_0_10px_rgba(0,0,0,0.5)] min-w-[80px] sm:min-w-[150px] whitespace-normal leading-tight">
-                              {u.first_name} {u.last_name}
+            {users?.some(u => u.id === user?.id && duesMembers?.includes(u.id)) && (
+              <div className="bg-gradient-to-br from-emerald-500/5 to-transparent border border-emerald-500/20 rounded-2xl p-5 sm:p-6">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-emerald-500/20 rounded-lg"><UserIcon className="w-4 h-4 text-emerald-400" /></div>
+                    <div>
+                      <h4 className="text-base font-bold text-emerald-400">Benim Aidat Durumum</h4>
+                      <p className="text-white/40 text-xs">{selectedYear} yılı ödeme durumunuz</p>
+                    </div>
+                  </div>
+                  {(() => {
+                    const myPaid = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].filter(m => duesPayments?.some(p => p.user_id === user?.id && p.year === selectedYear && p.month === m)).length;
+                    return (
+                      <div className="hidden sm:flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-lg">
+                        <span className="text-emerald-400 font-black text-sm">{myPaid}/12</span>
+                        <div className="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                          <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${(myPaid / 12) * 100}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-12 gap-2">
+                  {['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'].map((m, i) => {
+                    const month = i + 1;
+                    const isPaid = duesPayments?.some(p => p.user_id === user?.id && p.year === selectedYear && p.month === month);
+                    const isPending = toggleDuesMutation.variables?.userId === user?.id && toggleDuesMutation.variables?.month === month && toggleDuesMutation.isPending;
+                    const isCurrentMonth = i === new Date().getMonth() && selectedYear === new Date().getFullYear();
+                    return (
+                      <button
+                        key={month}
+                        onClick={() => {
+                          if (isPaid) { setPaymentToCancel({ userId: user!.id, month }); setIsCancelPaymentDialogOpen(true); }
+                          else { setPendingDuesPayment({ userId: user!.id, month }); setDuesPaymentAmount(budgetSettings?.dues_amount?.toString() || "100"); setIsDuesPaymentDialogOpen(true); }
+                        }}
+                        disabled={toggleDuesMutation.isPending && isPending}
+                        className={cn(
+                          "relative flex flex-col items-center justify-center gap-1 py-3 sm:py-4 rounded-xl border transition-all duration-300 group",
+                          isPaid ? "bg-emerald-500/15 border-emerald-500/30 hover:bg-emerald-500/25" : "bg-white/[0.02] border-white/10 hover:bg-white/[0.06] hover:border-white/20",
+                          isCurrentMonth && !isPaid && "border-emerald-500/40 ring-1 ring-emerald-500/20",
+                          isPending && "opacity-50 cursor-wait"
+                        )}
+                      >
+                        <span className={cn("text-[10px] font-bold uppercase tracking-wider", isPaid ? "text-emerald-400/70" : "text-white/40")}>{m}</span>
+                        {isPaid ? <CheckCircle2 className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" /> : <Circle className="w-5 h-5 text-white/20 group-hover:text-white/40 transition-colors" />}
+                        {isCurrentMonth && <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div className="bg-white/[0.02] border border-white/10 rounded-2xl overflow-hidden backdrop-blur-xl">
+              <div className="p-5 border-b border-white/10 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/5 rounded-lg"><Users className="w-4 h-4 text-white/60" /></div>
+                  <div>
+                    <h4 className="text-base font-bold text-white">Tüm Üyeler</h4>
+                    <p className="text-white/40 text-xs">{selectedYear} yılı aidat durumları</p>
+                  </div>
+                </div>
+                <span className="text-white/40 text-xs font-medium bg-white/5 px-3 py-1 rounded-lg">Toplam: {users?.filter(u => duesMembers?.includes(u.id)).length || 0} üye</span>
+              </div>
+              <ScrollArea className="w-full whitespace-nowrap">
+                <div className="flex w-max min-w-full">
+                  <table className="w-full text-xs sm:text-sm text-left">
+                    <thead className="text-[9px] sm:text-xs text-white/40 uppercase bg-white/[0.03] border-b border-white/10 sticky top-0">
+                      <tr>
+                        <th className="px-3 sm:px-5 py-3 font-bold sticky left-0 z-20 bg-[#0c0c0c] border-r border-white/10 min-w-[100px] sm:min-w-[160px]">Kullanıcı</th>
+                        {['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'].map((m, i) => {
+                          const isCurrentMonth = i === new Date().getMonth() && selectedYear === new Date().getFullYear();
+                          return (
+                            <th key={i} className={cn("px-1 sm:px-3 py-3 text-center font-bold min-w-[32px] sm:min-w-[56px] transition-colors", isCurrentMonth && "bg-emerald-500/10")}>
+                              <span className={cn(isCurrentMonth ? "bg-emerald-500 text-black px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px]" : "")}>{m}</span>
+                            </th>
+                          )
+                        })}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/[0.04]">
+                      {users?.filter(u => duesMembers?.includes(u.id) && u.id !== user?.id).map(u => {
+                        const paidCount = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].filter(m => duesPayments?.some(p => p.user_id === u.id && p.year === selectedYear && p.month === m)).length;
+                        return (
+                          <tr key={u.id} className="hover:bg-white/[0.02] transition-colors group">
+                            <td className="px-3 sm:px-5 py-2.5 sm:py-3 font-medium sticky left-0 z-10 bg-[#0a0a0a] group-hover:bg-[#0e0e0e] border-r border-white/10 shadow-[2px_0_8px_rgba(0,0,0,0.4)] min-w-[100px] sm:min-w-[160px] whitespace-normal leading-tight transition-colors">
+                              <div className="flex flex-col gap-1">
+                                <span className="text-white/90 text-xs sm:text-sm">{u.first_name} {u.last_name}</span>
+                                <div className="flex items-center gap-1.5">
+                                  <div className="w-12 h-1 bg-white/10 rounded-full overflow-hidden">
+                                    <div className="h-full bg-emerald-500/60 rounded-full transition-all duration-500" style={{ width: `${(paidCount / 12) * 100}%` }} />
+                                  </div>
+                                  <span className="text-[9px] text-white/30">{paidCount}/12</span>
+                                </div>
+                              </div>
                             </td>
                             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(month => {
                               const isPaid = duesPayments?.some(p => p.user_id === u.id && p.year === selectedYear && p.month === month);
                               const isPending = toggleDuesMutation.variables?.userId === u.id && toggleDuesMutation.variables?.month === month && toggleDuesMutation.isPending;
                               const isCurrentMonthCol = (month - 1) === new Date().getMonth() && selectedYear === new Date().getFullYear();
-                              
                               return (
-                                <td key={month} className={cn("px-0.5 sm:px-2 py-1 sm:py-3 text-center transition-colors", isCurrentMonthCol && "bg-emerald-500/5")}>
+                                <td key={month} className={cn("px-0.5 sm:px-1.5 py-1.5 sm:py-2.5 text-center transition-colors", isCurrentMonthCol && "bg-emerald-500/5")}>
                                   <button
                                     onClick={() => {
-                                      if (isPaid) {
-                                        setPaymentToCancel({ userId: u.id, month });
-                                        setIsCancelPaymentDialogOpen(true);
-                                      } else {
-                                        setPendingDuesPayment({ userId: u.id, month });
-                                        setDuesPaymentAmount(budgetSettings?.dues_amount?.toString() || "100");
-                                        setIsDuesPaymentDialogOpen(true);
-                                      }
+                                      if (isPaid) { setPaymentToCancel({ userId: u.id, month }); setIsCancelPaymentDialogOpen(true); }
+                                      else { setPendingDuesPayment({ userId: u.id, month }); setDuesPaymentAmount(budgetSettings?.dues_amount?.toString() || "100"); setIsDuesPaymentDialogOpen(true); }
                                     }}
                                     disabled={(toggleDuesMutation.isPending && isPending) || !canManageBudget}
                                     className={cn(
-                                      "flex items-center justify-center w-full py-1.5 sm:py-2 rounded-md sm:rounded-xl transition-all duration-200",
-                                      isPaid ? "bg-emerald-500/20 text-emerald-400" : "bg-white/5 text-white/20",
+                                      "flex items-center justify-center w-full py-1.5 sm:py-2 rounded-lg transition-all duration-200",
+                                      isPaid ? "bg-emerald-500/20 text-emerald-400" : "bg-white/[0.03] text-white/15",
                                       canManageBudget && isPaid && "hover:bg-emerald-500/30",
-                                      canManageBudget && !isPaid && "hover:bg-white/10 hover:text-white/50",
+                                      canManageBudget && !isPaid && "hover:bg-white/[0.08] hover:text-white/40",
                                       isPending && "opacity-50 cursor-wait",
                                       !canManageBudget && "cursor-default"
                                     )}
                                   >
-                                    {isPaid ? <CheckCircle2 className="w-3.5 h-3.5 sm:w-5 sm:h-5" /> : <Circle className="w-3.5 h-3.5 sm:w-5 sm:h-5" />}
+                                    {isPaid ? <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Circle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                                   </button>
                                 </td>
                               )
                             })}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <ScrollBar orientation="horizontal" className="bg-white/5" />
-                </ScrollArea>
-              </div>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <ScrollBar orientation="horizontal" className="bg-white/5" />
+              </ScrollArea>
             </div>
           </TabsContent>
         </Tabs>
@@ -1043,10 +941,10 @@ export default function Budget() {
           <div className="space-y-4 pt-4">
             <div className="space-y-2">
               <Label>Tutar (₺)</Label>
-              <Input 
-                type="number" 
-                value={duesPaymentAmount} 
-                onChange={(e) => setDuesPaymentAmount(e.target.value)} 
+              <Input
+                type="number"
+                value={duesPaymentAmount}
+                onChange={(e) => setDuesPaymentAmount(e.target.value)}
                 className="bg-black/50 border-white/10"
               />
             </div>
@@ -1055,21 +953,21 @@ export default function Budget() {
               <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl space-y-4 mt-2">
                 <Label className="text-emerald-400 block leading-snug">Fazla Ödediğiniz Tutarı Bir Sonraki Aylara Yansıtmak İstiyor Musunuz?</Label>
                 <div className="flex items-center gap-3">
-                   <button 
-                     type="button"
-                     onClick={() => setDistributePayment(true)}
-                     className={cn("px-3 py-2 rounded-lg text-sm font-bold transition-colors w-full", distributePayment ? "bg-emerald-500 text-black" : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white")}
-                   >Evet</button>
-                   <button 
-                     type="button"
-                     onClick={() => setDistributePayment(false)}
-                     className={cn("px-3 py-2 rounded-lg text-sm font-bold transition-colors w-full", !distributePayment ? "bg-emerald-500 text-black" : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white")}
-                   >Hayır</button>
+                  <button
+                    type="button"
+                    onClick={() => setDistributePayment(true)}
+                    className={cn("px-3 py-2 rounded-lg text-sm font-bold transition-colors w-full", distributePayment ? "bg-emerald-500 text-black" : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white")}
+                  >Evet</button>
+                  <button
+                    type="button"
+                    onClick={() => setDistributePayment(false)}
+                    className={cn("px-3 py-2 rounded-lg text-sm font-bold transition-colors w-full", !distributePayment ? "bg-emerald-500 text-black" : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white")}
+                  >Hayır</button>
                 </div>
                 <div className="space-y-2 mt-3">
                   <p className="text-xs text-white/50">
-                    {distributePayment 
-                      ? "Girilen fazla tutar sıradaki ödenmemiş aylara otomatik dağıtılacaktır." 
+                    {distributePayment
+                      ? "Girilen fazla tutar sıradaki ödenmemiş aylara otomatik dağıtılacaktır."
                       : "Girdiğiniz tutarın tamamı sadece seçtiğiniz ayın ödemesi olarak kaydedilecektir."}
                   </p>
                   {distributePayment && (
@@ -1081,14 +979,14 @@ export default function Budget() {
               </div>
             )}
 
-            <Button 
-              className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold mt-4" 
+            <Button
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold mt-4"
               disabled={toggleDuesMutation.isPending}
               onClick={() => {
                 if (pendingDuesPayment) {
-                  toggleDuesMutation.mutate({ 
-                    userId: pendingDuesPayment.userId, 
-                    month: pendingDuesPayment.month, 
+                  toggleDuesMutation.mutate({
+                    userId: pendingDuesPayment.userId,
+                    month: pendingDuesPayment.month,
                     amount: Number(duesPaymentAmount),
                     distribute: distributePayment
                   }, {
@@ -1114,22 +1012,22 @@ export default function Budget() {
           <div className="space-y-4 pt-4">
             <p className="text-white/70">Bu aya ait ödemeyi iptal etmek istediğinize emin misiniz? Bu işlem bütçeden ilgili tutarı düşecektir.</p>
             <div className="flex items-center gap-3 mt-6">
-              <Button 
-                variant="outline" 
-                className="w-full bg-white/5 border-white/10 hover:bg-white/10 text-white" 
+              <Button
+                variant="outline"
+                className="w-full bg-white/5 border-white/10 hover:bg-white/10 text-white"
                 onClick={() => setIsCancelPaymentDialogOpen(false)}
                 disabled={toggleDuesMutation.isPending}
               >
                 Vazgeç
               </Button>
-              <Button 
-                className="w-full bg-red-500 hover:bg-red-600 text-white font-bold" 
+              <Button
+                className="w-full bg-red-500 hover:bg-red-600 text-white font-bold"
                 disabled={toggleDuesMutation.isPending}
                 onClick={() => {
                   if (paymentToCancel) {
-                    toggleDuesMutation.mutate({ 
-                      userId: paymentToCancel.userId, 
-                      month: paymentToCancel.month 
+                    toggleDuesMutation.mutate({
+                      userId: paymentToCancel.userId,
+                      month: paymentToCancel.month
                     }, {
                       onSuccess: () => {
                         setIsCancelPaymentDialogOpen(false);
