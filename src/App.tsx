@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import React, { Suspense, useEffect } from "react";
 import LoadingScreen from "@/components/LoadingScreen";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 // Supabase recovery token root'a düşerse /sifre-sifirla'ya yönlendir
 const AuthRedirectHandler = () => {
@@ -48,6 +49,7 @@ const AuthRedirectHandler = () => {
 
 // Lazy-loaded pages (code splitting)
 const Index = React.lazy(() => import("./pages/Index"));
+const Events = React.lazy(() => import("./pages/Events"));
 const Login = React.lazy(() => import("./pages/Login"));
 const Register = React.lazy(() => import("./pages/Register"));
 const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword"));
@@ -72,35 +74,38 @@ const ScrollToTop = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <ScrollToTop />
-        <AuthProvider>
-          <AuthRedirectHandler />
-          <Suspense fallback={<LoadingScreen />}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/giris" element={<Login />} />
-              <Route path="/kayit" element={<Register />} />
-              <Route path="/sifremi-unuttum" element={<ForgotPassword />} />
-              <Route path="/sifre-sifirla" element={<ResetPassword />} />
-              <Route path="/etkinlik/:id" element={<EventDetail />} />
-              <Route path="/profil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/sosyal" element={<Social />} />
-              <Route path="/sosyal/profil/:id" element={<ProtectedRoute><SocialProfileView /></ProtectedRoute>} />
-              <Route path="/yonetim" element={<ProtectedRoute adminOnly><Admin /></ProtectedRoute>} />
-              <Route path="/raporlar" element={<ProtectedRoute><WeeklyReports /></ProtectedRoute>} />
-              <Route path="/butce" element={<ProtectedRoute><Budget /></ProtectedRoute>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <ScrollToTop />
+          <AuthProvider>
+            <AuthRedirectHandler />
+            <Suspense fallback={<LoadingScreen />}>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/etkinlikler" element={<Events />} />
+                <Route path="/giris" element={<Login />} />
+                <Route path="/kayit" element={<Register />} />
+                <Route path="/sifremi-unuttum" element={<ForgotPassword />} />
+                <Route path="/sifre-sifirla" element={<ResetPassword />} />
+                <Route path="/etkinlik/:id" element={<EventDetail />} />
+                <Route path="/profil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/sosyal" element={<Social />} />
+                <Route path="/sosyal/profil/:id" element={<ProtectedRoute><SocialProfileView /></ProtectedRoute>} />
+                <Route path="/yonetim" element={<ProtectedRoute adminOnly><Admin /></ProtectedRoute>} />
+                <Route path="/raporlar" element={<ProtectedRoute><WeeklyReports /></ProtectedRoute>} />
+                <Route path="/butce" element={<ProtectedRoute><Budget /></ProtectedRoute>} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ThemeProvider>
 );
 
 export default App;

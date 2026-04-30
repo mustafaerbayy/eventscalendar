@@ -72,7 +72,7 @@ function PollVotersList({ voterIds }: { voterIds: string[] }) {
     });
 
     if (voterIds.length === 0) {
-        return <div className="text-center py-4 text-sm text-gray-500">Henüz kimse oy kullanmadı.</div>;
+        return <div className="text-center py-4 text-sm text-muted-foreground">Henüz kimse oy kullanmadı.</div>;
     }
 
     if (isLoading) {
@@ -82,7 +82,7 @@ function PollVotersList({ voterIds }: { voterIds: string[] }) {
     return (
         <div className="flex flex-col gap-3 py-2">
             {voters?.map((voter) => (
-                <div key={voter.user_id} className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-50">
+                <div key={voter.user_id} className="flex items-center gap-3 p-2 rounded-md hover:bg-background">
                     <Avatar
                         className="h-8 w-8 cursor-pointer"
                         onClick={() => navigate(`/sosyal/profil/${voter.user_id}`)}
@@ -93,7 +93,7 @@ function PollVotersList({ voterIds }: { voterIds: string[] }) {
                         </AvatarFallback>
                     </Avatar>
                     <span
-                        className="text-sm font-medium text-gray-800 cursor-pointer hover:underline"
+                        className="text-sm font-medium text-foreground cursor-pointer hover:underline"
                         onClick={() => navigate(`/sosyal/profil/${voter.user_id}`)}
                     >
                         {voter.social_name || "Gizli Kullanıcı"}
@@ -151,14 +151,14 @@ function ReactorsList({ userIds }: { userIds: string[] }) {
     return (
         <div className="flex flex-wrap gap-1.5">
             {profiles.map(p => (
-                <div key={p.user_id} className="flex items-center gap-1.5 bg-gray-50 rounded-full px-2 py-1 border border-gray-100">
+                <div key={p.user_id} className="flex items-center gap-1.5 bg-background rounded-full px-2 py-1 border border-border">
                     <Avatar className="h-4 w-4">
                         <AvatarImage src={p.profile_photo || undefined} />
                         <AvatarFallback className="text-[7px] bg-primary/10 text-primary font-bold">
                             {(p.social_name || "?").slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                     </Avatar>
-                    <span className="text-[11px] text-gray-600 font-medium">{p.social_name || "Anonim"}</span>
+                    <span className="text-[11px] text-muted-foreground font-medium">{p.social_name || "Anonim"}</span>
                 </div>
             ))}
         </div>
@@ -231,7 +231,7 @@ function PostReactions({ postId }: { postId: string }) {
                             onClick={() => toggleReaction.mutate(emoji)}
                             className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border transition-all duration-200 ${hasReacted
                                 ? 'bg-primary/10 border-primary/30 text-primary shadow-sm scale-105'
-                                : 'bg-gray-50 border-gray-200/80 text-gray-600 hover:bg-gray-100 hover:border-gray-300'
+                                : 'bg-background border-border/80 text-muted-foreground hover:bg-muted hover:border-border'
                                 }`}
                         >
                             <span className="text-sm leading-none">{emoji}</span>
@@ -247,7 +247,7 @@ function PostReactions({ postId }: { postId: string }) {
                             onClick={() => setShowPicker(p => !p)}
                             className={`inline-flex items-center justify-center w-8 h-8 rounded-full border transition-all shadow-sm group ${userReaction
                                 ? 'bg-primary/5 border-primary/20 text-primary/60 hover:text-primary hover:border-primary/40'
-                                : 'bg-white border-gray-100 text-gray-400 hover:text-primary hover:border-primary/30 hover:bg-primary/5'
+                                : 'bg-card/90 dark:bg-card/60 backdrop-blur-md border-border text-muted-foreground/70 hover:text-primary hover:border-primary/30 hover:bg-primary/5'
                                 }`}
                             title="Emoji Ekle"
                         >
@@ -256,7 +256,7 @@ function PostReactions({ postId }: { postId: string }) {
                         {showPicker && (
                             <>
                                 <div className="fixed inset-0 z-40" onClick={() => setShowPicker(false)} />
-                                <div className="absolute bottom-full left-0 mb-1.5 flex items-center gap-0.5 bg-white border border-gray-200 rounded-xl shadow-xl p-1.5 z-50">
+                                <div className="absolute bottom-full left-0 mb-1.5 flex items-center gap-0.5 bg-card/90 dark:bg-card/60 backdrop-blur-md border border-border rounded-[1.25rem] shadow-xl p-1.5 z-50">
                                     {EMOJI_OPTIONS.map(emoji => (
                                         <button
                                             key={emoji}
@@ -264,9 +264,9 @@ function PostReactions({ postId }: { postId: string }) {
                                                 toggleReaction.mutate(emoji);
                                                 setShowPicker(false);
                                             }}
-                                            className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all text-lg ${emoji === userReaction
+                                            className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all text-lg ${emoji === userReaction
                                                 ? 'bg-primary/10 ring-2 ring-primary/30 scale-110'
-                                                : 'hover:bg-gray-100 hover:scale-110'
+                                                : 'hover:bg-muted hover:scale-110'
                                                 }`}
                                         >
                                             {emoji}
@@ -282,7 +282,7 @@ function PostReactions({ postId }: { postId: string }) {
                 {totalReactions > 0 && (
                     <button
                         onClick={() => setShowReactors(p => !p)}
-                        className="text-[10px] text-gray-400 hover:text-primary font-medium ml-1 transition-colors"
+                        className="text-[10px] text-muted-foreground/70 hover:text-primary font-medium ml-1 transition-colors"
                     >
                         {showReactors ? 'Gizle' : `${totalReactions} kişi`}
                         {showReactors ? <ChevronUp className="w-3 h-3 inline ml-0.5" /> : <ChevronDown className="w-3 h-3 inline ml-0.5" />}
@@ -292,12 +292,12 @@ function PostReactions({ postId }: { postId: string }) {
 
             {/* Collapsible reactors list */}
             {showReactors && totalReactions > 0 && (
-                <div className="bg-gray-50/60 rounded-xl border border-gray-100 p-2.5 space-y-2">
+                <div className="bg-background/60 rounded-[1.25rem] border border-border p-2.5 space-y-2">
                     {Object.entries(grouped).map(([emoji, userIds]) => (
                         <div key={emoji}>
                             <div className="flex items-center gap-1.5 mb-1.5">
                                 <span className="text-sm">{emoji}</span>
-                                <span className="text-[10px] text-gray-400 font-medium">{userIds.length} kişi</span>
+                                <span className="text-[10px] text-muted-foreground/70 font-medium">{userIds.length} kişi</span>
                             </div>
                             <ReactorsList userIds={userIds} />
                         </div>
@@ -372,7 +372,7 @@ function CommentLikeButton({ commentId }: { commentId: string }) {
                         onClick={() => toggleReaction.mutate(emoji)}
                         className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-medium border transition-all ${emoji === userReaction
                             ? 'bg-primary/10 border-primary/30 text-primary'
-                            : 'bg-gray-50 border-gray-100 text-gray-500 hover:bg-gray-100'
+                            : 'bg-background border-border text-muted-foreground hover:bg-muted'
                             }`}
                     >
                         <span className="text-xs leading-none">{emoji}</span>
@@ -385,14 +385,14 @@ function CommentLikeButton({ commentId }: { commentId: string }) {
                     <div className="relative inline-block">
                         <button
                             onClick={() => setShowPicker(p => !p)}
-                            className="inline-flex items-center gap-0.5 text-[10px] text-gray-400 hover:text-primary font-medium transition-colors"
+                            className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground/70 hover:text-primary font-medium transition-colors"
                         >
                             <Smile className="w-3 h-3" />
                         </button>
                         {showPicker && (
                             <>
                                 <div className="fixed inset-0 z-40" onClick={() => setShowPicker(false)} />
-                                <div className="absolute bottom-full left-0 mb-1 flex items-center gap-px bg-white border border-gray-200 rounded-lg shadow-lg p-1 z-50">
+                                <div className="absolute bottom-full left-0 mb-1 flex items-center gap-px bg-card/90 dark:bg-card/60 backdrop-blur-md border border-border rounded-xl shadow-lg p-1 z-50">
                                     {EMOJI_OPTIONS.map(emoji => (
                                         <button
                                             key={emoji}
@@ -400,7 +400,7 @@ function CommentLikeButton({ commentId }: { commentId: string }) {
                                                 toggleReaction.mutate(emoji);
                                                 setShowPicker(false);
                                             }}
-                                            className={`w-7 h-7 flex items-center justify-center rounded-md transition-all text-sm ${emoji === userReaction ? 'bg-primary/10 ring-1 ring-primary/30' : 'hover:bg-gray-100'
+                                            className={`w-7 h-7 flex items-center justify-center rounded-md transition-all text-sm ${emoji === userReaction ? 'bg-primary/10 ring-1 ring-primary/30' : 'hover:bg-muted'
                                                 }`}
                                         >
                                             {emoji}
@@ -416,7 +416,7 @@ function CommentLikeButton({ commentId }: { commentId: string }) {
                 {count > 0 && (
                     <button
                         onClick={() => setShowLikers(p => !p)}
-                        className="text-[9px] text-gray-400 hover:text-primary font-medium ml-0.5 transition-colors"
+                        className="text-[9px] text-muted-foreground/70 hover:text-primary font-medium ml-0.5 transition-colors"
                     >
                         {showLikers ? 'Gizle' : `${count}`}
                     </button>
@@ -425,7 +425,7 @@ function CommentLikeButton({ commentId }: { commentId: string }) {
 
             {/* Collapsible likers */}
             {showLikers && count > 0 && (
-                <div className="mt-1.5 bg-gray-50/60 rounded-lg border border-gray-100 p-2 space-y-1">
+                <div className="mt-1.5 bg-background/60 rounded-xl border border-border p-2 space-y-1">
                     {Object.entries(grouped).map(([emoji, userIds]) => (
                         <div key={emoji} className="flex items-start gap-1.5">
                             <span className="text-xs mt-0.5">{emoji}</span>
@@ -603,14 +603,14 @@ function CommentsSection({ postId, onReplyClick }: { postId: string, onReplyClic
     if (isLoading) {
         return (
             <div className="flex justify-center py-3">
-                <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground/70" />
             </div>
         );
     }
 
     if (!comments || comments.length === 0) {
         return (
-            <div className="text-center py-3 text-xs text-gray-400">
+            <div className="text-center py-3 text-xs text-muted-foreground/70">
                 Henüz yorum yok. İlk yorumu sen yaz!
             </div>
         );
@@ -632,12 +632,12 @@ function CommentsSection({ postId, onReplyClick }: { postId: string, onReplyClic
                                 </AvatarFallback>
                             </Avatar>
                             <div className="flex-1 min-w-0">
-                                <div className="bg-gray-50/80 rounded-xl px-3 py-2 border border-gray-100/60">
+                                <div className="bg-background/80 rounded-[1.25rem] px-3 py-2 border border-border/60">
                                     <div className="flex items-center gap-2 mb-0.5">
-                                        <span className="text-xs font-bold text-gray-700 truncate">
+                                        <span className="text-xs font-bold text-foreground/90 truncate">
                                             {comment.profile?.social_name || 'Anonim'}
                                         </span>
-                                        <span className="text-[10px] text-gray-400 shrink-0">
+                                        <span className="text-[10px] text-muted-foreground/70 shrink-0">
                                             {timeAgo(comment.created_at)}
                                         </span>
                                     </div>
@@ -646,8 +646,8 @@ function CommentsSection({ postId, onReplyClick }: { postId: string, onReplyClic
                                     {comment.reply_to_comment_id && comments.find((c: any) => c.id === comment.reply_to_comment_id) && (() => {
                                         const quoted = comments.find((c: any) => c.id === comment.reply_to_comment_id);
                                         return (
-                                            <div className="bg-white/60 border border-gray-100 rounded-lg p-2 mt-1 mb-2 text-[11px] text-gray-500 border-l-2 border-l-primary/40">
-                                                <div className="font-semibold text-gray-600 flex items-center gap-1 mb-0.5">
+                                            <div className="bg-card/90 dark:bg-card/60 backdrop-blur-md border border-border rounded-xl p-2 mt-1 mb-2 text-[11px] text-muted-foreground border-l-2 border-l-primary/40">
+                                                <div className="font-semibold text-muted-foreground flex items-center gap-1 mb-0.5">
                                                     <MessageCircle className="w-3 h-3 text-primary/40" />
                                                     {quoted?.profile?.social_name || 'Anonim'}
                                                 </div>
@@ -671,7 +671,7 @@ function CommentsSection({ postId, onReplyClick }: { postId: string, onReplyClic
                                                         setEditCommentText("");
                                                     }
                                                 }}
-                                                className="flex-1 bg-white border border-primary/30 rounded-lg px-2 py-1 text-[13px] text-gray-700 outline-none focus:border-primary/50 min-h-[40px]"
+                                                className="flex-1 bg-card/90 dark:bg-card/60 backdrop-blur-md border border-primary/30 rounded-xl px-2 py-1 text-[13px] text-foreground/90 outline-none focus:border-primary/50 min-h-[40px]"
                                             />
                                             <div className="flex justify-end gap-1">
                                                 <button
@@ -687,14 +687,14 @@ function CommentsSection({ postId, onReplyClick }: { postId: string, onReplyClic
                                                 </button>
                                                 <button
                                                     onClick={() => { setEditingCommentId(null); setEditCommentText(""); }}
-                                                    className="text-gray-400 hover:text-red-500 p-1"
+                                                    className="text-muted-foreground/70 hover:text-red-500 p-1"
                                                 >
                                                     <X className="w-3.5 h-3.5" />
                                                 </button>
                                             </div>
                                         </div>
                                     ) : (
-                                        <p className="text-[13px] text-gray-600 leading-relaxed break-words">
+                                        <p className="text-[13px] text-muted-foreground leading-relaxed break-words">
                                             {renderContent(comment.content, navigate)}
                                         </p>
                                     )}
@@ -704,7 +704,7 @@ function CommentsSection({ postId, onReplyClick }: { postId: string, onReplyClic
                                         <CommentLikeButton commentId={comment.id} />
                                         <button
                                             onClick={() => onReplyClick && onReplyClick(comment.id, comment.profile?.social_name || 'Anonim', comment.content)}
-                                            className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-primary transition-colors py-0.5 px-1 -mx-1 rounded"
+                                            className="flex items-center gap-1 text-[11px] text-muted-foreground/70 hover:text-primary transition-colors py-0.5 px-1 -mx-1 rounded"
                                         >
                                             <Reply className="w-3.5 h-3.5" />
                                             Cevapla
@@ -712,7 +712,7 @@ function CommentsSection({ postId, onReplyClick }: { postId: string, onReplyClic
                                         {isOwner && (
                                             <button
                                                 onClick={() => { setEditingCommentId(comment.id); setEditCommentText(comment.content); }}
-                                                className="text-[11px] text-gray-400 hover:text-primary transition-colors py-0.5 px-1 -mx-1 rounded"
+                                                className="text-[11px] text-muted-foreground/70 hover:text-primary transition-colors py-0.5 px-1 -mx-1 rounded"
                                             >
                                                 Düzenle
                                             </button>
@@ -720,7 +720,7 @@ function CommentsSection({ postId, onReplyClick }: { postId: string, onReplyClic
                                         {(isOwner || isSuperAdmin) && (
                                             <button
                                                 onClick={() => setDeleteConfirmCommentId(comment.id)}
-                                                className="text-[11px] text-gray-400 hover:text-red-500 transition-colors py-0.5 px-1 -mx-1 rounded"
+                                                className="text-[11px] text-muted-foreground/70 hover:text-red-500 transition-colors py-0.5 px-1 -mx-1 rounded"
                                             >
                                                 Sil
                                             </button>
@@ -735,7 +735,7 @@ function CommentsSection({ postId, onReplyClick }: { postId: string, onReplyClic
 
             {/* Comment Delete Confirmation Dialog */}
             <AlertDialog open={!!deleteConfirmCommentId} onOpenChange={(open) => { if (!open) setDeleteConfirmCommentId(null); }}>
-                <AlertDialogContent className="rounded-2xl">
+                <AlertDialogContent className="rounded-[1.5rem]">
                     <AlertDialogHeader>
                         <AlertDialogTitle>Yorumu Sil</AlertDialogTitle>
                         <AlertDialogDescription>
@@ -743,9 +743,9 @@ function CommentsSection({ postId, onReplyClick }: { postId: string, onReplyClic
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel className="rounded-xl">İptal</AlertDialogCancel>
+                        <AlertDialogCancel className="rounded-[1.25rem]">İptal</AlertDialogCancel>
                         <AlertDialogAction
-                            className="bg-red-500 hover:bg-red-600 rounded-xl"
+                            className="bg-red-500 hover:bg-red-600 rounded-[1.25rem]"
                             onClick={() => {
                                 if (deleteConfirmCommentId) {
                                     deleteCommentMutation.mutate(deleteConfirmCommentId);
@@ -1470,7 +1470,7 @@ export default function SocialFeed() {
                 {!showPostForm ? (
                     <button
                         onClick={() => setShowPostForm(true)}
-                        className="w-full flex items-center gap-3 bg-white/80 backdrop-blur-xl rounded-2xl border border-white/60 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.06)] px-4 py-3.5 text-left hover:shadow-[0_4px_25px_-4px_rgba(0,0,0,0.1)] hover:border-primary/20 transition-all duration-300 group"
+                        className="w-full flex items-center gap-3 bg-card/90 dark:bg-card/60 backdrop-blur-md backdrop-blur-xl rounded-[1.5rem] border border-border/40 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.06)] px-4 py-3.5 text-left hover:shadow-[0_4px_25px_-4px_rgba(0,0,0,0.1)] hover:border-primary/20 transition-all duration-300 group"
                     >
                         <Avatar className="h-9 w-9 border-2 border-primary/10 shrink-0 ring-2 ring-primary/5">
                             <AvatarImage src={currentUserProfile?.profile_photo || undefined} />
@@ -1478,15 +1478,15 @@ export default function SocialFeed() {
                                 {getInitials(currentUserProfile?.social_name)}
                             </AvatarFallback>
                         </Avatar>
-                        <span className="text-sm text-gray-400 group-hover:text-gray-500 transition-colors flex-1">
+                        <span className="text-sm text-muted-foreground/70 group-hover:text-muted-foreground transition-colors flex-1">
                             Aklından ne geçiyor?
                         </span>
-                        <span className="text-xs font-semibold text-white bg-gradient-to-r from-primary to-primary/90 px-4 py-2 rounded-xl shadow-lg shadow-primary/20 group-hover:shadow-primary/30 group-hover:scale-[1.02] transition-all duration-300">
+                        <span className="text-xs font-semibold text-foreground bg-gradient-to-r from-primary to-primary/90 px-4 py-2 rounded-[1.25rem] shadow-lg shadow-primary/20 group-hover:shadow-primary/30 group-hover:scale-[1.02] transition-all duration-300">
                             + Gönderi Ekle
                         </span>
                     </button>
                 ) : (
-                    <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/60 shadow-[0_4px_30px_-6px_rgba(0,0,0,0.08)] overflow-hidden">
+                    <div className="bg-card/90 dark:bg-card/60 backdrop-blur-md backdrop-blur-xl rounded-[1.5rem] border border-border/40 shadow-[0_4px_30px_-6px_rgba(0,0,0,0.08)] overflow-hidden">
                         <div className="p-4 sm:p-5">
                             <div className="flex justify-end mb-1">
                                 {editingPostId ? (
@@ -1500,7 +1500,7 @@ export default function SocialFeed() {
                                 ) : (
                                     <button
                                         onClick={() => setShowPostForm(false)}
-                                        className="p-1 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                                        className="p-1 rounded-full hover:bg-muted text-muted-foreground/70 hover:text-muted-foreground transition-colors"
                                     >
                                         <X className="w-4 h-4" />
                                     </button>
@@ -1509,7 +1509,7 @@ export default function SocialFeed() {
                             <div className="flex flex-col gap-4">
                                 <div className="flex gap-4">
                                     <Avatar
-                                        className="h-10 w-10 mt-1 cursor-pointer border border-gray-100 shrink-0"
+                                        className="h-10 w-10 mt-1 cursor-pointer border border-border shrink-0"
                                         onClick={() => navigate(`/sosyal/profil/${user?.id}`)}
                                     >
                                         <AvatarImage src={currentUserProfile?.profile_photo || undefined} />
@@ -1519,7 +1519,7 @@ export default function SocialFeed() {
                                     </Avatar>
                                     <MentionTextarea
                                         placeholder="Aklından ne geçiyor?"
-                                        className="resize-none min-h-[180px] sm:min-h-[200px] flex-1 bg-gray-50/50 hover:bg-white focus:bg-white transition-all duration-300 rounded-xl p-4 text-sm sm:text-base border-none shadow-inner focus:ring-1 focus:ring-primary/20"
+                                        className="resize-none min-h-[180px] sm:min-h-[200px] flex-1 bg-background/50 hover:bg-card/90 dark:bg-card/60 backdrop-blur-md focus:bg-card/90 dark:bg-card/60 backdrop-blur-md transition-all duration-300 rounded-[1.25rem] p-4 text-sm sm:text-base border-none shadow-inner focus:ring-1 focus:ring-primary/20"
                                         value={newPostContent}
                                         onChange={(val) => setNewPostContent(val)}
                                     />
@@ -1543,7 +1543,7 @@ export default function SocialFeed() {
 
                                 {/* Poll Preview Area */}
                                 {isPollMode && (
-                                    <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 relative">
+                                    <div className="bg-primary/5 p-4 rounded-xl border border-primary/20 relative">
                                         <button
                                             type="button"
                                             className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full bg-red-500/10 text-red-400 text-[11px] font-medium hover:bg-red-500/20 hover:text-red-500 transition-colors"
@@ -1565,7 +1565,7 @@ export default function SocialFeed() {
                                                     placeholder="Ör: En sevdiğiniz programlama dili hangisi?"
                                                     value={pollTitle}
                                                     onChange={(e) => setPollTitle(e.target.value)}
-                                                    className="bg-white"
+                                                    className="bg-card/90 dark:bg-card/60 backdrop-blur-md"
                                                     maxLength={120}
                                                 />
                                             </div>
@@ -1581,7 +1581,7 @@ export default function SocialFeed() {
                                                                 placeholder={`Seçenek ${index + 1}`}
                                                                 value={option.text}
                                                                 onChange={(e) => handlePollOptionChange(option.id, e.target.value)}
-                                                                className="bg-white"
+                                                                className="bg-card/90 dark:bg-card/60 backdrop-blur-md"
                                                                 maxLength={50}
                                                             />
                                                             {pollOptions.length > 2 && (
@@ -1607,9 +1607,9 @@ export default function SocialFeed() {
                                                         type="checkbox"
                                                         checked={pollAllowMultiple}
                                                         onChange={(e) => setPollAllowMultiple(e.target.checked)}
-                                                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                        className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
                                                     />
-                                                    <span className="text-xs text-gray-600 font-medium">Birden fazla seçeneği işaretlemeye izin ver</span>
+                                                    <span className="text-xs text-muted-foreground font-medium">Birden fazla seçeneği işaretlemeye izin ver</span>
                                                 </label>
                                             </div>
 
@@ -1619,7 +1619,7 @@ export default function SocialFeed() {
                                                     <Input
                                                         id="poll-end-date"
                                                         type="datetime-local"
-                                                        className="bg-white max-w-[250px]"
+                                                        className="bg-card/90 dark:bg-card/60 backdrop-blur-md max-w-[250px]"
                                                         value={pollEndDate}
                                                         onChange={(e) => setPollEndDate(e.target.value)}
                                                     />
@@ -1631,7 +1631,7 @@ export default function SocialFeed() {
 
                                 {/* Image Preview Area */}
                                 {imagePreview && (
-                                    <div className="relative inline-block w-full max-w-sm rounded-md overflow-hidden border border-gray-200">
+                                    <div className="relative inline-block w-full max-w-sm rounded-md overflow-hidden border border-border">
                                         <img
                                             src={imagePreview}
                                             alt="Yükleme önizlemesi"
@@ -1647,7 +1647,7 @@ export default function SocialFeed() {
                                     </div>
                                 )}
 
-                                <div className="flex justify-between items-center border-t border-gray-100 mt-2 pt-4 flex-wrap gap-2">
+                                <div className="flex justify-between items-center border-t border-border mt-2 pt-4 flex-wrap gap-2">
                                     <div className="flex gap-2 flex-wrap items-center">
                                         <input
                                             type="file"
@@ -1663,66 +1663,66 @@ export default function SocialFeed() {
                                                     type="button"
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="w-10 h-10 rounded-full hover:bg-primary/10 hover:text-primary text-gray-400 transition-all duration-300"
+                                                    className="w-10 h-10 rounded-full hover:bg-primary/10 hover:text-primary text-muted-foreground/70 transition-all duration-300"
                                                     disabled={isUploading || createPostMutation.isPending}
                                                 >
                                                     <Paperclip className="h-5 w-5" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="start" className="w-56 p-2 rounded-2xl shadow-xl border-gray-100/50 backdrop-blur-xl bg-white/90">
-                                                <div className="px-2 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Ekle</div>
+                                            <DropdownMenuContent align="start" className="w-56 p-2 rounded-[1.5rem] shadow-xl border-border/50 backdrop-blur-xl bg-card/90 dark:bg-card/60 backdrop-blur-md">
+                                                <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest mb-1">Ekle</div>
                                                 <DropdownMenuItem
                                                     onClick={() => fileInputRef.current?.click()}
-                                                    className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-primary/5 transition-colors group"
+                                                    className="flex items-center gap-3 p-3 rounded-[1.25rem] cursor-pointer hover:bg-primary/5 transition-colors group"
                                                 >
-                                                    <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-100 transition-colors">
+                                                    <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-100 transition-colors">
                                                         <ImageIcon className="h-4 w-4" />
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <span className="text-sm font-semibold text-gray-700">Fotoğraf</span>
-                                                        <span className="text-[10px] text-gray-400">Görsel veya GIF paylaş</span>
+                                                        <span className="text-sm font-semibold text-foreground/90">Fotoğraf</span>
+                                                        <span className="text-[10px] text-muted-foreground/70">Görsel veya GIF paylaş</span>
                                                     </div>
                                                 </DropdownMenuItem>
 
                                                 <DropdownMenuItem
                                                     onClick={() => setIsPollMode(!isPollMode)}
-                                                    className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-primary/5 transition-colors group"
+                                                    className="flex items-center gap-3 p-3 rounded-[1.25rem] cursor-pointer hover:bg-primary/5 transition-colors group"
                                                 >
-                                                    <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-100 transition-colors">
+                                                    <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-100 transition-colors">
                                                         <BarChart2 className="h-4 w-4" />
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <span className="text-sm font-semibold text-gray-700">Anket</span>
-                                                        <span className="text-[10px] text-gray-400">Topluluğa soru sor</span>
+                                                        <span className="text-sm font-semibold text-foreground/90">Anket</span>
+                                                        <span className="text-[10px] text-muted-foreground/70">Topluluğa soru sor</span>
                                                     </div>
                                                 </DropdownMenuItem>
 
-                                                <div className="h-px bg-gray-50 my-1 mx-2" />
-                                                <div className="px-2 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Alıntıla</div>
+                                                <div className="h-px bg-background my-1 mx-2" />
+                                                <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest mb-1">Alıntıla</div>
 
                                                 <DropdownMenuItem
                                                     onClick={() => { setQuoteType("event"); setIsQuoteDialogOpen(true); }}
-                                                    className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-primary/5 transition-colors group"
+                                                    className="flex items-center gap-3 p-3 rounded-[1.25rem] cursor-pointer hover:bg-primary/5 transition-colors group"
                                                 >
-                                                    <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-100 transition-colors">
+                                                    <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-100 transition-colors">
                                                         <Calendar className="h-4 w-4" />
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <span className="text-sm font-semibold text-gray-700">Etkinlik</span>
-                                                        <span className="text-[10px] text-gray-400">Geçmiş bir etkinliği paylaş</span>
+                                                        <span className="text-sm font-semibold text-foreground/90">Etkinlik</span>
+                                                        <span className="text-[10px] text-muted-foreground/70">Geçmiş bir etkinliği paylaş</span>
                                                     </div>
                                                 </DropdownMenuItem>
 
                                                 <DropdownMenuItem
                                                     onClick={() => { setQuoteType("report"); setIsQuoteDialogOpen(true); }}
-                                                    className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-primary/5 transition-colors group"
+                                                    className="flex items-center gap-3 p-3 rounded-[1.25rem] cursor-pointer hover:bg-primary/5 transition-colors group"
                                                 >
-                                                    <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 group-hover:bg-purple-100 transition-colors">
+                                                    <div className="w-8 h-8 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 group-hover:bg-purple-100 transition-colors">
                                                         <FileText className="h-4 w-4" />
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <span className="text-sm font-semibold text-gray-700">Rapor</span>
-                                                        <span className="text-[10px] text-gray-400">Haftalık bir raporu paylaş</span>
+                                                        <span className="text-sm font-semibold text-foreground/90">Rapor</span>
+                                                        <span className="text-[10px] text-muted-foreground/70">Haftalık bir raporu paylaş</span>
                                                     </div>
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
@@ -1731,19 +1731,19 @@ export default function SocialFeed() {
                                         {/* Status Indicators */}
                                         <div className="flex items-center gap-1.5 ml-2">
                                             {selectedImage && (
-                                                <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-bold border border-emerald-100 animate-in fade-in zoom-in-95">
+                                                <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 text-emerald-600 rounded-xl text-[10px] font-bold border border-emerald-100 animate-in fade-in zoom-in-95">
                                                     <ImageIcon className="w-3 h-3" />
                                                     Görsel Eklendi
                                                 </div>
                                             )}
                                             {isPollMode && (
-                                                <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-bold border border-blue-100 animate-in fade-in zoom-in-95">
+                                                <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-bold border border-blue-100 animate-in fade-in zoom-in-95">
                                                     <BarChart2 className="w-3 h-3" />
                                                     Anket Aktif
                                                 </div>
                                             )}
                                             {(selectedEventId || selectedReportId) && (
-                                                <div className="flex items-center gap-1.5 px-2 py-1 bg-amber-50 text-amber-600 rounded-lg text-[10px] font-bold border border-amber-100 animate-in fade-in zoom-in-95">
+                                                <div className="flex items-center gap-1.5 px-2 py-1 bg-amber-50 text-amber-600 rounded-xl text-[10px] font-bold border border-amber-100 animate-in fade-in zoom-in-95">
                                                     <LinkIcon className="w-3 h-3" />
                                                     Alıntı Eklendi
                                                 </div>
@@ -1751,30 +1751,30 @@ export default function SocialFeed() {
                                         </div>
 
                                         <Dialog open={isQuoteDialogOpen} onOpenChange={setIsQuoteDialogOpen}>
-                                            <DialogContent className="rounded-3xl border-none shadow-2xl p-0 overflow-hidden bg-white/95 backdrop-blur-xl max-w-md">
+                                            <DialogContent className="rounded-3xl border-none shadow-2xl p-0 overflow-hidden bg-card/90 dark:bg-card/60 backdrop-blur-md backdrop-blur-xl max-w-md">
                                                 <DialogHeader className="p-6 bg-gradient-to-r from-primary/10 via-transparent to-transparent flex flex-row items-center justify-between space-y-0">
-                                                    <DialogTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
-                                                        <div className={`p-2 rounded-xl ${quoteType === "event" ? 'bg-amber-100 text-amber-600' : 'bg-purple-100 text-purple-600'}`}>
+                                                    <DialogTitle className="text-xl font-bold text-foreground flex items-center gap-3">
+                                                        <div className={`p-2 rounded-[1.25rem] ${quoteType === "event" ? 'bg-amber-100 text-amber-600' : 'bg-purple-100 text-purple-600'}`}>
                                                             {quoteType === "event" ? <Calendar className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
                                                         </div>
                                                         {quoteType === "event" ? "Etkinlik Alıntıla" : "Rapor Alıntıla"}
                                                     </DialogTitle>
                                                 </DialogHeader>
                                                 <div className="p-4 flex flex-col gap-2 max-h-[400px] overflow-y-auto px-6 pb-8">
-                                                    <p className="text-gray-500 text-xs mb-2">Paylaşmak istediğiniz içeriği seçin:</p>
+                                                    <p className="text-muted-foreground text-xs mb-2">Paylaşmak istediğiniz içeriği seçin:</p>
                                                     {quoteType === "event" && recentEvents && recentEvents.length > 0 ? (
                                                         recentEvents.map(event => (
                                                             <button
                                                                 key={event.id}
-                                                                className="flex items-center gap-4 p-4 rounded-2xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100 text-left group"
+                                                                className="flex items-center gap-4 p-4 rounded-[1.5rem] hover:bg-background transition-all border border-transparent hover:border-border text-left group"
                                                                 onClick={() => handleSelectQuote("event", event.id, event.title)}
                                                             >
-                                                                <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-100 shrink-0">
+                                                                <div className="w-10 h-10 rounded-[1.25rem] bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-100 shrink-0">
                                                                     <Calendar className="h-5 w-5" />
                                                                 </div>
                                                                 <div className="flex flex-col min-w-0">
-                                                                    <span className="font-bold text-gray-800 truncate">{event.title}</span>
-                                                                    <span className="text-[11px] text-gray-400">
+                                                                    <span className="font-bold text-foreground truncate">{event.title}</span>
+                                                                    <span className="text-[11px] text-muted-foreground/70">
                                                                         {new Date(event.date).toLocaleDateString("tr-TR", { day: 'numeric', month: 'long', year: 'numeric' })}
                                                                     </span>
                                                                 </div>
@@ -1784,15 +1784,15 @@ export default function SocialFeed() {
                                                         recentReports.map(report => (
                                                             <button
                                                                 key={report.id}
-                                                                className="flex items-center gap-4 p-4 rounded-2xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100 text-left group"
+                                                                className="flex items-center gap-4 p-4 rounded-[1.5rem] hover:bg-background transition-all border border-transparent hover:border-border text-left group"
                                                                 onClick={() => handleSelectQuote("report", report.id, report.title)}
                                                             >
-                                                                <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 group-hover:bg-purple-100 shrink-0">
+                                                                <div className="w-10 h-10 rounded-[1.25rem] bg-purple-50 flex items-center justify-center text-purple-600 group-hover:bg-purple-100 shrink-0">
                                                                     <FileText className="h-5 w-5" />
                                                                 </div>
                                                                 <div className="flex flex-col min-w-0">
-                                                                    <span className="font-bold text-gray-800 truncate">{report.title}</span>
-                                                                    <span className="text-[11px] text-gray-400">
+                                                                    <span className="font-bold text-foreground truncate">{report.title}</span>
+                                                                    <span className="text-[11px] text-muted-foreground/70">
                                                                         {new Date(report.week_end).toLocaleDateString("tr-TR", { day: 'numeric', month: 'long', year: 'numeric' })}
                                                                     </span>
                                                                 </div>
@@ -1800,11 +1800,11 @@ export default function SocialFeed() {
                                                         ))
                                                     ) : (
                                                         <div className="flex flex-col items-center justify-center py-12 text-center">
-                                                            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                                                            <div className="w-16 h-16 bg-background rounded-full flex items-center justify-center mb-4">
                                                                 <Search className="w-6 h-6 text-gray-300" />
                                                             </div>
-                                                            <h3 className="font-bold text-gray-900 mb-1">İçerik Bulunamadı</h3>
-                                                            <p className="text-gray-500 text-xs px-8 leading-relaxed">
+                                                            <h3 className="font-bold text-foreground mb-1">İçerik Bulunamadı</h3>
+                                                            <p className="text-muted-foreground text-xs px-8 leading-relaxed">
                                                                 {quoteType === "event" ? "Henüz katıldığınız veya oluşturduğunuz bir etkinlik bulunmuyor." : "Henüz oluşturulmuş bir raporunuz bulunmuyor."}
                                                             </p>
                                                         </div>
@@ -1843,12 +1843,12 @@ export default function SocialFeed() {
                             </div>
                         </div>
                     ) : posts?.length === 0 ? (
-                        <div className="text-center py-16 px-8 bg-gradient-to-br from-white to-gray-50/80 rounded-[20px] border border-dashed border-gray-200 shadow-sm">
-                            <div className="w-14 h-14 mx-auto mb-4 bg-primary/5 rounded-2xl flex items-center justify-center">
+                        <div className="text-center py-16 px-8 bg-card/90 dark:bg-card/60 backdrop-blur-md bg-gradient-to-br from-card/50 dark:from-card/60 to-muted/80 dark:to-background/40 rounded-[20px] border border-dashed border-border shadow-sm">
+                            <div className="w-14 h-14 mx-auto mb-4 bg-primary/5 rounded-[1.5rem] flex items-center justify-center">
                                 <MessageCircle className="w-7 h-7 text-primary/40" />
                             </div>
-                            <p className="text-gray-500 text-sm font-medium">Henüz hiç paylaşım yapılmamış</p>
-                            <p className="text-gray-400 text-xs mt-1">İlk paylaşan siz olun!</p>
+                            <p className="text-muted-foreground text-sm font-medium">Henüz hiç paylaşım yapılmamış</p>
+                            <p className="text-muted-foreground/70 text-xs mt-1">İlk paylaşan siz olun!</p>
                         </div>
                     ) : (
                         posts?.map((post: any) => {
@@ -1881,8 +1881,8 @@ export default function SocialFeed() {
                             return (
                                 <div key={post.id} id={`post-${post.id}`} className="group/card relative overflow-hidden rounded-[20px] transition-all duration-500 hover:translate-y-[-2px]">
                                     {/* Layered background */}
-                                    <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-gray-50/80 rounded-[20px]" />
-                                    <div className="absolute inset-0 border border-gray-200/40 rounded-[20px] group-hover/card:border-primary/20 transition-colors duration-500" />
+                                    <div className="absolute inset-0 bg-card/90 dark:bg-card/60 backdrop-blur-md bg-gradient-to-br from-card/50 dark:from-card/60 via-card dark:via-card/60 to-muted/80 dark:to-background/40 rounded-[20px]" />
+                                    <div className="absolute inset-0 border border-border/40 rounded-[20px] group-hover/card:border-primary/20 transition-colors duration-500" />
                                     <div className="absolute inset-0 shadow-[0_4px_24px_-6px_rgba(0,0,0,0.06)] group-hover/card:shadow-[0_12px_40px_-8px_rgba(0,0,0,0.12)] transition-shadow duration-500 rounded-[20px]" />
 
                                     {/* Top accent gradient line */}
@@ -1893,9 +1893,9 @@ export default function SocialFeed() {
                                         <div className="flex items-center gap-3.5 px-5 pt-5 pb-2">
                                             <div className="relative shrink-0" onClick={() => navigate(`/sosyal/profil/${post.user_id}`)}>
                                                 <div className="absolute -inset-[3px] bg-gradient-to-br from-primary/40 via-purple-400/30 to-pink-400/20 rounded-full opacity-60 group-hover/card:opacity-100 transition-opacity duration-300" />
-                                                <Avatar className="h-10 w-10 cursor-pointer border-2 border-white relative">
+                                                <Avatar className="h-10 w-10 cursor-pointer border-2 border-background relative">
                                                     <AvatarImage src={authorPhoto} alt={authorName} />
-                                                    <AvatarFallback className="bg-gradient-to-br from-primary via-purple-500 to-pink-500 text-white text-xs font-bold">
+                                                    <AvatarFallback className="bg-gradient-to-br from-primary via-purple-500 to-pink-500 text-foreground text-xs font-bold">
                                                         {getInitials(authorName)}
                                                     </AvatarFallback>
                                                 </Avatar>
@@ -1903,34 +1903,34 @@ export default function SocialFeed() {
                                             <div className="flex flex-col min-w-0 flex-1">
                                                 <div className="flex items-center gap-2">
                                                     <span
-                                                        className="font-bold text-sm text-gray-900 cursor-pointer hover:text-primary transition-colors truncate"
+                                                        className="font-bold text-sm text-foreground cursor-pointer hover:text-primary transition-colors truncate"
                                                         onClick={() => navigate(`/sosyal/profil/${post.user_id}`)}
                                                     >
                                                         {authorName}
                                                     </span>
                                                 </div>
-                                                <span className="text-[11px] text-gray-400 font-medium tracking-wide">{timeAgo(post.created_at)}</span>
+                                                <span className="text-[11px] text-muted-foreground/70 font-medium tracking-wide">{timeAgo(post.created_at)}</span>
                                             </div>
 
                                             {/* 3-dot menu */}
                                             {canManage && (
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
-                                                        <button className="p-2 rounded-xl hover:bg-gray-100/80 transition-all duration-200 text-gray-300 hover:text-gray-600 opacity-0 group-hover/card:opacity-100">
+                                                        <button className="p-2 rounded-[1.25rem] hover:bg-muted/80 transition-all duration-200 text-gray-300 hover:text-muted-foreground opacity-0 group-hover/card:opacity-100">
                                                             <MoreHorizontal className="w-4 h-4" />
                                                         </button>
                                                     </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end" className="w-44 rounded-2xl border-gray-100 shadow-xl p-1">
+                                                    <DropdownMenuContent align="end" className="w-44 rounded-[1.5rem] border-border shadow-xl p-1">
                                                         <DropdownMenuItem
                                                             onClick={() => handleStartEdit(post.id, post)}
-                                                            className="gap-2.5 text-sm cursor-pointer rounded-xl py-2.5"
+                                                            className="gap-2.5 text-sm cursor-pointer rounded-[1.25rem] py-2.5"
                                                         >
                                                             <Pencil className="w-3.5 h-3.5" />
                                                             Düzenle
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem
                                                             onClick={() => handleDeletePost(post.id)}
-                                                            className="gap-2.5 text-sm text-red-500 focus:text-red-500 cursor-pointer rounded-xl py-2.5"
+                                                            className="gap-2.5 text-sm text-red-500 focus:text-red-500 cursor-pointer rounded-[1.25rem] py-2.5"
                                                         >
                                                             <Trash2 className="w-3.5 h-3.5" />
                                                             Sil
@@ -1943,7 +1943,7 @@ export default function SocialFeed() {
                                         {/* Linked Post Feature - Mini Version Under Profile */}
                                         {linkedPost && (
                                             <div
-                                                className="mx-5 mb-2 mt-1 flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10 hover:to-primary/5 border border-primary/10 transition-colors cursor-pointer group/quoted shadow-sm relative z-20"
+                                                className="mx-5 mb-2 mt-1 flex items-center gap-2.5 px-3.5 py-2.5 rounded-[1.25rem] bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10 hover:to-primary/5 border border-primary/10 transition-colors cursor-pointer group/quoted shadow-sm relative z-20"
                                                 onClick={() => {
                                                     const el = document.getElementById(`post-${linkedPost.id}`);
                                                     if (el) {
@@ -1955,14 +1955,14 @@ export default function SocialFeed() {
                                                     }
                                                 }}
                                             >
-                                                <div className="w-7 h-7 shrink-0 bg-white rounded-full flex items-center justify-center shadow-sm border border-primary/10 group-hover/quoted:bg-primary/5 transition-colors">
+                                                <div className="w-7 h-7 shrink-0 bg-card/90 dark:bg-card/60 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm border border-primary/10 group-hover/quoted:bg-primary/5 transition-colors">
                                                     <MessageCircle className="w-3.5 h-3.5 text-primary/70" />
                                                 </div>
                                                 <div className="flex flex-col min-w-0 flex-1">
                                                     <span className="text-[10px] font-bold text-primary uppercase tracking-wider leading-none flex items-center gap-1.5 opacity-80 mb-1">
                                                         {linkedPostAuthor?.social_name || "Gizli Kullanıcı"} alıntılandı
                                                     </span>
-                                                    <p className="text-xs text-gray-500 truncate group-hover/quoted:text-gray-700 transition-colors font-medium">
+                                                    <p className="text-xs text-muted-foreground truncate group-hover/quoted:text-foreground/90 transition-colors font-medium">
                                                         {linkedPost.content ? renderContent(linkedPost.content, navigate) : "Bir görsel içeren gönderiyi alıntıladı."}
                                                     </p>
                                                 </div>
@@ -1973,7 +1973,7 @@ export default function SocialFeed() {
                                         {/* Text Content */}
                                         {post.content ? (
                                             <div className="px-5 py-2">
-                                                <p className={`text-[15px] text-gray-700 leading-[1.7] whitespace-pre-wrap break-words font-[400] tracking-[-0.01em] ${!expandedPosts.has(post.id) ? 'line-clamp-4' : ''}`}>
+                                                <p className={`text-[15px] text-foreground/90 leading-[1.7] whitespace-pre-wrap break-words font-[400] tracking-[-0.01em] ${!expandedPosts.has(post.id) ? 'line-clamp-4' : ''}`}>
                                                     {renderContent(post.content, navigate)}
                                                 </p>
                                                 {(post.content.length > 200 || post.content.split('\n').length > 4) && (
@@ -2000,7 +2000,7 @@ export default function SocialFeed() {
 
                                         {/* Image - Full width with elegant display */}
                                         {post.image_url && expandedImages.has(post.id) && (
-                                            <div className="relative mx-5 my-2 rounded-2xl overflow-hidden bg-gray-100">
+                                            <div className="relative mx-5 my-2 rounded-[1.5rem] overflow-hidden bg-muted">
                                                 <img
                                                     src={post.image_url}
                                                     alt="Gönderi görseli"
@@ -2011,7 +2011,7 @@ export default function SocialFeed() {
                                                 <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/20 to-transparent" />
                                                 <button
                                                     onClick={() => setExpandedImages(prev => { const next = new Set(prev); next.delete(post.id); return next; })}
-                                                    className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/40 text-white text-[11px] font-medium hover:bg-black/60 transition-colors backdrop-blur-sm"
+                                                    className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground/5 text-foreground text-[11px] font-medium hover:bg-black/60 transition-colors backdrop-blur-sm"
                                                 >
                                                     <X className="w-3 h-3" />
                                                     Kapat
@@ -2025,9 +2025,9 @@ export default function SocialFeed() {
                                                 {post.image_url && !expandedImages.has(post.id) && (
                                                     <button
                                                         onClick={() => setExpandedImages(prev => { const next = new Set(prev); next.add(post.id); return next; })}
-                                                        className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200/40 text-xs font-semibold text-sky-600 hover:from-sky-100 hover:to-blue-100 hover:border-sky-300/60 hover:shadow-md transition-all duration-300 group/btn"
+                                                        className="flex items-center gap-2 px-4 py-2.5 rounded-[1.5rem] bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200/40 text-xs font-semibold text-sky-600 hover:from-sky-100 hover:to-blue-100 hover:border-sky-300/60 hover:shadow-md transition-all duration-300 group/btn"
                                                     >
-                                                        <div className="w-6 h-6 bg-sky-100 rounded-lg flex items-center justify-center group-hover/btn:bg-sky-200 transition-colors">
+                                                        <div className="w-6 h-6 bg-sky-100 rounded-xl flex items-center justify-center group-hover/btn:bg-sky-200 transition-colors">
                                                             <ImageIcon className="w-3.5 h-3.5" />
                                                         </div>
                                                         Görseli Göster
@@ -2036,9 +2036,9 @@ export default function SocialFeed() {
                                                 {post.poll_data && !expandedPolls.has(post.id) && (
                                                     <button
                                                         onClick={() => setExpandedPolls(prev => { const next = new Set(prev); next.add(post.id); return next; })}
-                                                        className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200/40 text-xs font-semibold text-violet-600 hover:from-violet-100 hover:to-purple-100 hover:border-violet-300/60 hover:shadow-md transition-all duration-300 group/btn"
+                                                        className="flex items-center gap-2 px-4 py-2.5 rounded-[1.5rem] bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200/40 text-xs font-semibold text-violet-600 hover:from-violet-100 hover:to-purple-100 hover:border-violet-300/60 hover:shadow-md transition-all duration-300 group/btn"
                                                     >
-                                                        <div className="w-6 h-6 bg-violet-100 rounded-lg flex items-center justify-center group-hover/btn:bg-violet-200 transition-colors">
+                                                        <div className="w-6 h-6 bg-violet-100 rounded-xl flex items-center justify-center group-hover/btn:bg-violet-200 transition-colors">
                                                             <BarChart2 className="w-3.5 h-3.5" />
                                                         </div>
                                                         Anketi Göster
@@ -2051,21 +2051,21 @@ export default function SocialFeed() {
                                         {(linkedEvent || linkedReport) && (
                                             <div className="px-5 py-2">
                                                 <div
-                                                    className="group/link flex items-center gap-3 p-3.5 rounded-2xl border border-gray-100 bg-gradient-to-r from-gray-50/60 to-white hover:border-primary/25 hover:shadow-lg hover:shadow-primary/5 cursor-pointer transition-all duration-300"
+                                                    className="group/link flex items-center gap-3 p-3.5 rounded-[1.5rem] border border-border bg-gradient-to-r from-gray-50/60 to-white hover:border-primary/25 hover:shadow-lg hover:shadow-primary/5 cursor-pointer transition-all duration-300"
                                                     onClick={() => navigate(linkedEvent ? `/etkinlik/${linkedEvent.id}` : `/raporlar`)}
                                                 >
-                                                    <div className="h-10 w-10 shrink-0 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/10 rounded-xl flex items-center justify-center text-primary group-hover/link:from-primary group-hover/link:to-primary/80 group-hover/link:text-white group-hover/link:border-transparent transition-all duration-300 shadow-sm">
+                                                    <div className="h-10 w-10 shrink-0 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/10 rounded-[1.25rem] flex items-center justify-center text-primary group-hover/link:from-primary group-hover/link:to-primary/80 group-hover/link:text-foreground group-hover/link:border-transparent transition-all duration-300 shadow-sm">
                                                         {linkedEvent ? <Calendar className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
                                                     </div>
                                                     <div className="flex flex-col overflow-hidden min-w-0 flex-1">
                                                         <span className="text-[9px] font-extrabold uppercase tracking-[0.15em] text-primary/50">
                                                             {linkedEvent ? "Etkinlik" : "Rapor"}
                                                         </span>
-                                                        <span className="text-sm font-semibold text-gray-800 truncate group-hover/link:text-primary transition-colors">
+                                                        <span className="text-sm font-semibold text-foreground truncate group-hover/link:text-primary transition-colors">
                                                             {linkedEvent ? linkedEvent.title : linkedReport.title}
                                                         </span>
                                                     </div>
-                                                    <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center group-hover/link:bg-primary/10 group-hover/link:border-primary/20 transition-all shrink-0">
+                                                    <div className="w-8 h-8 rounded-xl bg-background border border-border flex items-center justify-center group-hover/link:bg-primary/10 group-hover/link:border-primary/20 transition-all shrink-0">
                                                         <LinkIcon className="w-3.5 h-3.5 text-gray-300 group-hover/link:text-primary transition-colors" />
                                                     </div>
                                                 </div>
@@ -2077,19 +2077,19 @@ export default function SocialFeed() {
                                         {/* Poll Render Area */}
                                         {post.poll_data && expandedPolls.has(post.id) && (
                                             <div className="px-5 py-2">
-                                                <div className="p-4 rounded-2xl border border-violet-100/60 bg-gradient-to-br from-violet-50/40 to-fuchsia-50/20 space-y-3 relative">
+                                                <div className="p-4 rounded-[1.5rem] border border-violet-100/60 bg-gradient-to-br from-violet-50/40 to-fuchsia-50/20 space-y-3 relative">
                                                     <button
                                                         onClick={() => setExpandedPolls(prev => { const next = new Set(prev); next.delete(post.id); return next; })}
                                                         className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 text-[10px] font-semibold hover:bg-red-500/20 hover:text-red-500 transition-colors"
                                                     >
                                                         <X className="w-3 h-3" />
                                                     </button>
-                                                    <div className="flex items-center justify-between text-gray-700 pb-2 border-b border-violet-100/60">
+                                                    <div className="flex items-center justify-between text-foreground/90 pb-2 border-b border-violet-100/60">
                                                         <div className="flex items-center gap-2">
-                                                            <div className="w-7 h-7 bg-violet-100 rounded-lg flex items-center justify-center">
+                                                            <div className="w-7 h-7 bg-violet-100 rounded-xl flex items-center justify-center">
                                                                 <BarChart2 className="w-3.5 h-3.5 text-violet-600" />
                                                             </div>
-                                                            <span className="text-sm font-bold text-gray-700">
+                                                            <span className="text-sm font-bold text-foreground/90">
                                                                 {post.poll_data.title || 'Anket'}
                                                             </span>
                                                             {post.poll_data.allowMultiple && (
@@ -2102,7 +2102,7 @@ export default function SocialFeed() {
                                                             <Button
                                                                 variant="ghost"
                                                                 size="sm"
-                                                                className="h-6 text-[10px] text-red-400 hover:text-red-500 hover:bg-red-50 px-2 rounded-lg"
+                                                                className="h-6 text-[10px] text-red-400 hover:text-red-500 hover:bg-red-50 px-2 rounded-xl"
                                                                 onClick={() => endPollMutation.mutate({ postId: post.id, currentPollData: post.poll_data })}
                                                                 disabled={endPollMutation.isPending}
                                                             >
@@ -2128,11 +2128,11 @@ export default function SocialFeed() {
                                                                 return (
                                                                     <div
                                                                         key={opt.id}
-                                                                        className={`relative overflow-hidden rounded-xl border ${votedThisOption
+                                                                        className={`relative overflow-hidden rounded-[1.25rem] border ${votedThisOption
                                                                             ? 'border-primary/30 bg-primary/[0.06] shadow-[0_2px_12px_-3px_rgba(99,102,241,0.15)]'
                                                                             : isEnded
-                                                                                ? 'border-gray-100 bg-white/60'
-                                                                                : 'border-gray-200/60 bg-white hover:border-primary/25 hover:bg-primary/[0.02] hover:shadow-sm cursor-pointer'
+                                                                                ? 'border-border bg-foreground/'
+                                                                                : 'border-border/60 bg-card/90 dark:bg-card/60 backdrop-blur-md hover:border-primary/25 hover:bg-primary/[0.02] hover:shadow-sm cursor-pointer'
                                                                             } transition-all duration-300 py-3 px-4 flex justify-between items-center group`}
                                                                         onClick={() => {
                                                                             if (!isEnded) handleVote(post.id, opt.id, post.poll_data);
@@ -2140,22 +2140,22 @@ export default function SocialFeed() {
                                                                     >
                                                                         {showResults && (
                                                                             <div
-                                                                                className="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-primary/10 to-primary/5 transition-all duration-1000 ease-out rounded-xl"
+                                                                                className="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-primary/10 to-primary/5 transition-all duration-1000 ease-out rounded-[1.25rem]"
                                                                                 style={{ width: `${percentage}%` }}
                                                                             />
                                                                         )}
                                                                         <div className="relative z-10 flex items-center gap-2">
                                                                             {votedThisOption && <Check className="w-3.5 h-3.5 text-primary" />}
-                                                                            <span className="text-sm text-gray-700">{opt.text}</span>
+                                                                            <span className="text-sm text-foreground/90">{opt.text}</span>
                                                                         </div>
                                                                         <div className="relative z-10 flex items-center gap-2">
                                                                             {showResults ? (
                                                                                 <>
-                                                                                    <span className="text-[11px] text-gray-400 tabular-nums">{voteCount} oy</span>
+                                                                                    <span className="text-[11px] text-muted-foreground/70 tabular-nums">{voteCount} oy</span>
                                                                                     <span className="text-xs font-bold text-primary/70 tabular-nums">{percentage}%</span>
                                                                                 </>
                                                                             ) : (
-                                                                                <span className="text-[11px] text-gray-400 group-hover:text-primary transition-colors">Oy Ver</span>
+                                                                                <span className="text-[11px] text-muted-foreground/70 group-hover:text-primary transition-colors">Oy Ver</span>
                                                                             )}
                                                                         </div>
                                                                     </div>
@@ -2163,7 +2163,7 @@ export default function SocialFeed() {
                                                             });
                                                         })()}
                                                     </div>
-                                                    <div className="flex justify-between items-center pt-1.5 text-[11px] text-gray-400">
+                                                    <div className="flex justify-between items-center pt-1.5 text-[11px] text-muted-foreground/70">
                                                         <Dialog>
                                                             <DialogTrigger asChild>
                                                                 <span className="hover:underline cursor-pointer hover:text-primary transition-colors">
@@ -2182,9 +2182,9 @@ export default function SocialFeed() {
                                                                         const optVoterIds: string[] = post.poll_data.votersByOption?.[opt.id] || [];
                                                                         const optVoteCount = opt.votes || 0;
                                                                         return (
-                                                                            <div key={opt.id} className="border border-gray-100 rounded-xl overflow-hidden">
-                                                                                <div className="flex items-center justify-between bg-gray-50 px-3 py-2">
-                                                                                    <span className="text-sm font-semibold text-gray-700">{opt.text}</span>
+                                                                            <div key={opt.id} className="border border-border rounded-[1.25rem] overflow-hidden">
+                                                                                <div className="flex items-center justify-between bg-background px-3 py-2">
+                                                                                    <span className="text-sm font-semibold text-foreground/90">{opt.text}</span>
                                                                                     <span className="text-xs font-medium text-primary tabular-nums">{optVoteCount} oy</span>
                                                                                 </div>
                                                                                 <div className="px-3 py-1">
@@ -2214,7 +2214,7 @@ export default function SocialFeed() {
                                             {user && (
                                                 <button
                                                     onClick={() => handleQuotePost(post)}
-                                                    className="mr-5 mt-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/5 text-primary text-[11px] font-medium border border-primary/10 hover:bg-primary hover:text-white transition-colors"
+                                                    className="mr-5 mt-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/5 text-primary text-[11px] font-medium border border-primary/10 hover:bg-primary hover:text-foreground transition-colors"
                                                 >
                                                     <Reply className="w-3.5 h-3.5" />
                                                     Alıntıla
@@ -2235,7 +2235,7 @@ export default function SocialFeed() {
                                                     else next.add(post.id);
                                                     return next;
                                                 })}
-                                                className="w-full flex items-center justify-center gap-2 py-3 text-xs font-semibold text-gray-400 hover:text-primary transition-all duration-300 group/comments"
+                                                className="w-full flex items-center justify-center gap-2 py-3 text-xs font-semibold text-muted-foreground/70 hover:text-primary transition-all duration-300 group/comments"
                                             >
                                                 <MessageCircle className="w-3.5 h-3.5 group-hover/comments:scale-110 transition-transform" />
                                                 <CommentsCount postId={post.id} />
@@ -2262,13 +2262,13 @@ export default function SocialFeed() {
                                                     {user && (
                                                         <div className="flex flex-col gap-1 pt-1">
                                                             {replyingTo[post.id] && (
-                                                                <div className="flex items-center justify-between bg-primary/5 border border-primary/10 rounded-xl px-3 py-2 ml-9">
+                                                                <div className="flex items-center justify-between bg-primary/5 border border-primary/10 rounded-[1.25rem] px-3 py-2 ml-9">
                                                                     <div className="flex flex-col gap-0.5 overflow-hidden">
                                                                         <span className="text-[10px] font-medium text-primary flex items-center gap-1">
                                                                             <MessageCircle className="w-3 h-3" />
                                                                             {replyingTo[post.id].authorName} yanıtlanıyor
                                                                         </span>
-                                                                        <span className="text-xs text-gray-500 truncate">{replyingTo[post.id].content}</span>
+                                                                        <span className="text-xs text-muted-foreground truncate">{replyingTo[post.id].content}</span>
                                                                     </div>
                                                                     <button
                                                                         onClick={() => {
@@ -2276,7 +2276,7 @@ export default function SocialFeed() {
                                                                             delete newReplyingTo[post.id];
                                                                             setReplyingTo(newReplyingTo);
                                                                         }}
-                                                                        className="p-1 hover:bg-black/5 rounded-full text-gray-400 hover:text-gray-600 ml-2"
+                                                                        className="p-1 hover:bg-black/5 rounded-full text-muted-foreground/70 hover:text-muted-foreground ml-2"
                                                                     >
                                                                         <X className="w-3.5 h-3.5" />
                                                                     </button>
@@ -2289,7 +2289,7 @@ export default function SocialFeed() {
                                                                         {getInitials(currentUserProfile?.social_name)}
                                                                     </AvatarFallback>
                                                                 </Avatar>
-                                                                <div className="flex-1 flex items-center bg-gray-50/80 rounded-2xl border border-gray-100 focus-within:border-primary/30 focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(99,102,241,0.06)] transition-all duration-300">
+                                                                <div className="flex-1 flex items-center bg-background/80 rounded-[1.5rem] border border-border focus-within:border-primary/30 focus-within:bg-card/90 dark:bg-card/60 backdrop-blur-md focus-within:shadow-[0_0_0_3px_rgba(99,102,241,0.06)] transition-all duration-300">
                                                                     <MentionTextarea
                                                                         placeholder={replyingTo[post.id] ? "Yanıt yaz..." : "Yorum yaz..."}
                                                                         value={commentTexts[post.id] || ''}
@@ -2308,7 +2308,7 @@ export default function SocialFeed() {
                                                                                 setReplyingTo(newReplyingTo);
                                                                             }
                                                                         }}
-                                                                        className="flex-1 bg-transparent border-none outline-none text-sm text-gray-700 placeholder:text-gray-400 px-4 py-2 min-h-[40px]"
+                                                                        className="flex-1 bg-transparent border-none outline-none text-sm text-foreground/90 placeholder:text-muted-foreground/70 px-4 py-2 min-h-[40px]"
                                                                     />
                                                                     <button
                                                                         onClick={() => {
@@ -2325,7 +2325,7 @@ export default function SocialFeed() {
                                                                             }
                                                                         }}
                                                                         disabled={!commentTexts[post.id]?.trim() || addCommentMutation.isPending}
-                                                                        className="p-2.5 mr-0.5 rounded-xl text-primary hover:text-white hover:bg-primary disabled:text-gray-300 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all duration-200"
+                                                                        className="p-2.5 mr-0.5 rounded-[1.25rem] text-primary hover:text-foreground hover:bg-primary disabled:text-gray-300 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all duration-200"
                                                                     >
                                                                         <Send className="w-3.5 h-3.5" />
                                                                     </button>
@@ -2340,7 +2340,7 @@ export default function SocialFeed() {
                                                             next.delete(post.id);
                                                             return next;
                                                         })}
-                                                        className="w-full flex items-center justify-center gap-2 py-2 mt-2 text-xs font-semibold text-gray-400 hover:text-primary transition-all duration-300 group/close-comments"
+                                                        className="w-full flex items-center justify-center gap-2 py-2 mt-2 text-xs font-semibold text-muted-foreground/70 hover:text-primary transition-all duration-300 group/close-comments"
                                                     >
                                                         <ChevronUp className="w-3.5 h-3.5 group-hover/close-comments:-translate-y-0.5 transition-transform" />
                                                         Yorumları Kapat
@@ -2358,7 +2358,7 @@ export default function SocialFeed() {
 
             {/* Post Delete Confirmation Dialog */}
             <AlertDialog open={!!deleteConfirmPostId} onOpenChange={(open) => { if (!open) setDeleteConfirmPostId(null); }}>
-                <AlertDialogContent className="rounded-2xl">
+                <AlertDialogContent className="rounded-[1.5rem]">
                     <AlertDialogHeader>
                         <AlertDialogTitle>Gönderiyi Sil</AlertDialogTitle>
                         <AlertDialogDescription>
@@ -2366,9 +2366,9 @@ export default function SocialFeed() {
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel className="rounded-xl">İptal</AlertDialogCancel>
+                        <AlertDialogCancel className="rounded-[1.25rem]">İptal</AlertDialogCancel>
                         <AlertDialogAction
-                            className="bg-red-500 hover:bg-red-600 rounded-xl"
+                            className="bg-red-500 hover:bg-red-600 rounded-[1.25rem]"
                             onClick={confirmDeletePost}
                         >
                             Gönderiyi Sil

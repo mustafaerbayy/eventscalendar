@@ -98,9 +98,9 @@ const ForgotPassword = () => {
         whileHover={{ y: -5 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="relative group rounded-[2.5rem] p-px bg-gradient-to-b from-white/20 to-transparent border border-white/10 backdrop-blur-xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)]">
+        <div className="relative group rounded-[2.5rem] p-px bg-gradient-to-b from-white/20 to-transparent border border-border/ backdrop-blur-xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)]">
           {/* Inner glass layer */}
-          <div className="rounded-[2.45rem] bg-black/40 p-8 md:p-10 backdrop-blur-md border border-white/5 relative">
+          <div className="rounded-[2.45rem] bg-foreground/5 p-8 md:p-10 backdrop-blur-md border border-border/ relative">
 
             <div className="flex flex-col items-center mb-10">
               <Link to="/" className="relative group">
@@ -126,15 +126,15 @@ const ForgotPassword = () => {
                   </div>
                 </div>
                 <div>
-                  <h1 className="font-display text-3xl font-bold text-white mb-3">E-posta Gönderildi</h1>
+                  <h1 className="font-display text-3xl font-bold text-foreground mb-3">E-posta Gönderildi</h1>
                   <p className="text-slate-400 font-medium">
-                    Eğer <strong className="text-white">{email}</strong> adresiyle bir hesap varsa,
+                    Eğer <strong className="text-foreground">{email}</strong> adresiyle bir hesap varsa,
                     şifre sıfırlama bağlantısı gönderildi. Lütfen gelen kutunuzu kontrol edin.
                   </p>
                 </div>
                 <Button
                   variant="outline"
-                  className="w-full h-14 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold transition-all flex gap-3"
+                  className="w-full h-14 rounded-2xl border-border/ bg-foreground/ hover:bg-foreground/ text-foreground font-bold transition-all flex gap-3"
                   onClick={() => navigate("/giris")}
                 >
                   <ArrowLeft className="h-5 w-5" /> Giriş sayfasına dön
@@ -143,7 +143,7 @@ const ForgotPassword = () => {
             ) : (
               <>
                 <div className="mb-8 text-center">
-                  <h1 className="font-display text-3xl font-bold tracking-tight text-white mb-2">
+                  <h1 className="font-display text-3xl font-bold tracking-tight text-foreground mb-2">
                     Şifremi Unuttum
                   </h1>
                   <p className="text-slate-400 font-medium">Şifrenizi sıfırlama bağlantısını almak için e-posta adresinizi girin</p>
@@ -162,7 +162,7 @@ const ForgotPassword = () => {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
-                        className="pl-12 h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20 focus:border-primary/50 text-white placeholder:text-slate-600 transition-all font-medium"
+                        className="pl-12 h-14 bg-foreground/ border-border/ rounded-2xl focus:ring-primary/20 focus:border-primary/50 text-foreground placeholder:text-slate-600 transition-all font-medium"
                       />
                     </div>
                   </div>

@@ -507,7 +507,7 @@ const Admin = () => {
   // Not admin
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-6 sm:p-12 overflow-hidden selection:bg-primary/30">
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6 sm:p-12 overflow-hidden selection:bg-primary/30">
         <Navbar />
         {/* Abstract Background for Access Denied */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -520,7 +520,7 @@ const Admin = () => {
             initial={{ opacity: 0, scale: 0.5, rotate: -20 }}
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
             transition={{ type: "spring", damping: 15, stiffness: 100 }}
-            className="w-32 h-32 rounded-[2.5rem] bg-gradient-to-br from-white/10 to-transparent border border-white/10 flex items-center justify-center mx-auto mb-10 box-glow group"
+            className="w-32 h-32 rounded-[2.5rem] bg-gradient-to-br from-white/10 to-transparent border border-border/ flex items-center justify-center mx-auto mb-10 box-glow group"
           >
             <Shield className="h-14 w-14 text-primary group-hover:scale-110 transition-transform duration-500" />
             <div className="absolute inset-0 bg-primary/20 blur-2xl -z-10 group-hover:opacity-40 transition-opacity" />
@@ -530,7 +530,7 @@ const Admin = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6 }}
-            className="text-4xl sm:text-6xl font-display font-black text-white mb-6 leading-tight"
+            className="text-4xl sm:text-6xl font-display font-black text-foreground mb-6 leading-tight"
           >
             Erişim <span className="text-gradient">Kısıtlandı</span>
           </motion.h2>
@@ -539,7 +539,7 @@ const Admin = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="text-white/40 font-bold uppercase tracking-widest text-[10px] sm:text-xs mb-12 max-w-sm mx-auto leading-relaxed"
+            className="text-foreground/ font-bold uppercase tracking-widest text-[10px] sm:text-xs mb-12 max-w-sm mx-auto leading-relaxed"
           >
             Bu alan yalnızca sistem yetkilileri için tasarlanmıştır. Devam etmek için gerekli izne sahip değilsiniz.
           </motion.p>
@@ -551,7 +551,7 @@ const Admin = () => {
           >
             <Button
               onClick={() => navigate("/")}
-              className="h-16 px-10 rounded-2xl bg-white text-black font-black text-xs uppercase tracking-widest hover:bg-white/90 hover:-translate-y-1 active:translate-y-0 transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)]"
+              className="h-16 px-10 rounded-2xl bg-white text-black font-black text-xs uppercase tracking-widest hover:bg-foreground/ hover:-translate-y-1 active:translate-y-0 transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)]"
             >
               Ana Sayfaya Dön
             </Button>
@@ -562,7 +562,7 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-primary/30 selection:text-white overflow-x-hidden font-body">
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 selection:text-foreground overflow-x-hidden font-body">
       <Navbar />
 
       {/* Dynamic Background Effects */}
@@ -592,10 +592,10 @@ const Admin = () => {
 
           <div className="flex items-center gap-4">
             <div className="hidden lg:flex flex-col items-end">
-              <span className="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none mb-1">Sistem Durumu</span>
+              <span className="text-[10px] font-black text-foreground/ uppercase tracking-widest leading-none mb-1">Sistem Durumu</span>
               <div className="flex items-center gap-2">
                 <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
-                <span className="text-sm font-bold text-white/90">Aktif ve Güvenli</span>
+                <span className="text-sm font-bold text-foreground/">Aktif ve Güvenli</span>
               </div>
             </div>
           </div>
@@ -611,7 +611,7 @@ const Admin = () => {
               transition={{ delay: i * 0.1, duration: 0.5 }}
               onClick={s.clickable ? s.onClick : undefined}
               className={cn(
-                "group relative p-8 rounded-[2.5rem] border border-white/5 bg-white/[0.03] backdrop-blur-xl transition-all duration-500 overflow-hidden",
+                "group relative p-8 rounded-[2.5rem] border border-border/ bg-white/[0.03] backdrop-blur-xl transition-all duration-500 overflow-hidden",
                 s.clickable ? "cursor-pointer hover:bg-white/[0.06] hover:border-primary/20 hover:scale-[1.02]" : ""
               )}
             >
@@ -620,18 +620,18 @@ const Admin = () => {
               </div>
               <div className="flex items-start justify-between mb-8">
                 <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center border transition-all duration-500",
-                  s.color.includes("primary") ? "bg-primary/10 border-primary/20 text-primary group-hover:bg-primary group-hover:text-black" : "bg-accent/10 border-accent/20 text-accent group-hover:bg-accent group-hover:text-white")}>
+                  s.color.includes("primary") ? "bg-primary/10 border-primary/20 text-primary group-hover:bg-primary group-hover:text-black" : "bg-accent/10 border-accent/20 text-accent group-hover:bg-accent group-hover:text-foreground")}>
                   <s.icon className="w-6 h-6" />
                 </div>
                 {s.clickable && (
-                  <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="w-8 h-8 rounded-full bg-foreground/ flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <ChevronRight className="w-4 h-4" />
                   </div>
                 )}
               </div>
               <div>
                 <p className="text-4xl font-display font-black mb-1">{s.value}</p>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">{s.label}</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/">{s.label}</p>
               </div>
             </motion.div>
           ))}
@@ -641,7 +641,7 @@ const Admin = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
-            className="lg:col-span-2 p-8 rounded-[2.5rem] border border-white/5 bg-white/[0.02] backdrop-blur-xl"
+            className="lg:col-span-2 p-8 rounded-[2.5rem] border border-border/ bg-white/[0.02] backdrop-blur-xl"
           >
             <div className="flex items-center justify-between mb-8">
               <div className="flex flex-col">
@@ -661,10 +661,10 @@ const Admin = () => {
                       className="w-full bg-gradient-to-t from-primary/40 to-primary rounded-t-xl group-hover/bar:from-primary group-hover/bar:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all"
                     />
                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap">
-                      <span className="text-[10px] font-black bg-white/10 px-2 py-1 rounded-md">{r.val} Kişi</span>
+                      <span className="text-[10px] font-black bg-foreground/ px-2 py-1 rounded-md">{r.val} Kişi</span>
                     </div>
                   </div>
-                  <span className="text-[8px] font-black text-white/20 uppercase tracking-widest">{r.label.replace('önce', '')}</span>
+                  <span className="text-[8px] font-black text-foreground/ uppercase tracking-widest">{r.label.replace('önce', '')}</span>
                 </div>
               ))}
             </div>
@@ -674,7 +674,7 @@ const Admin = () => {
         {/* CRUD Tabs */}
         <motion.div ref={tabsRef} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.4 }}>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-8">
-            <TabsList className="w-full flex justify-start gap-2 bg-transparent border-b border-white/5 p-0 h-auto mb-12 overflow-x-auto no-scrollbar">
+            <TabsList className="w-full flex justify-start gap-2 bg-transparent border-b border-border/ p-0 h-auto mb-12 overflow-x-auto no-scrollbar">
               <TabsTrigger
                 value="events"
                 className="px-6 py-4 bg-transparent data-[state=active]:bg-transparent data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary rounded-none transition-all gap-2 text-[10px] font-black uppercase tracking-widest"
@@ -721,7 +721,7 @@ const Admin = () => {
                     </div>
                     <div>
                       <h3 className="text-xl font-display font-black">Etkinlik Yönetimi</h3>
-                      <p className="text-xs text-white/40 font-bold uppercase tracking-widest">{events.filter(e => e.date >= new Date().toISOString().split("T")[0]).length} Yaklaşan Kayıt</p>
+                      <p className="text-xs text-foreground/ font-bold uppercase tracking-widest">{events.filter(e => e.date >= new Date().toISOString().split("T")[0]).length} Yaklaşan Kayıt</p>
                     </div>
                   </div>
                   <motion.button
@@ -735,31 +735,31 @@ const Admin = () => {
                   </motion.button>
                 </div>
 
-                <div className="rounded-[2.5rem] border border-white/5 bg-white/[0.02] overflow-hidden backdrop-blur-xl">
+                <div className="rounded-[2.5rem] border border-border/ bg-white/[0.02] overflow-hidden backdrop-blur-xl">
                   <Table>
                     <TableHeader>
-                      <TableRow className="border-white/5 hover:bg-transparent">
-                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-white/40 py-6 pl-8">Etkinlik</TableHead>
-                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-white/40 py-6">Tarih & Saat</TableHead>
-                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-white/40 py-6">Konum</TableHead>
-                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-white/40 py-6">Kategori</TableHead>
-                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-white/40 py-6 text-right pr-8">İşlemler</TableHead>
+                      <TableRow className="border-border/ hover:bg-transparent">
+                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-foreground/ py-6 pl-8">Etkinlik</TableHead>
+                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-foreground/ py-6">Tarih & Saat</TableHead>
+                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-foreground/ py-6">Konum</TableHead>
+                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-foreground/ py-6">Kategori</TableHead>
+                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-foreground/ py-6 text-right pr-8">İşlemler</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {events.filter(e => e.date >= new Date().toISOString().split("T")[0]).map((e) => (
-                        <TableRow key={e.id} className="border-white/5 group hover:bg-white/[0.03] transition-colors">
-                          <TableCell className="py-6 pl-8 text-sm font-bold text-white group-hover:text-primary transition-colors">{e.title}</TableCell>
+                        <TableRow key={e.id} className="border-border/ group hover:bg-white/[0.03] transition-colors">
+                          <TableCell className="py-6 pl-8 text-sm font-bold text-foreground group-hover:text-primary transition-colors">{e.title}</TableCell>
                           <TableCell className="py-6">
                             <div className="flex flex-col">
-                              <span className="text-sm font-bold text-white/80">{new Date(e.date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long' })}</span>
-                              <span className="text-[10px] font-black text-white/30">{e.time}</span>
+                              <span className="text-sm font-bold text-foreground/">{new Date(e.date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long' })}</span>
+                              <span className="text-[10px] font-black text-foreground/">{e.time}</span>
                             </div>
                           </TableCell>
                           <TableCell className="py-6">
                             <div className="flex items-center gap-2">
                               {e.cities?.name && (
-                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] font-black tracking-widest text-white/60">
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-foreground/ border border-border/ text-[10px] font-black tracking-widest text-foreground/">
                                   <MapPin className="w-3 h-3 text-primary" /> {e.cities.name.toUpperCase()}
                                 </span>
                               )}
@@ -774,10 +774,10 @@ const Admin = () => {
                           </TableCell>
                           <TableCell className="py-6 text-right pr-8">
                             <div className="flex justify-end gap-2">
-                              <button onClick={() => openDialog("event", e)} className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-primary hover:bg-primary/10 transition-all">
+                              <button onClick={() => openDialog("event", e)} className="w-9 h-9 rounded-xl bg-foreground/ border border-border/ flex items-center justify-center text-foreground/ hover:text-primary hover:bg-primary/10 transition-all">
                                 <Pencil className="w-4 h-4" />
                               </button>
-                              <button onClick={() => handleDelete("events", e.id)} className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-destructive hover:bg-destructive/10 transition-all">
+                              <button onClick={() => handleDelete("events", e.id)} className="w-9 h-9 rounded-xl bg-foreground/ border border-border/ flex items-center justify-center text-foreground/ hover:text-destructive hover:bg-destructive/10 transition-all">
                                 <Trash2 className="w-4 h-4" />
                               </button>
                             </div>
@@ -792,24 +792,24 @@ const Admin = () => {
                 {events.filter(e => e.date < new Date().toISOString().split("T")[0]).length > 0 && (
                   <div className="mt-12 space-y-6">
                     <div className="flex items-center gap-3 px-2">
-                      <Clock className="w-4 h-4 text-white/30" />
-                      <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em]">GEÇMİŞ ETKİNLİKLER ({events.filter(e => e.date < new Date().toISOString().split("T")[0]).length})</h4>
+                      <Clock className="w-4 h-4 text-foreground/" />
+                      <h4 className="text-[10px] font-black text-foreground/ uppercase tracking-[0.4em]">GEÇMİŞ ETKİNLİKLER ({events.filter(e => e.date < new Date().toISOString().split("T")[0]).length})</h4>
                     </div>
-                    <div className="rounded-[2.5rem] border border-white/5 bg-white/[0.01] overflow-hidden opacity-60">
+                    <div className="rounded-[2.5rem] border border-border/ bg-white/[0.01] overflow-hidden opacity-60">
                       <Table>
                         <TableBody>
                           {events.filter(e => e.date < new Date().toISOString().split("T")[0]).map((e) => (
-                            <TableRow key={e.id} className="border-white/5 hover:bg-white/[0.02] transition-colors">
-                              <TableCell className="py-4 pl-8 text-sm font-bold text-white/60">{e.title}</TableCell>
-                              <TableCell className="py-4 text-[10px] font-black text-white/30 uppercase">
+                            <TableRow key={e.id} className="border-border/ hover:bg-white/[0.02] transition-colors">
+                              <TableCell className="py-4 pl-8 text-sm font-bold text-foreground/">{e.title}</TableCell>
+                              <TableCell className="py-4 text-[10px] font-black text-foreground/ uppercase">
                                 {new Date(e.date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })} • {e.time}
                               </TableCell>
                               <TableCell className="py-4 text-right pr-8">
                                 <div className="flex justify-end gap-2">
-                                  <button onClick={() => openDialog("event", e)} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/30 hover:text-white transition-all">
+                                  <button onClick={() => openDialog("event", e)} className="w-8 h-8 rounded-lg bg-foreground/ flex items-center justify-center text-foreground/ hover:text-foreground transition-all">
                                     <Pencil className="w-3.5 h-3.5" />
                                   </button>
-                                  <button onClick={() => handleDelete("events", e.id)} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/30 hover:text-destructive transition-all">
+                                  <button onClick={() => handleDelete("events", e.id)} className="w-8 h-8 rounded-lg bg-foreground/ flex items-center justify-center text-foreground/ hover:text-destructive transition-all">
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </button>
                                 </div>
@@ -844,15 +844,15 @@ const Admin = () => {
                       key={c.id}
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="group p-6 rounded-[2rem] bg-white/[0.03] border border-white/5 hover:border-primary/30 transition-all duration-300"
+                      className="group p-6 rounded-[2rem] bg-white/[0.03] border border-border/ hover:border-primary/30 transition-all duration-300"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-base font-bold text-white group-hover:text-primary transition-colors">{c.name}</span>
+                        <span className="text-base font-bold text-foreground group-hover:text-primary transition-colors">{c.name}</span>
                         <div className="flex gap-2">
-                          <button onClick={() => openDialog("city", c)} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/20 hover:text-primary transition-all">
+                          <button onClick={() => openDialog("city", c)} className="w-8 h-8 rounded-lg bg-foreground/ flex items-center justify-center text-foreground/ hover:text-primary transition-all">
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
-                          <button onClick={() => handleDelete("cities", c.id)} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/20 hover:text-destructive transition-all">
+                          <button onClick={() => handleDelete("cities", c.id)} className="w-8 h-8 rounded-lg bg-foreground/ flex items-center justify-center text-foreground/ hover:text-destructive transition-all">
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -883,15 +883,15 @@ const Admin = () => {
                       key={c.id}
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="group p-6 rounded-[2rem] bg-white/[0.03] border border-white/5 hover:border-primary/30 transition-all duration-300"
+                      className="group p-6 rounded-[2rem] bg-white/[0.03] border border-border/ hover:border-primary/30 transition-all duration-300"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-base font-bold text-white group-hover:text-primary transition-colors">{c.name}</span>
+                        <span className="text-base font-bold text-foreground group-hover:text-primary transition-colors">{c.name}</span>
                         <div className="flex gap-2">
-                          <button onClick={() => openDialog("category", c)} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/20 hover:text-primary transition-all">
+                          <button onClick={() => openDialog("category", c)} className="w-8 h-8 rounded-lg bg-foreground/ flex items-center justify-center text-foreground/ hover:text-primary transition-all">
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
-                          <button onClick={() => handleDelete("categories", c.id)} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/20 hover:text-destructive transition-all">
+                          <button onClick={() => handleDelete("categories", c.id)} className="w-8 h-8 rounded-lg bg-foreground/ flex items-center justify-center text-foreground/ hover:text-destructive transition-all">
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -919,40 +919,40 @@ const Admin = () => {
                       </div>
                     </div>
 
-                    <div className="p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/5 space-y-8">
+                    <div className="p-8 rounded-[2.5rem] bg-white/[0.03] border border-border/ space-y-8">
                       <div className="space-y-3">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Konu</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">Konu</Label>
                         <Input
                           placeholder="Duyuru başlığı..."
                           value={emailSubject}
                           onChange={(e) => setEmailSubject(e.target.value)}
-                          className="rounded-2xl h-14 bg-white/5 border-white/10 focus:border-accent/40 px-6 font-bold text-white placeholder:text-white/40"
+                          className="rounded-2xl h-14 bg-foreground/ border-border/ focus:border-accent/40 px-6 font-bold text-foreground placeholder:text-foreground/"
                         />
                       </div>
                       <div className="space-y-3">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">İçerik</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">İçerik</Label>
                         <Textarea
                           placeholder="Mesajınızı buraya yazın..."
                           value={emailBody}
                           onChange={(e) => setEmailBody(e.target.value)}
-                          className="rounded-2xl min-h-[180px] bg-white/5 border-white/10 focus:border-accent/40 resize-none px-6 py-5 font-medium leading-relaxed text-white placeholder:text-white/40"
+                          className="rounded-2xl min-h-[180px] bg-foreground/ border-border/ focus:border-accent/40 resize-none px-6 py-5 font-medium leading-relaxed text-foreground placeholder:text-foreground/"
                         />
                       </div>
 
                       <div className="space-y-6">
                         <div className="flex items-center justify-between px-1">
-                          <Label className="text-[10px] font-black uppercase tracking-widest text-white/30">Alıcılar ({selectedUsers.length}/{profiles.length})</Label>
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/">Alıcılar ({selectedUsers.length}/{profiles.length})</Label>
                           <button onClick={toggleAllUsers} className="text-[10px] font-black text-accent uppercase tracking-widest hover:underline decoration-2 underline-offset-4">
                             {selectedUsers.length === profiles.length ? "Tümünü Kaldır" : "Tümünü Seç"}
                           </button>
                         </div>
                         <div className="relative group">
-                          <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-accent transition-colors" />
+                          <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/ group-focus-within:text-accent transition-colors" />
                           <Input
                             placeholder="Kullanıcı ara..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="rounded-2xl h-14 pl-14 bg-white/5 border-white/10 font-bold text-white placeholder:text-white/40"
+                            className="rounded-2xl h-14 pl-14 bg-foreground/ border-border/ font-bold text-foreground placeholder:text-foreground/"
                           />
                         </div>
                         <div className="max-h-[300px] overflow-y-auto pr-2 space-y-2 custom-scrollbar">
@@ -966,21 +966,21 @@ const Admin = () => {
                                   "flex items-center gap-4 p-5 rounded-2xl border transition-all cursor-pointer",
                                   selectedUsers.includes(u.id)
                                     ? "bg-accent/10 border-accent/20"
-                                    : "bg-white/5 border-transparent hover:border-white/10 hover:bg-white/[0.06]"
+                                    : "bg-foreground/ border-transparent hover:border-border/ hover:bg-white/[0.06]"
                                 )}
                               >
                                 <Checkbox
                                   checked={selectedUsers.includes(u.id)}
                                   onCheckedChange={() => toggleUser(u.id)}
-                                  className="w-5 h-5 border-white/20 data-[state=checked]:bg-accent data-[state=checked]:border-accent"
+                                  className="w-5 h-5 border-border/ data-[state=checked]:bg-accent data-[state=checked]:border-accent"
                                 />
                                 <div className="flex items-center gap-4">
-                                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center text-xs font-black border border-white/10">
+                                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center text-xs font-black border border-border/">
                                     {u.first_name?.[0] || "?"}
                                   </div>
                                   <div className="flex flex-col">
                                     <span className="text-sm font-bold">{u.first_name} {u.last_name}</span>
-                                    <span className="text-[10px] text-white/30 font-bold uppercase tracking-widest">Üye</span>
+                                    <span className="text-[10px] text-foreground/ font-bold uppercase tracking-widest">Üye</span>
                                   </div>
                                 </div>
                               </label>
@@ -993,7 +993,7 @@ const Admin = () => {
                         whileTap={{ scale: 0.98 }}
                         onClick={handleSendAnnouncement}
                         disabled={sending}
-                        className="w-full h-16 rounded-2xl bg-accent text-white font-black text-xs uppercase tracking-widest hover:bg-accent/80 shadow-[0_15px_30px_rgba(245,158,11,0.2)] disabled:opacity-50 transition-all flex items-center justify-center gap-3"
+                        className="w-full h-16 rounded-2xl bg-accent text-foreground font-black text-xs uppercase tracking-widest hover:bg-accent/80 shadow-[0_15px_30px_rgba(245,158,11,0.2)] disabled:opacity-50 transition-all flex items-center justify-center gap-3"
                       >
                         <Send className="w-4 h-4 stroke-[3px]" />
                         {sending ? "GÖNDERİLİYOR..." : `DUYURUYU GÖNDER (${selectedUsers.length} KİŞİ)`}
@@ -1004,48 +1004,48 @@ const Admin = () => {
                   {/* Announcement History */}
                   <div className="space-y-8">
                     <div className="flex items-center gap-4 px-2">
-                      <div className="w-12 h-12 rounded-[1.25rem] bg-white/5 flex items-center justify-center border border-white/10">
-                        <Archive className="w-6 h-6 text-white/40" />
+                      <div className="w-12 h-12 rounded-[1.25rem] bg-foreground/ flex items-center justify-center border border-border/">
+                        <Archive className="w-6 h-6 text-foreground/" />
                       </div>
                       <div>
                         <h3 className="text-2xl font-display font-black">Duyuru Geçmişi</h3>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Gönderilen Mesajlar</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-foreground/">Gönderilen Mesajlar</p>
                       </div>
                     </div>
 
                     <div className="space-y-4 max-h-[850px] overflow-y-auto pr-4 custom-scrollbar">
                       {announcements.length === 0 ? (
-                        <div className="p-16 text-center rounded-[2.5rem] bg-white/[0.02] border border-dashed border-white/5">
-                          <Megaphone className="w-16 h-16 text-white/10 mx-auto mb-6" />
-                          <p className="text-sm font-bold text-white/20 uppercase tracking-widest">Henüz kayıt bulunamadı</p>
+                        <div className="p-16 text-center rounded-[2.5rem] bg-white/[0.02] border border-dashed border-border/">
+                          <Megaphone className="w-16 h-16 text-foreground/ mx-auto mb-6" />
+                          <p className="text-sm font-bold text-foreground/ uppercase tracking-widest">Henüz kayıt bulunamadı</p>
                         </div>
                       ) : (
                         announcements.map((a) => {
                           const sentCount = a.announcement_recipients?.filter(r => r.status === "sent").length || 0;
                           return (
-                            <div key={a.id} className="p-8 rounded-[2rem] bg-white/[0.03] border border-white/5 hover:border-white/10 transition-all space-y-5">
+                            <div key={a.id} className="p-8 rounded-[2rem] bg-white/[0.03] border border-border/ hover:border-border/ transition-all space-y-5">
                               <div className="flex justify-between items-start gap-4">
                                 <div className="space-y-2">
-                                  <h4 className="text-lg font-bold text-white leading-tight group-hover:text-accent transition-colors">{a.subject}</h4>
-                                  <div className="flex items-center gap-2 text-[10px] font-black text-white/20 uppercase tracking-widest">
+                                  <h4 className="text-lg font-bold text-foreground leading-tight group-hover:text-accent transition-colors">{a.subject}</h4>
+                                  <div className="flex items-center gap-2 text-[10px] font-black text-foreground/ uppercase tracking-widest">
                                     <Clock className="w-3 h-3" />
                                     {new Date(a.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                   </div>
                                 </div>
-                                <button onClick={() => handleDeleteAnnouncement(a.id)} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white/20 hover:text-destructive hover:bg-destructive/10 transition-all">
+                                <button onClick={() => handleDeleteAnnouncement(a.id)} className="w-10 h-10 rounded-xl bg-foreground/ flex items-center justify-center text-foreground/ hover:text-destructive hover:bg-destructive/10 transition-all">
                                   <Trash2 className="w-4.5 h-4.5" />
                                 </button>
                               </div>
-                              <p className="text-sm text-white/50 font-medium leading-relaxed line-clamp-3">{a.body}</p>
-                              <div className="flex items-center gap-6 pt-5 border-t border-white/5">
+                              <p className="text-sm text-foreground/ font-medium leading-relaxed line-clamp-3">{a.body}</p>
+                              <div className="flex items-center gap-6 pt-5 border-t border-border/">
                                 <div className="flex flex-col gap-1">
-                                  <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">ALICILAR</span>
+                                  <span className="text-[10px] font-black text-foreground/ uppercase tracking-widest">ALICILAR</span>
                                   <span className="text-xs font-black text-accent flex items-center gap-2">
                                     <Users className="w-3.5 h-3.5" /> {a.recipient_count}
                                   </span>
                                 </div>
                                 <div className="flex flex-col gap-1">
-                                  <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">DURUM</span>
+                                  <span className="text-[10px] font-black text-foreground/ uppercase tracking-widest">DURUM</span>
                                   <span className="text-xs font-black text-primary flex items-center gap-2">
                                     <CheckCircle2 className="w-3.5 h-3.5" /> {sentCount} BAŞARILI
                                   </span>
@@ -1077,12 +1077,12 @@ const Admin = () => {
                     </div>
                     <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
                       <div className="relative group flex-1 lg:w-80">
-                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-primary transition-colors" />
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/ group-focus-within:text-primary transition-colors" />
                         <Input
                           placeholder="İsim veya e-posta..."
                           value={userSearchQuery}
                           onChange={(e) => setUserSearchQuery(e.target.value)}
-                          className="rounded-2xl h-14 pl-14 bg-white/[0.03] border-white/10 font-bold focus:border-primary/40"
+                          className="rounded-2xl h-14 pl-14 bg-white/[0.03] border-border/ font-bold focus:border-primary/40"
                         />
                       </div>
                       <motion.button
@@ -1096,16 +1096,16 @@ const Admin = () => {
                     </div>
                   </div>
 
-                  <div className="rounded-[2.5rem] border border-white/5 bg-white/[0.02] overflow-hidden backdrop-blur-xl">
+                  <div className="rounded-[2.5rem] border border-border/ bg-white/[0.02] overflow-hidden backdrop-blur-xl">
                     <Table>
                       <TableHeader>
-                        <TableRow className="border-white/5 hover:bg-transparent">
-                          <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 py-8 pl-10">KİMLİK</TableHead>
-                          <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 py-8">KAYIT</TableHead>
-                          <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 py-8 text-center">DUYURU YETKİSİ</TableHead>
-                          <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 py-8 text-center">RAPOR YETKİSİ</TableHead>
+                        <TableRow className="border-border/ hover:bg-transparent">
+                          <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/ py-8 pl-10">KİMLİK</TableHead>
+                          <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/ py-8">KAYIT</TableHead>
+                          <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/ py-8 text-center">DUYURU YETKİSİ</TableHead>
+                          <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/ py-8 text-center">RAPOR YETKİSİ</TableHead>
                           <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400/50 py-8 text-center">BÜTÇE YETKİSİ</TableHead>
-                          <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 py-8 text-right pr-10">AKSİYONLAR</TableHead>
+                          <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/ py-8 text-right pr-10">AKSİYONLAR</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -1115,7 +1115,7 @@ const Admin = () => {
                           .map((u) => {
                             const admin = admins.find(a => a.id === u.id);
                             return (
-                              <TableRow key={u.id} className="border-white/5 group hover:bg-white/[0.03] transition-all">
+                              <TableRow key={u.id} className="border-border/ group hover:bg-white/[0.03] transition-all">
                                 <TableCell className="py-8 pl-10">
                                   <div className="flex items-center gap-5">
                                     <div className="relative">
@@ -1130,17 +1130,17 @@ const Admin = () => {
                                     </div>
                                     <div className="flex flex-col gap-0.5">
                                       <div className="flex items-center gap-3">
-                                        <span className="text-base font-bold text-white group-hover:text-primary transition-colors">{u.first_name} {u.last_name}</span>
+                                        <span className="text-base font-bold text-foreground group-hover:text-primary transition-colors">{u.first_name} {u.last_name}</span>
                                         {admin && <span className="text-[8px] font-black bg-primary/20 text-primary px-2 py-0.5 rounded-full border border-primary/20 tracking-widest uppercase">ADMIN</span>}
                                       </div>
-                                      <span className="text-xs text-white/40 font-medium">{u.email}</span>
+                                      <span className="text-xs text-foreground/ font-medium">{u.email}</span>
                                     </div>
                                   </div>
                                 </TableCell>
                                 <TableCell className="py-8">
                                   <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-white/80">{new Date(u.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                                    <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Üyelik Tarihi</span>
+                                    <span className="text-sm font-bold text-foreground/">{new Date(u.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                    <span className="text-[10px] font-black text-foreground/ uppercase tracking-widest">Üyelik Tarihi</span>
                                   </div>
                                 </TableCell>
                                 <TableCell className="py-8 text-center">
@@ -1154,12 +1154,12 @@ const Admin = () => {
                                         "px-6 py-2 rounded-xl text-[10px] font-black tracking-widest transition-all",
                                         admin.has_announcement_access
                                           ? "bg-primary/20 text-primary border border-primary/30 shadow-[0_5px_15px_rgba(16,185,129,0.1)]"
-                                          : "bg-white/5 text-white/30 border border-white/10"
+                                          : "bg-foreground/ text-foreground/ border border-border/"
                                       )}
                                     >
                                       {admin.has_announcement_access ? "AKTİF" : "PASİF"}
                                     </motion.button>
-                                  ) : <span className="text-white/10 font-bold">—</span>}
+                                  ) : <span className="text-foreground/ font-bold">—</span>}
                                 </TableCell>
                                 <TableCell className="py-8 text-center">
                                   {admin ? (
@@ -1172,12 +1172,12 @@ const Admin = () => {
                                         "px-6 py-2 rounded-xl text-[10px] font-black tracking-widest transition-all",
                                         admin.has_report_access
                                           ? "bg-primary/20 text-primary border border-primary/30 shadow-[0_5px_15px_rgba(16,185,129,0.1)]"
-                                          : "bg-white/5 text-white/30 border border-white/10"
+                                          : "bg-foreground/ text-foreground/ border border-border/"
                                       )}
                                     >
                                       {admin.has_report_access ? "AKTİF" : "PASİF"}
                                     </motion.button>
-                                  ) : <span className="text-white/10 font-bold">—</span>}
+                                  ) : <span className="text-foreground/ font-bold">—</span>}
                                 </TableCell>
                                 <TableCell className="py-8 text-center">
                                   {user?.email === "admin@admin.com" ? (
@@ -1190,12 +1190,12 @@ const Admin = () => {
                                         "px-6 py-2 rounded-xl text-[10px] font-black tracking-widest transition-all",
                                         u.has_budget_role
                                           ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-[0_5px_15px_rgba(16,185,129,0.1)]"
-                                          : "bg-white/5 text-white/30 border border-white/10"
+                                          : "bg-foreground/ text-foreground/ border border-border/"
                                       )}
                                     >
                                       {u.has_budget_role ? "AKTİF" : "PASİF"}
                                     </motion.button>
-                                  ) : <span className="text-white/10 font-bold">—</span>}
+                                  ) : <span className="text-foreground/ font-bold">—</span>}
                                 </TableCell>
                                 <TableCell className="py-8 text-right pr-10">
                                   <div className="flex justify-end gap-3">
@@ -1205,19 +1205,19 @@ const Admin = () => {
                                       onClick={() => admin ? handleRemoveAdmin(u.id) : handleAddAdminById(u.id)}
                                       className={cn(
                                         "h-11 px-5 rounded-2xl text-[10px] font-black tracking-widest flex items-center gap-2 transition-all",
-                                        admin ? "bg-white/5 text-white/60 hover:bg-destructive/10 hover:text-destructive border border-transparent hover:border-destructive/20" : "bg-primary text-black shadow-[0_5px_15px_rgba(16,185,129,0.2)]"
+                                        admin ? "bg-foreground/ text-foreground/ hover:bg-destructive/10 hover:text-destructive border border-transparent hover:border-destructive/20" : "bg-primary text-black shadow-[0_5px_15px_rgba(16,185,129,0.2)]"
                                       )}
                                     >
                                       <Shield className="w-4 h-4" />
                                       {admin ? "YETKİ AL" : "ADMİN YAP"}
                                     </motion.button>
-                                    <button onClick={() => handleEditUser(u)} className="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/30 hover:bg-white/10 hover:text-white transition-all">
+                                    <button onClick={() => handleEditUser(u)} className="w-11 h-11 rounded-2xl bg-foreground/ border border-border/ flex items-center justify-center text-foreground/ hover:bg-foreground/ hover:text-foreground transition-all">
                                       <Pencil className="w-5 h-5" />
                                     </button>
                                     <button
                                       onClick={() => handleDeleteUser(u.id)}
                                       disabled={u.id === user?.id}
-                                      className="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/30 hover:bg-destructive/10 hover:text-destructive disabled:opacity-20 transition-all"
+                                      className="w-11 h-11 rounded-2xl bg-foreground/ border border-border/ flex items-center justify-center text-foreground/ hover:bg-destructive/10 hover:text-destructive disabled:opacity-20 transition-all"
                                     >
                                       <Trash2 className="w-5 h-5" />
                                     </button>
@@ -1237,8 +1237,8 @@ const Admin = () => {
 
         {/* Edit/Create Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="w-[95vw] sm:max-w-xl bg-[#050505]/95 backdrop-blur-3xl border-white/10 p-0 rounded-[1.5rem] sm:rounded-[2.5rem] selection:bg-primary/30 max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-6 sm:p-10 pb-6 border-b border-white/5 bg-white/[0.02] backdrop-blur-xl relative z-10">
+          <DialogContent className="w-[95vw] sm:max-w-xl bg-background/95 backdrop-blur-3xl border-border/ p-0 rounded-[1.5rem] sm:rounded-[2.5rem] selection:bg-primary/30 max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 sm:p-10 pb-6 border-b border-border/ bg-white/[0.02] backdrop-blur-xl relative z-10">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-display font-black flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
@@ -1246,7 +1246,7 @@ const Admin = () => {
                   </div>
                   <div>
                     <h3 className="text-xl font-display font-black">{editingItem ? "Bilgileri Düzenle" : "Yeni Kayıt Oluştur"}</h3>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white/30">{dialogType === "city" ? "Şehir Yönetimi" : dialogType === "category" ? "Kategori Yönetimi" : dialogType === "venue" ? "Mekan Yönetimi" : "Etkinlik Yönetimi"}</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-foreground/">{dialogType === "city" ? "Şehir Yönetimi" : dialogType === "category" ? "Kategori Yönetimi" : dialogType === "venue" ? "Mekan Yönetimi" : "Etkinlik Yönetimi"}</p>
                   </div>
                 </DialogTitle>
               </DialogHeader>
@@ -1256,11 +1256,11 @@ const Admin = () => {
               <div className="space-y-6">
                 {(dialogType === "city" || dialogType === "category") && (
                   <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">İsim</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">İsim</Label>
                     <Input
                       value={formData.name || ""}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white placeholder:text-white/40"
+                      className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-foreground placeholder:text-foreground/"
                       placeholder="Kategori Adını Giriniz"
                     />
                   </div>
@@ -1268,21 +1268,21 @@ const Admin = () => {
                 {dialogType === "venue" && (
                   <>
                     <div className="space-y-3">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Mekan Adı</Label>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">Mekan Adı</Label>
                       <Input
                         value={formData.name || ""}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white placeholder:text-white/40"
+                        className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-foreground placeholder:text-foreground/"
                       />
                     </div>
                     <div className="space-y-3">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Şehir</Label>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">Şehir</Label>
                       <Select value={formData.city_id || ""} onValueChange={(v) => setFormData({ ...formData, city_id: v })}>
-                        <SelectTrigger className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:ring-primary/20 transition-all font-bold text-white">
+                        <SelectTrigger className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:ring-primary/20 transition-all font-bold text-foreground">
                           <SelectValue placeholder="Şehir seçin" />
                         </SelectTrigger>
-                        <SelectContent className="!bg-[#0c0c0c] border-white/10 rounded-2xl p-2 !z-[9999] !opacity-100 !visible">
-                          {cities.map((c) => <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold hover:bg-white/10 cursor-pointer !text-white">{c.name}</SelectItem>)}
+                        <SelectContent className="!bg-[#0c0c0c] border-border/ rounded-2xl p-2 !z-[9999] !opacity-100 !visible">
+                          {cities.map((c) => <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold hover:bg-foreground/ cursor-pointer !text-foreground">{c.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
@@ -1291,78 +1291,78 @@ const Admin = () => {
                 {dialogType === "event" && (
                   <>
                     <div className="space-y-3">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Etkinlik Başlığı</Label>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">Etkinlik Başlığı</Label>
                       <Input
                         value={formData.title || ""}
                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                        className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white placeholder:text-white/40"
+                        className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-foreground placeholder:text-foreground/"
                       />
                     </div>
                     <div className="space-y-3">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Açıklama</Label>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">Açıklama</Label>
                       <Textarea
                         value={formData.description || ""}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        className="bg-white/5 border-white/10 rounded-2xl min-h-[120px] p-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-medium leading-relaxed resize-none text-white placeholder:text-white/40"
+                        className="bg-foreground/ border-border/ rounded-2xl min-h-[120px] p-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-medium leading-relaxed resize-none text-foreground placeholder:text-foreground/"
                       />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-3">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Tarih</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">Tarih</Label>
                         <Input
                           type="date"
                           value={formData.date || ""}
                           onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                          className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white [color-scheme:dark]"
+                          className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-foreground [color-scheme:dark]"
                         />
                       </div>
                       <div className="space-y-3">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Saat</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">Saat</Label>
                         <Input
                           type="time"
                           value={formData.time || ""}
                           onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                          className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white [color-scheme:dark]"
+                          className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-foreground [color-scheme:dark]"
                         />
                       </div>
                     </div>
                     <div className="space-y-3">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Şehir</Label>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">Şehir</Label>
                       <Select value={formData.city_id || ""} onValueChange={(v) => setFormData({ ...formData, city_id: v })}>
-                        <SelectTrigger className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 transition-all font-bold text-white">
+                        <SelectTrigger className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 transition-all font-bold text-foreground">
                           <SelectValue placeholder="Şehir seçin" />
                         </SelectTrigger>
-                        <SelectContent className="!bg-[#0c0c0c] border-white/10 rounded-2xl p-2 !z-[9999] !opacity-100 !visible">
-                          {cities.map((c) => <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold hover:bg-white/10 cursor-pointer !text-white">{c.name}</SelectItem>)}
+                        <SelectContent className="!bg-[#0c0c0c] border-border/ rounded-2xl p-2 !z-[9999] !opacity-100 !visible">
+                          {cities.map((c) => <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold hover:bg-foreground/ cursor-pointer !text-foreground">{c.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-3">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Mekan Bilgisi</Label>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">Mekan Bilgisi</Label>
                       <Input
                         placeholder="Mekan adını girin..."
                         value={formData.venue_name || ""}
                         onChange={(e) => setFormData({ ...formData, venue_name: e.target.value })}
-                        className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white placeholder:text-white/40"
+                        className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-foreground placeholder:text-foreground/"
                       />
                     </div>
                     <div className="space-y-3">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Harita Bağlantısı (Opsiyonel)</Label>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">Harita Bağlantısı (Opsiyonel)</Label>
                       <Input
                         placeholder="Bağlantıyı yapıştırın..."
                         value={formData.location_url || ""}
                         onChange={(e) => setFormData({ ...formData, location_url: e.target.value })}
-                        className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-white placeholder:text-white/40"
+                        className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-foreground placeholder:text-foreground/"
                       />
                     </div>
                     <div className="space-y-3">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">Kategori</Label>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">Kategori</Label>
                       <Select value={formData.category_id || ""} onValueChange={(v) => setFormData({ ...formData, category_id: v })}>
-                        <SelectTrigger className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 transition-all font-bold text-white">
+                        <SelectTrigger className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 transition-all font-bold text-foreground">
                           <SelectValue placeholder="Kategori seçin" />
                         </SelectTrigger>
-                        <SelectContent className="!bg-[#0c0c0c] border-white/10 rounded-2xl p-2 !z-[9999] !opacity-100 !visible">
-                          {categories.map((c) => <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold hover:bg-white/10 cursor-pointer !text-white">{c.name}</SelectItem>)}
+                        <SelectContent className="!bg-[#0c0c0c] border-border/ rounded-2xl p-2 !z-[9999] !opacity-100 !visible">
+                          {categories.map((c) => <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold hover:bg-foreground/ cursor-pointer !text-foreground">{c.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
@@ -1383,8 +1383,8 @@ const Admin = () => {
 
         {/* New User Dialog */}
         <Dialog open={newUserDialog} onOpenChange={setNewUserDialog}>
-          <DialogContent className="w-[95vw] sm:max-w-xl bg-[#050505]/95 backdrop-blur-3xl border-white/10 p-0 rounded-[1.5rem] sm:rounded-[2.5rem] selection:bg-primary/30 max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-6 sm:p-10 pb-6 border-b border-white/5 bg-white/[0.02] backdrop-blur-xl relative z-10">
+          <DialogContent className="w-[95vw] sm:max-w-xl bg-background/95 backdrop-blur-3xl border-border/ p-0 rounded-[1.5rem] sm:rounded-[2.5rem] selection:bg-primary/30 max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 sm:p-10 pb-6 border-b border-border/ bg-white/[0.02] backdrop-blur-xl relative z-10">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-display font-black flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
@@ -1392,7 +1392,7 @@ const Admin = () => {
                   </div>
                   <div>
                     <h3 className="text-xl font-display font-black">Yeni Kullanıcı Oluştur</h3>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Üye Kayıt Yönetimi</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-foreground/">Üye Kayıt Yönetimi</p>
                   </div>
                 </DialogTitle>
               </DialogHeader>
@@ -1402,38 +1402,38 @@ const Admin = () => {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">AD</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">AD</Label>
                     <Input
                       value={newUserData.first_name}
                       onChange={(e) => setNewUserData({ ...newUserData, first_name: e.target.value })}
-                      className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-white placeholder:text-white/40"
+                      className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-foreground placeholder:text-foreground/"
                     />
                   </div>
                   <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">SOYAD</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">SOYAD</Label>
                     <Input
                       value={newUserData.last_name}
                       onChange={(e) => setNewUserData({ ...newUserData, last_name: e.target.value })}
-                      className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-white placeholder:text-white/40"
+                      className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-foreground placeholder:text-foreground/"
                     />
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">E-POSTA ADRESİ</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">E-POSTA ADRESİ</Label>
                   <Input
                     type="email"
                     value={newUserData.email}
                     onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
-                    className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-white placeholder:text-white/40"
+                    className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-foreground placeholder:text-foreground/"
                   />
                 </div>
                 <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">ŞİFRE</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">ŞİFRE</Label>
                   <Input
                     type="password"
                     value={newUserData.password}
                     onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
-                    className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-white placeholder:text-white/40"
+                    className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-foreground placeholder:text-foreground/"
                   />
                 </div>
                 <motion.button
@@ -1452,8 +1452,8 @@ const Admin = () => {
 
         {/* Edit User Dialog */}
         <Dialog open={editUserDialog} onOpenChange={setEditUserDialog}>
-          <DialogContent className="w-[95vw] sm:max-w-xl bg-[#050505]/95 backdrop-blur-3xl border-white/10 p-0 rounded-[1.5rem] sm:rounded-[2.5rem] selection:bg-primary/30 max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-6 sm:p-10 pb-6 border-b border-white/5 bg-white/[0.02] backdrop-blur-xl relative z-10">
+          <DialogContent className="w-[95vw] sm:max-w-xl bg-background/95 backdrop-blur-3xl border-border/ p-0 rounded-[1.5rem] sm:rounded-[2.5rem] selection:bg-primary/30 max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 sm:p-10 pb-6 border-b border-border/ bg-white/[0.02] backdrop-blur-xl relative z-10">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-display font-black flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
@@ -1461,7 +1461,7 @@ const Admin = () => {
                   </div>
                   <div>
                     <h3 className="text-xl font-display font-black">Kullanıcıyı Düzenle</h3>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white/30">{editUserData.email}</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-foreground/">{editUserData.email}</p>
                   </div>
                 </DialogTitle>
               </DialogHeader>
@@ -1471,57 +1471,57 @@ const Admin = () => {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">AD</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">AD</Label>
                     <Input
                       value={editUserData.first_name}
                       onChange={(e) => setEditUserData({ ...editUserData, first_name: e.target.value })}
-                      className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-white placeholder:text-white/40"
+                      className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-foreground placeholder:text-foreground/"
                     />
                   </div>
                   <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">SOYAD</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">SOYAD</Label>
                     <Input
                       value={editUserData.last_name}
                       onChange={(e) => setEditUserData({ ...editUserData, last_name: e.target.value })}
-                      className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-white placeholder:text-white/40"
+                      className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-foreground placeholder:text-foreground/"
                     />
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">E-POSTA ADRESİ</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">E-POSTA ADRESİ</Label>
                   <Input
                     type="email"
                     value={editUserData.email}
                     onChange={(e) => setEditUserData({ ...editUserData, email: e.target.value })}
-                    className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-white placeholder:text-white/40"
+                    className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-foreground placeholder:text-foreground/"
                   />
                 </div>
 
-                <div className="pt-6 border-t border-white/5 mt-2">
-                  <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-6">GÜVENLİK AYARLARI</p>
+                <div className="pt-6 border-t border-border/ mt-2">
+                  <p className="text-[10px] font-black text-foreground/ uppercase tracking-[0.2em] mb-6">GÜVENLİK AYARLARI</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-3">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">YENİ ŞİFRE</Label>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">YENİ ŞİFRE</Label>
                       <Input
                         type="password"
                         placeholder="••••••••"
                         value={editUserData.new_password}
                         onChange={(e) => setEditUserData({ ...editUserData, new_password: e.target.value })}
-                        className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-white placeholder:text-white/40"
+                        className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-foreground placeholder:text-foreground/"
                       />
                     </div>
                     <div className="space-y-3">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 ml-1">ŞİFRE TEKRAR</Label>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">ŞİFRE TEKRAR</Label>
                       <Input
                         type="password"
                         placeholder="••••••••"
                         value={editUserData.confirm_password}
                         onChange={(e) => setEditUserData({ ...editUserData, confirm_password: e.target.value })}
-                        className="bg-white/5 border-white/10 rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-white placeholder:text-white/40"
+                        className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 transition-all font-bold text-foreground placeholder:text-foreground/"
                       />
                     </div>
                   </div>
-                  <p className="text-[9px] font-medium text-white/20 mt-4 italic">* Şifreyi değiştirmek istemiyorsanız bu alanları boş bırakabilirsiniz.</p>
+                  <p className="text-[9px] font-medium text-foreground/ mt-4 italic">* Şifreyi değiştirmek istemiyorsanız bu alanları boş bırakabilirsiniz.</p>
                 </div>
 
                 <motion.button

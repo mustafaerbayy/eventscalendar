@@ -40,10 +40,10 @@ const Social = () => {
 
     if (!user) {
         return (
-            <div className="min-h-screen bg-slate-50 flex flex-col">
+            <div className="min-h-screen bg-background dark:bg-[#050505] selection:bg-primary/30 flex flex-col">
                 <Navbar />
                 <main className="flex-1 flex items-center justify-center p-4">
-                    <div className="max-w-md w-full bg-white/80 backdrop-blur-xl p-8 rounded-3xl border border-white/60 shadow-xl text-center">
+                    <div className="max-w-md w-full bg-card backdrop-blur-xl p-8 rounded-3xl border border-border shadow-xl text-center">
                         <div className="relative mb-6">
                             <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
                                 <Rss className="w-8 h-8 text-primary" />
@@ -53,22 +53,22 @@ const Social = () => {
                             </div>
                         </div>
 
-                        <h1 className="text-2xl font-bold text-gray-900 mb-3 tracking-tight">Fikir Meydanı'na Hoş Geldiniz</h1>
-                        <p className="text-gray-500 mb-8 leading-relaxed text-sm">
+                        <h1 className="text-2xl font-bold text-foreground mb-3 tracking-tight">Fikir Meydanı'na Hoş Geldiniz</h1>
+                        <p className="text-muted-foreground mb-8 leading-relaxed text-sm">
                             Paylaşımları görmek, topluluğumuzla etkileşim kurmak ve kendi anılarınızı paylaşmak için giriş yapmanız gerekmektedir.
                         </p>
 
                         <div className="space-y-3">
                             <Button
                                 onClick={() => navigate("/giris", { state: { from: location.pathname } })}
-                                className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-12 rounded-xl text-base shadow-lg shadow-primary/25 transition-all hover:scale-[1.02]"
+                                className="w-full bg-primary hover:bg-primary/90 text-foreground font-bold h-12 rounded-xl text-base shadow-lg shadow-primary/25 transition-all hover:scale-[1.02]"
                             >
                                 Giriş Yap
                             </Button>
                             <Button
                                 variant="outline"
                                 onClick={() => navigate("/kayit", { state: { from: location.pathname } })}
-                                className="w-full border-gray-200 hover:bg-gray-50 text-gray-600 font-semibold h-12 rounded-xl"
+                                className="w-full border-border hover:bg-muted text-muted-foreground font-semibold h-12 rounded-xl"
                             >
                                 Yeni Hesap Oluştur
                             </Button>
@@ -105,7 +105,7 @@ const Social = () => {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-slate-50 flex flex-col">
+            <div className="min-h-screen bg-background dark:bg-[#050505] selection:bg-primary/30 flex flex-col">
                 <Navbar />
                 <main className="flex-1 flex items-center justify-center p-4">
                     <Loader2 className="w-8 h-8 text-primary animate-spin" />
@@ -115,14 +115,14 @@ const Social = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50/50 flex flex-col overflow-x-hidden">
+        <div className="min-h-screen bg-background dark:bg-[#050505] selection:bg-primary/30 flex flex-col overflow-x-hidden">
             <Navbar />
             <main className="flex-1 container max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-6 mt-20">
                 {isProfileIncomplete && !isWarningDismissed && (
-                    <div className="mb-6 bg-white/80 backdrop-blur-xl p-6 rounded-3xl border border-amber-200 shadow-xl relative animate-in fade-in slide-in-from-top-4 duration-500 group">
+                    <div className="mb-6 bg-card backdrop-blur-xl p-6 rounded-3xl border border-amber-500/30 shadow-xl relative animate-in fade-in slide-in-from-top-4 duration-500 group">
                         <button 
                             onClick={() => setIsWarningDismissed(true)}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors p-2 bg-gray-50 rounded-xl"
+                            className="absolute top-4 right-4 text-muted-foreground hover:text-red-500 transition-colors p-2 bg-muted/50 rounded-xl"
                             title="Kapat"
                         >
                             <X className="w-4 h-4" />
@@ -133,14 +133,14 @@ const Social = () => {
                                 <AlertCircle className="w-7 h-7 text-amber-500" />
                             </div>
                             
-                            <h2 className="text-lg font-bold text-gray-900 mb-2">Profilinizi Tamamlayın</h2>
-                            <p className="text-gray-500 mb-6 text-sm leading-relaxed max-w-[280px]">
+                            <h2 className="text-lg font-bold text-foreground mb-2">Profilinizi Tamamlayın</h2>
+                            <p className="text-muted-foreground mb-6 text-sm leading-relaxed max-w-[280px]">
                                 Lütfen Fikir Meydanı profilinizdeki eksik bilgileri doldurunuz.
                             </p>
                             
                             <Button
                                 onClick={() => navigate("/profil?tab=social")}
-                                className="bg-primary hover:bg-primary/90 text-white font-bold h-11 px-8 rounded-xl text-sm flex items-center gap-2 transition-all shadow-lg shadow-primary/20"
+                                className="bg-primary hover:bg-primary/90 text-foreground font-bold h-11 px-8 rounded-xl text-sm flex items-center gap-2 transition-all shadow-lg shadow-primary/20"
                             >
                                 Fikir Meydanı Profili'ne Git
                                 <ArrowRight className="w-4 h-4" />

@@ -264,7 +264,7 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
                 <Plus className="h-5 w-5 mr-2" /> Fotoğraf Ekle
               </Button>
             </DialogTrigger>
-            <DialogContent className="w-[95vw] sm:max-w-lg max-h-[95dvh] overflow-y-auto rounded-[2rem] border-none shadow-2xl p-0 bg-white/95 backdrop-blur-xl scrollbar-hide">
+            <DialogContent className="w-[95vw] sm:max-w-lg max-h-[95dvh] overflow-y-auto rounded-[2rem] border-none shadow-2xl p-0 bg-foreground/ backdrop-blur-xl scrollbar-hide">
               <DialogHeader className="p-6 sm:p-8 bg-gradient-to-r from-primary/10 to-transparent">
                 <DialogTitle className="text-xl sm:text-2xl font-black text-gray-900 flex items-center gap-3">
                   <div className="p-2 sm:p-2.5 bg-white rounded-2xl shadow-sm text-primary">
@@ -304,7 +304,7 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
                           />
                           <button 
                             onClick={() => removeFile(index)}
-                            className="absolute top-2 right-2 p-1.5 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-red-500 transition-all shadow-lg opacity-0 group-hover:opacity-100"
+                            className="absolute top-2 right-2 p-1.5 bg-black/60 backdrop-blur-md rounded-full text-foreground hover:bg-red-500 transition-all shadow-lg opacity-0 group-hover:opacity-100"
                           >
                             <X className="h-4 w-4" />
                           </button>
@@ -356,7 +356,7 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
         )}
       </div>
 
-      <div className="bg-white/40 backdrop-blur-sm rounded-[2.5rem] p-4 sm:p-6 border border-white/60 shadow-xl overflow-hidden min-h-[300px]">
+      <div className="bg-foreground/ backdrop-blur-sm rounded-[2.5rem] p-4 sm:p-6 border border-border/ shadow-xl overflow-hidden min-h-[300px]">
         {memories && memories.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             <AnimatePresence>
@@ -376,10 +376,10 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-5">
                     {memory.caption && (
-                      <p className="text-sm text-white font-medium line-clamp-3 mb-3 leading-snug">{memory.caption}</p>
+                      <p className="text-sm text-foreground font-medium line-clamp-3 mb-3 leading-snug">{memory.caption}</p>
                     )}
                     <div className="flex items-center gap-2">
-                       <div className="w-6 h-6 rounded-full bg-primary/20 backdrop-blur-md flex items-center justify-center text-[10px] font-black text-white border border-white/20">
+                       <div className="w-6 h-6 rounded-full bg-primary/20 backdrop-blur-md flex items-center justify-center text-[10px] font-black text-foreground border border-border/">
                           {memory.profiles?.first_name?.[0]?.toUpperCase()}
                        </div>
                        <span className="text-[11px] text-gray-200 font-bold tracking-wide">
@@ -393,7 +393,7 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
                           e.stopPropagation();
                           setSelectedPhoto(memory);
                         }}
-                        className="w-7 h-7 flex items-center justify-center bg-black/40 backdrop-blur-md rounded-lg text-white hover:bg-black/60 hover:scale-110 transition-all shadow-lg scale-0 group-hover:scale-100 duration-300"
+                        className="w-7 h-7 flex items-center justify-center bg-foreground/5 backdrop-blur-md rounded-lg text-foreground hover:bg-black/60 hover:scale-110 transition-all shadow-lg scale-0 group-hover:scale-100 duration-300"
                         title="Tam Boyut Görüntüle"
                       >
                         <Maximize2 className="h-3.5 w-3.5" />
@@ -408,7 +408,7 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
                             error: 'İndirme başarısız oldu.'
                           });
                         }}
-                        className="w-7 h-7 flex items-center justify-center bg-primary/80 backdrop-blur-md rounded-lg text-white hover:bg-primary hover:scale-110 transition-all shadow-lg scale-0 group-hover:scale-100 duration-300 delay-75"
+                        className="w-7 h-7 flex items-center justify-center bg-primary/80 backdrop-blur-md rounded-lg text-foreground hover:bg-primary hover:scale-110 transition-all shadow-lg scale-0 group-hover:scale-100 duration-300 delay-75"
                         title="İndir"
                       >
                         <Download className="h-3.5 w-3.5" />
@@ -422,7 +422,7 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
                               deleteMutation.mutate(memory.id);
                             }
                           }}
-                          className="w-7 h-7 flex items-center justify-center bg-red-500/90 backdrop-blur-md rounded-lg text-white hover:bg-red-600 hover:scale-110 transition-all shadow-lg scale-0 group-hover:scale-100 duration-300 delay-150"
+                          className="w-7 h-7 flex items-center justify-center bg-red-500/90 backdrop-blur-md rounded-lg text-foreground hover:bg-red-600 hover:scale-110 transition-all shadow-lg scale-0 group-hover:scale-100 duration-300 delay-150"
                           title="Sil"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -462,7 +462,7 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
 
       {/* Fullscreen Photo Lightbox Dialog */}
       <Dialog open={!!selectedPhoto} onOpenChange={(open) => !open && setSelectedPhoto(null)}>
-        <DialogContent className="max-w-[90vw] md:max-w-[80vw] lg:max-w-5xl p-1 bg-black/95 backdrop-blur-3xl border-white/10 shadow-2xl overflow-hidden rounded-[2rem]">
+        <DialogContent className="max-w-[90vw] md:max-w-[80vw] lg:max-w-5xl p-1 bg-black/95 backdrop-blur-3xl border-border/ shadow-2xl overflow-hidden rounded-[2rem]">
           {selectedPhoto && (
             <div className="relative flex flex-col">
               <div className="absolute top-6 right-20 z-50 flex items-center gap-3">
@@ -492,21 +492,21 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
               <div className="absolute bottom-0 inset-x-0 p-6 md:p-8 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none">
                 <div className="flex items-end justify-between">
                   <div className="flex items-center gap-3 pointer-events-auto">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 border-2 border-primary/50 flex items-center justify-center text-sm font-black text-white shadow-lg backdrop-blur-md">
+                    <div className="w-10 h-10 rounded-full bg-primary/20 border-2 border-primary/50 flex items-center justify-center text-sm font-black text-foreground shadow-lg backdrop-blur-md">
                       {selectedPhoto.profiles?.first_name?.[0]?.toUpperCase()}
                     </div>
                     <div>
-                      <h4 className="text-white font-bold leading-none mb-1 shadow-black drop-shadow-md">
+                      <h4 className="text-foreground font-bold leading-none mb-1 shadow-black drop-shadow-md">
                         {selectedPhoto.profiles?.first_name} {selectedPhoto.profiles?.last_name}
                       </h4>
-                      <p className="text-white/60 text-xs font-medium">
+                      <p className="text-foreground/ text-xs font-medium">
                         {new Date(selectedPhoto.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
                       </p>
                     </div>
                   </div>
                 </div>
                 {selectedPhoto.caption && (
-                  <p className="mt-4 text-white/90 text-sm md:text-base max-w-2xl font-medium leading-relaxed drop-shadow-md pointer-events-auto">
+                  <p className="mt-4 text-foreground/ text-sm md:text-base max-w-2xl font-medium leading-relaxed drop-shadow-md pointer-events-auto">
                     {selectedPhoto.caption}
                   </p>
                 )}

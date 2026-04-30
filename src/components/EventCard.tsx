@@ -97,7 +97,7 @@ const EventCard = ({ id, title, date, time, cityName, venueName, categoryName, a
         onClick={handleCardClick}
       >
         <Card
-          className={`relative overflow-hidden border bg-white/10 backdrop-blur-xl md:backdrop-blur-2xl transition-all duration-500 hover:bg-white/15 hover:border-white/40 hover:shadow-2xl rounded-2xl transform-gpu ${colors.bg.replace('bg-', 'border-').replace('/15', '/30')}`}
+          className={`relative overflow-hidden border bg-foreground/ backdrop-blur-xl md:backdrop-blur-2xl transition-all duration-500 hover:bg-foreground/ hover:border-border/ hover:shadow-2xl rounded-2xl transform-gpu ${colors.bg.replace('bg-', 'border-').replace('/15', '/30')}`}
         >
           {/* Subtle Glow */}
           <div className={`absolute inset-0 bg-gradient-to-r ${colors.gradient} opacity-[0.03] group-hover:opacity-10 transition-opacity duration-500`} />
@@ -140,7 +140,7 @@ const EventCard = ({ id, title, date, time, cityName, venueName, categoryName, a
                 </div>
 
                 {isAdmin && (
-                  <div className="flex items-center gap-2 pl-4 border-l border-white/10 relative z-50" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-2 pl-4 border-l border-border/ relative z-50" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
                     <Button size="icon" variant="ghost" className="h-9 w-9 rounded-full hover:bg-amber-500/20 text-amber-500" onClick={(e) => { e.stopPropagation(); onEdit?.({ id, title, date, time, categoryName, cityName, venueName }); }}>
                       <Edit2 className="h-4 w-4" />
                     </Button>
@@ -170,7 +170,7 @@ const EventCard = ({ id, title, date, time, cityName, venueName, categoryName, a
       className={isPast ? "opacity-50" : ""}
     >
       <Card
-        className={`group cursor-pointer overflow-hidden border bg-white/10 backdrop-blur-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(0,0,0,0.4)] hover:border-white/40 relative rounded-[2.5rem] h-full transform-gpu ${colors.bg.replace('bg-', 'border-').replace('/15', '/30')}`}
+        className={`group cursor-pointer overflow-hidden border bg-foreground/ backdrop-blur-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(0,0,0,0.4)] hover:border-border/ relative rounded-[2.5rem] h-full transform-gpu ${colors.bg.replace('bg-', 'border-').replace('/15', '/30')}`}
         onClick={handleCardClick}
       >
         {/* Background Orbs */}
@@ -181,7 +181,7 @@ const EventCard = ({ id, title, date, time, cityName, venueName, categoryName, a
           {/* Header: Date + Status */}
           {isAuthenticated && (
             <div className="flex justify-between items-start mb-6">
-              <div className="bg-white/10 border border-white/10 rounded-2xl p-3 flex flex-col items-center min-w-[60px] shadow-xl">
+              <div className="bg-foreground/ border border-border/ rounded-2xl p-3 flex flex-col items-center min-w-[60px] shadow-xl">
                 <span className="text-[10px] font-black uppercase tracking-widest text-primary/80">{formatTurkishDate(date).split(' ')[1]}</span>
                 <span className="text-2xl font-black text-foreground leading-none mt-1">{formatTurkishDate(date).split(' ')[0]}</span>
               </div>
@@ -199,7 +199,7 @@ const EventCard = ({ id, title, date, time, cityName, venueName, categoryName, a
           {/* Content */}
           <div className="flex-1">
             {isAuthenticated && (
-              <Badge className="mb-4 bg-white/10 text-foreground border-white/10 font-bold px-3 py-1 uppercase tracking-wider text-[10px]">
+              <Badge className="mb-4 bg-foreground/ text-foreground border-border/ font-bold px-3 py-1 uppercase tracking-wider text-[10px]">
                 {categoryName}
               </Badge>
             )}
@@ -224,7 +224,7 @@ const EventCard = ({ id, title, date, time, cityName, venueName, categoryName, a
 
           {/* Footer */}
           {isAuthenticated ? (
-            <div className="pt-6 border-t border-white/5 flex items-center justify-between">
+            <div className="pt-6 border-t border-border/ flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="flex -space-x-2">
                   {[1, 2, 3].map((i) => (
@@ -242,7 +242,7 @@ const EventCard = ({ id, title, date, time, cityName, venueName, categoryName, a
               {isAdmin && (
                 <div className="flex items-center gap-2 relative z-50" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
                   <button
-                    className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center border border-white/10 hover:bg-amber-500 hover:text-white hover:scale-110 active:scale-95 transition-all duration-300 shadow-xl cursor-pointer"
+                    className="h-10 w-10 rounded-full bg-foreground/ flex items-center justify-center border border-border/ hover:bg-amber-500 hover:text-foreground hover:scale-110 active:scale-95 transition-all duration-300 shadow-xl cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
                       onEdit?.({ id, title, date, time, categoryName, cityName, venueName });
@@ -251,7 +251,7 @@ const EventCard = ({ id, title, date, time, cityName, venueName, categoryName, a
                     <Edit2 className="h-4 w-4" />
                   </button>
                   <button
-                    className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center border border-white/10 hover:bg-red-500 hover:text-white hover:scale-110 active:scale-95 transition-all duration-300 shadow-xl cursor-pointer"
+                    className="h-10 w-10 rounded-full bg-foreground/ flex items-center justify-center border border-border/ hover:bg-red-500 hover:text-foreground hover:scale-110 active:scale-95 transition-all duration-300 shadow-xl cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
                       onDelete?.(id);
@@ -263,7 +263,7 @@ const EventCard = ({ id, title, date, time, cityName, venueName, categoryName, a
               )}
             </div>
           ) : (
-            <div className="pt-4 border-t border-white/5">
+            <div className="pt-4 border-t border-border/">
               <span className="text-xs font-bold text-primary italic">Detaylar için giriş yapın →</span>
             </div>
           )}

@@ -219,12 +219,12 @@ export default function SocialProfileForm({ hideCard = false }: SocialProfileFor
                     <div className="relative group">
                         <Avatar className="w-32 h-32 border-2 border-primary/20 shadow-xl">
                             <AvatarImage src={profile?.profile_photo || ""} className="object-cover" />
-                            <AvatarFallback className="bg-white/5 text-primary text-4xl">
+                            <AvatarFallback className="bg-foreground/ text-primary text-4xl">
                                 {user?.email?.[0].toUpperCase()}
                             </AvatarFallback>
                         </Avatar>
                         {isUploadingPhoto && (
-                            <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center backdrop-blur-sm z-10">
+                            <div className="absolute inset-0 bg-foreground/5 rounded-full flex items-center justify-center backdrop-blur-sm z-10">
                                 <Loader2 className="w-8 h-8 text-primary animate-spin" />
                             </div>
                         )}
@@ -250,7 +250,7 @@ export default function SocialProfileForm({ hideCard = false }: SocialProfileFor
                             size="sm"
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isUploadingPhoto}
-                            className={hideCard ? "bg-white/5 border-white/10 text-white hover:bg-white/10" : ""}
+                            className={hideCard ? "bg-foreground/ border-border/ text-foreground hover:bg-foreground/" : ""}
                         >
                             <Upload className="w-4 h-4 mr-2" />
                             {profile?.profile_photo ? "Değiştir" : "Fotoğraf Yükle"}
@@ -275,7 +275,7 @@ export default function SocialProfileForm({ hideCard = false }: SocialProfileFor
                     name="job_title"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="text-white flex items-center justify-between">
+                            <FormLabel className="text-foreground flex items-center justify-between">
                                 Meslek / Ünvan
                                 <span className="text-[10px] text-red-500/60 font-normal italic">Fikir Meydanı için lütfen doldurunuz</span>
                             </FormLabel>
@@ -284,7 +284,7 @@ export default function SocialProfileForm({ hideCard = false }: SocialProfileFor
                                     placeholder="Örn: Yazılım Mühendisi"
                                     {...field}
                                     value={field.value || ""}
-                                    className={hideCard ? "bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary/50 h-14 rounded-2xl" : ""}
+                                    className={hideCard ? "bg-foreground/ border-border/ text-foreground placeholder:text-foreground/ focus:border-primary/50 h-14 rounded-2xl" : ""}
                                 />
                             </FormControl>
                             <FormMessage />
@@ -297,7 +297,7 @@ export default function SocialProfileForm({ hideCard = false }: SocialProfileFor
                     name="university"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="text-white flex items-center justify-between">
+                            <FormLabel className="text-foreground flex items-center justify-between">
                                 Üniversite
                                 <span className="text-[10px] text-red-500/60 font-normal italic">Fikir Meydanı için lütfen doldurunuz</span>
                             </FormLabel>
@@ -306,7 +306,7 @@ export default function SocialProfileForm({ hideCard = false }: SocialProfileFor
                                     placeholder="Örn: Boğaziçi Üniversitesi"
                                     {...field}
                                     value={field.value || ""}
-                                    className={hideCard ? "bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary/50 h-14 rounded-2xl" : ""}
+                                    className={hideCard ? "bg-foreground/ border-border/ text-foreground placeholder:text-foreground/ focus:border-primary/50 h-14 rounded-2xl" : ""}
                                 />
                             </FormControl>
                             <FormMessage />
@@ -319,7 +319,7 @@ export default function SocialProfileForm({ hideCard = false }: SocialProfileFor
                     name="linkedin_url"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="text-white">Linkedin Profili</FormLabel>
+                            <FormLabel className="text-foreground">Linkedin Profili</FormLabel>
                             <FormControl>
                                 <div className="relative">
                                     <Linkedin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0077B5]" />
@@ -327,7 +327,7 @@ export default function SocialProfileForm({ hideCard = false }: SocialProfileFor
                                         placeholder="https://www.linkedin.com/in/kullaniciadi"
                                         {...field}
                                         value={field.value || ""}
-                                        className={hideCard ? "bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary/50 h-14 rounded-2xl pl-12" : "pl-12"}
+                                        className={hideCard ? "bg-foreground/ border-border/ text-foreground placeholder:text-foreground/ focus:border-primary/50 h-14 rounded-2xl pl-12" : "pl-12"}
                                     />
                                 </div>
                             </FormControl>
@@ -341,11 +341,11 @@ export default function SocialProfileForm({ hideCard = false }: SocialProfileFor
                     name="bio"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="text-white">Hakkımda (Biyografi)</FormLabel>
+                            <FormLabel className="text-foreground">Hakkımda (Biyografi)</FormLabel>
                             <FormControl>
                                 <Textarea
                                     placeholder="Kendinizden bahsedin..."
-                                    className={hideCard ? "bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary/50 rounded-2xl resize-none" : "resize-none"}
+                                    className={hideCard ? "bg-foreground/ border-border/ text-foreground placeholder:text-foreground/ focus:border-primary/50 rounded-2xl resize-none" : "resize-none"}
                                     rows={4}
                                     {...field}
                                     value={field.value || ""}
@@ -361,16 +361,16 @@ export default function SocialProfileForm({ hideCard = false }: SocialProfileFor
                     name="birth_date"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="text-white">Doğum Tarihi</FormLabel>
+                            <FormLabel className="text-foreground">Doğum Tarihi</FormLabel>
                             <FormControl>
                                 <Input
                                     type="date"
                                     {...field}
                                     value={field.value || ""}
-                                    className={hideCard ? "bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary/50 h-14 rounded-2xl [color-scheme:dark]" : ""}
+                                    className={hideCard ? "bg-foreground/ border-border/ text-foreground placeholder:text-foreground/ focus:border-primary/50 h-14 rounded-2xl [color-scheme:dark]" : ""}
                                 />
                             </FormControl>
-                            <FormDescription className={hideCard ? "text-white/40" : ""}>
+                            <FormDescription className={hideCard ? "text-foreground/" : ""}>
                                 {currentAge !== null ? (
                                     <span className="text-primary font-medium">Sistemde sadece yaşınız ({currentAge}) gösterilecektir.</span>
                                 ) : (

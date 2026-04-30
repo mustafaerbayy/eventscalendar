@@ -205,9 +205,9 @@ const Login = () => {
         whileHover={{ y: -5 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="relative group rounded-[2.5rem] p-px bg-gradient-to-b from-white/20 to-transparent border border-white/10 backdrop-blur-xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)]">
+        <div className="relative group rounded-[2.5rem] p-px bg-gradient-to-b from-white/20 to-transparent border border-border/ backdrop-blur-xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)]">
           {/* Inner glass layer */}
-          <div className="rounded-[2.45rem] bg-black/40 p-8 md:p-10 backdrop-blur-md border border-white/5 relative">
+          <div className="rounded-[2.45rem] bg-foreground/5 p-8 md:p-10 backdrop-blur-md border border-border/ relative">
 
             <div className="flex flex-col items-center mb-10">
               <Link to="/" className="relative group">
@@ -221,7 +221,7 @@ const Login = () => {
             </div>
 
             <div className="mb-8 text-center">
-              <h1 className="font-display text-4xl font-bold tracking-tight text-white mb-2">
+              <h1 className="font-display text-4xl font-bold tracking-tight text-foreground mb-2">
                 Hoş Geldiniz
               </h1>
               <p className="text-slate-400 font-medium">Lütfen bilgilerinizi girin</p>
@@ -240,7 +240,7 @@ const Login = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="pl-12 h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20 focus:border-primary/50 text-white placeholder:text-slate-600 transition-all font-medium"
+                    className="pl-12 h-14 bg-foreground/ border-border/ rounded-2xl focus:ring-primary/20 focus:border-primary/50 text-foreground placeholder:text-slate-600 transition-all font-medium"
                   />
                 </div>
               </div>
@@ -261,11 +261,11 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="pl-12 pr-12 h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20 focus:border-primary/50 text-white placeholder:text-slate-600 transition-all font-medium"
+                    className="pl-12 pr-12 h-14 bg-foreground/ border-border/ rounded-2xl focus:ring-primary/20 focus:border-primary/50 text-foreground placeholder:text-slate-600 transition-all font-medium"
                   />
                   <button
                     type="button"
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors p-1"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-foreground transition-colors p-1"
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
                   >
@@ -294,22 +294,22 @@ const Login = () => {
 
             <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-white/10" />
+                <span className="w-full border-t border-border/" />
               </div>
               <div className="relative flex justify-center text-xs uppercase tracking-tighter">
-                <span className="bg-black/40 px-3 text-slate-500 font-bold backdrop-blur-sm">VEYA</span>
+                <span className="bg-foreground/5 px-3 text-slate-500 font-bold backdrop-blur-sm">VEYA</span>
               </div>
             </div>
 
             <Button
               type="button"
               variant="outline"
-              className="w-full h-14 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold transition-all active:scale-[0.98] flex gap-3"
+              className="w-full h-14 rounded-2xl border-border/ bg-foreground/ hover:bg-foreground/ text-foreground font-bold transition-all active:scale-[0.98] flex gap-3"
               onClick={handleGoogleLogin}
               disabled={loading || googleLoading}
             >
               {googleLoading ? (
-                <span className="h-5 w-5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                <span className="h-5 w-5 rounded-full border-2 border-border/ border-t-white animate-spin" />
               ) : (
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

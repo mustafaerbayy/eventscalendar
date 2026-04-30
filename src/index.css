@@ -24,7 +24,7 @@
   }
 
   .bg-background {
-    background-color: hsl(40 12% 97% / 0.85) !important;
+    background-color: hsl(var(--background) / 0.85) !important;
   }
 
   :root {

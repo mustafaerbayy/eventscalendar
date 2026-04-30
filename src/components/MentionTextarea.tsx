@@ -260,7 +260,7 @@ export function MentionTextarea({
         onKeyDown={handleKeyDown}
         onClick={handleClick}
         spellCheck={false}
-        className="w-full min-h-[50px] px-4 py-3 text-sm focus:outline-none overflow-y-auto transition-all duration-200 bg-white/50 hover:bg-white focus:bg-white rounded-xl border border-transparent focus:border-primary/20"
+        className="w-full min-h-[50px] px-4 py-3 text-sm focus:outline-none overflow-y-auto transition-all duration-200 bg-foreground/ hover:bg-white focus:bg-white rounded-xl border border-transparent focus:border-primary/20"
         data-placeholder={placeholder}
         style={{ 
           whiteSpace: "pre-wrap",
@@ -299,7 +299,7 @@ export function MentionTextarea({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 5, scale: 0.98 }}
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  className="w-72 bg-white/80 backdrop-blur-2xl border border-white/40 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] overflow-hidden ring-1 ring-black/5"
+                  className="w-72 bg-foreground/ backdrop-blur-2xl border border-border/ rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] overflow-hidden ring-1 ring-black/5"
                 >
                   <div className="bg-gradient-to-r from-primary/5 via-primary/[0.02] to-transparent px-4 py-3 border-b border-gray-100/50 flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -338,12 +338,12 @@ export function MentionTextarea({
                           <div className="relative shrink-0">
                             <Avatar className={cn(
                               "h-9 w-9 border-2 transition-transform duration-300",
-                              selectedIndex === index ? "border-white/40 scale-105" : "border-gray-100 group-hover/item:scale-105"
+                              selectedIndex === index ? "border-border/ scale-105" : "border-gray-100 group-hover/item:scale-105"
                             )}>
                               <AvatarImage src={user.profile_photo || undefined} />
                               <AvatarFallback className={cn(
                                 "text-xs font-black",
-                                selectedIndex === index ? "bg-white/20 text-white" : "bg-primary/10 text-primary"
+                                selectedIndex === index ? "bg-foreground/ text-foreground" : "bg-primary/10 text-primary"
                               )}>
                                 {user.social_name.substring(0, 2).toUpperCase()}
                               </AvatarFallback>
@@ -358,13 +358,13 @@ export function MentionTextarea({
                           <div className="flex flex-col text-left min-w-0 flex-1">
                             <span className={cn(
                               "text-[13px] font-bold leading-tight truncate transition-colors",
-                              selectedIndex === index ? "text-white" : "text-gray-800"
+                              selectedIndex === index ? "text-foreground" : "text-gray-800"
                             )}>
                               {user.social_name}
                             </span>
                             <span className={cn(
                               "text-[10px] font-semibold truncate transition-colors mt-0.5",
-                              selectedIndex === index ? "text-white/70" : "text-gray-400"
+                              selectedIndex === index ? "text-foreground/" : "text-gray-400"
                             )}>
                               @{user.social_name.toLowerCase().replace(/\s+/g, '')}
                             </span>
@@ -376,8 +376,8 @@ export function MentionTextarea({
                                     animate={{ opacity: 1, x: 0 }}
                                     className="ml-auto"
                                 >
-                                    <div className="w-6 h-6 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/20">
-                                        <Check className="w-3 h-3 text-white" />
+                                    <div className="w-6 h-6 rounded-full bg-foreground/ backdrop-blur-sm flex items-center justify-center border border-border/">
+                                        <Check className="w-3 h-3 text-foreground" />
                                     </div>
                                 </motion.div>
                             )}

@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Wallet, Plus, Trash2, Edit2, Info, User as UserIcon, CalendarDays, Users, TrendingUp, ShieldCheck } from "lucide-react";
+import { Wallet, Plus, Trash2, Edit2, Info, User as UserIcon, CalendarDays, Users, TrendingUp, ShieldCheck, Clock, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -102,7 +102,21 @@ export default function Budget() {
     },
   });
 
-  // Fetch Expenses
+  // Fetch Pending Dues Transactions
+  const { data: pendingTransactions, isLoading: loadingPending } = useQuery({
+    queryKey: ["pendingDuesTransactions"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("pending_dues_transactions")
+        .select("*")
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+
   const { data: expenses, isLoading: loadingExpenses } = useQuery({
     queryKey: ["expenses"],
     queryFn: async () => {
@@ -345,29 +359,150 @@ export default function Budget() {
   const toggleDuesMutation = useMutation({
     mutationFn: async ({ userId, month, amount, distribute }: { userId: string, month: number, amount?: number, distribute?: boolean }) => {
       const existing = duesPayments?.find(p => p.user_id === userId && p.year === selectedYear && p.month === month);
-      if (existing) {
-        const { error } = await supabase.from("dues_payments").delete().eq("id", existing.id);
-        if (error) throw error;
+
+      // Check if user is admin/budget manager
+      const userIsAdmin = canManageBudget;
+
+      if (userIsAdmin) {
+        // Admin: apply directly (existing behavior)
+        if (existing) {
+          const { error } = await supabase.from("dues_payments").delete().eq("id", existing.id);
+          if (error) throw error;
+        } else {
+          const baseDues = budgetSettings?.dues_amount || 100;
+          const totalAmount = amount !== undefined ? amount : baseDues;
+          const inserts: { user_id: string; year: number; month: number; amount: number; created_by: string }[] = [];
+
+          if (distribute && totalAmount > baseDues) {
+            let remainingAmount = totalAmount;
+            let currentMonth = month;
+            let currentYear = selectedYear;
+
+            while (remainingAmount >= baseDues) {
+              const isAlreadyPaid = allDuesPaymentsHistory?.some(p => p.user_id === userId && p.year === currentYear && p.month === currentMonth);
+
+              if (!isAlreadyPaid) {
+                inserts.push({
+                  user_id: userId,
+                  year: currentYear,
+                  month: currentMonth,
+                  amount: baseDues,
+                  created_by: isEditMode ? user?.id : userId
+                });
+                remainingAmount -= baseDues;
+              }
+
+              currentMonth++;
+              if (currentMonth > 12) {
+                currentMonth = 1;
+                currentYear++;
+              }
+              if (currentYear > selectedYear + 10) break;
+            }
+
+            if (remainingAmount > 0) {
+              if (inserts.length > 0) {
+                inserts[inserts.length - 1].amount += remainingAmount;
+              } else {
+                inserts.push({
+                  user_id: userId,
+                  year: selectedYear,
+                  month,
+                  amount: remainingAmount,
+                  created_by: isEditMode ? user?.id : userId
+                });
+              }
+            }
+          } else {
+            inserts.push({
+              user_id: userId,
+              year: selectedYear,
+              month,
+              amount: totalAmount,
+              created_by: isEditMode ? user?.id : userId
+            });
+          }
+
+          if (inserts.length > 0) {
+            const { error } = await supabase.from("dues_payments").insert(inserts);
+            if (error) throw error;
+          }
+        }
       } else {
+        // Normal user: create pending transaction
+        const actionType = existing ? "mark_unpaid" : "mark_paid";
         const baseDues = budgetSettings?.dues_amount || 100;
         const totalAmount = amount !== undefined ? amount : baseDues;
-        const inserts = [];
 
-        if (distribute && totalAmount > baseDues) {
+        // Check if there's already a pending transaction for this user/month/year
+        const existingPending = pendingTransactions?.find(
+          pt => pt.user_id === userId && pt.year === selectedYear && pt.month === month
+        );
+        if (existingPending) {
+          // Cancel the existing pending transaction
+          const { error } = await supabase
+            .from("pending_dues_transactions")
+            .delete()
+            .eq("id", existingPending.id);
+          if (error) throw error;
+          toast.info("Bekleyen işlem iptal edildi");
+          return;
+        }
+
+        const { error } = await supabase
+          .from("pending_dues_transactions")
+          .insert([{
+            user_id: userId,
+            year: selectedYear,
+            month,
+            amount: totalAmount,
+            action_type: actionType,
+            status: "pending",
+            distribute: distribute || false,
+            payment_amount: totalAmount
+          }]);
+        if (error) throw error;
+        toast.info("İşleminiz onay bekliyor. Bir admin onayladığında uygulanacaktır.");
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["duesPayments", selectedYear] });
+      queryClient.invalidateQueries({ queryKey: ["allDuesPaymentsHistory"] });
+      queryClient.invalidateQueries({ queryKey: ["pendingDuesTransactions"] });
+    },
+    onError: (error: Error) => {
+      toast.error("Aidat durumu güncellenirken hata oluştu: " + error.message);
+    }
+  });
+
+  // Approve pending transaction
+  const approvePendingMutation = useMutation({
+    mutationFn: async (transactionId: string) => {
+      const transaction = pendingTransactions?.find(t => t.id === transactionId);
+      if (!transaction) throw new Error("İşlem bulunamadı");
+
+      if (transaction.action_type === "mark_paid") {
+        const baseDues = budgetSettings?.dues_amount || 100;
+        const totalAmount = transaction.payment_amount || transaction.amount || baseDues;
+        const inserts: { user_id: string; year: number; month: number; amount: number; created_by: string }[] = [];
+
+        if (transaction.distribute && totalAmount > baseDues) {
           let remainingAmount = totalAmount;
-          let currentMonth = month;
-          let currentYear = selectedYear;
+          let currentMonth = transaction.month;
+          let currentYear = transaction.year;
 
           while (remainingAmount >= baseDues) {
-            const isAlreadyPaid = allDuesPaymentsHistory?.some(p => p.user_id === userId && p.year === currentYear && p.month === currentMonth);
+            const isAlreadyPaid = allDuesPaymentsHistory?.some(
+              p => p.user_id === transaction.user_id && p.year === currentYear && p.month === currentMonth
+            );
 
             if (!isAlreadyPaid) {
               inserts.push({
-                user_id: userId,
+                user_id: transaction.user_id,
                 year: currentYear,
                 month: currentMonth,
                 amount: baseDues,
-                created_by: isEditMode ? user?.id : userId
+                created_by: transaction.user_id
               });
               remainingAmount -= baseDues;
             }
@@ -377,30 +512,29 @@ export default function Budget() {
               currentMonth = 1;
               currentYear++;
             }
-            if (currentYear > selectedYear + 10) break; // safety
+            if (currentYear > transaction.year + 10) break;
           }
 
-          // Kalan küsurat varsa son ödenen aya ekle ki para kaybolmasın ama yarım tik atılmasın
           if (remainingAmount > 0) {
             if (inserts.length > 0) {
               inserts[inserts.length - 1].amount += remainingAmount;
             } else {
               inserts.push({
-                user_id: userId,
-                year: selectedYear,
-                month,
+                user_id: transaction.user_id,
+                year: transaction.year,
+                month: transaction.month,
                 amount: remainingAmount,
-                created_by: isEditMode ? user?.id : userId
+                created_by: transaction.user_id
               });
             }
           }
         } else {
           inserts.push({
-            user_id: userId,
-            year: selectedYear,
-            month,
+            user_id: transaction.user_id,
+            year: transaction.year,
+            month: transaction.month,
             amount: totalAmount,
-            created_by: isEditMode ? user?.id : userId
+            created_by: transaction.user_id
           });
         }
 
@@ -408,14 +542,49 @@ export default function Budget() {
           const { error } = await supabase.from("dues_payments").insert(inserts);
           if (error) throw error;
         }
+      } else if (transaction.action_type === "mark_unpaid") {
+        const { error } = await supabase
+          .from("dues_payments")
+          .delete()
+          .eq("user_id", transaction.user_id)
+          .eq("year", transaction.year)
+          .eq("month", transaction.month);
+        if (error) throw error;
       }
+
+      // Mark as approved
+      const { error } = await supabase
+        .from("pending_dues_transactions")
+        .update({ status: "approved", reviewed_at: new Date().toISOString(), reviewed_by: user?.id })
+        .eq("id", transactionId);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["duesPayments", selectedYear] });
       queryClient.invalidateQueries({ queryKey: ["allDuesPaymentsHistory"] });
+      queryClient.invalidateQueries({ queryKey: ["pendingDuesTransactions"] });
+      toast.success("İşlem onaylandı ve uygulandı");
     },
     onError: (error: Error) => {
-      toast.error("Aidat durumu güncellenirken hata oluştu: " + error.message);
+      toast.error("İşlem onaylanırken hata oluştu: " + error.message);
+    }
+  });
+
+  // Reject pending transaction
+  const rejectPendingMutation = useMutation({
+    mutationFn: async (transactionId: string) => {
+      const { error } = await supabase
+        .from("pending_dues_transactions")
+        .update({ status: "rejected", reviewed_at: new Date().toISOString(), reviewed_by: user?.id })
+        .eq("id", transactionId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["pendingDuesTransactions"] });
+      toast.success("İşlem reddedildi");
+    },
+    onError: (error: Error) => {
+      toast.error("İşlem reddedilirken hata oluştu: " + error.message);
     }
   });
 
@@ -541,7 +710,7 @@ export default function Budget() {
   });
 
   return (
-    <div className="min-h-screen bg-black text-white pt-24 pb-20 px-4 sm:px-6">
+    <div className="min-h-screen bg-background text-foreground pt-24 pb-20 px-4 sm:px-6">
       <Navbar />
       <div className="max-w-5xl mx-auto space-y-8">
 
@@ -552,16 +721,26 @@ export default function Budget() {
               <Wallet className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="text-3xl font-black tracking-tight text-white">Bütçe Yönetimi</h1>
-              <p className="text-white/60 text-sm mt-1">Topluluk bütçesini ve harcamalarını takip edin</p>
+              <h1 className="text-3xl font-black tracking-tight text-foreground">Bütçe Yönetimi</h1>
+              <p className="text-foreground/60 text-sm mt-1">Topluluk bütçesini ve harcamalarını takip edin</p>
             </div>
           </div>
         </div>
 
         <Tabs defaultValue="expenses" className="w-full">
-          <TabsList className="bg-white/5 border border-white/10 p-1 rounded-2xl mb-8 grid w-full max-w-md grid-cols-2">
+          <TabsList className={cn("bg-foreground/5 border border-border/10 p-1 rounded-2xl mb-8 grid w-full", canManageBudget ? "max-w-xl grid-cols-3" : "max-w-md grid-cols-2")}>
             <TabsTrigger value="expenses" className="rounded-xl data-[state=active]:bg-emerald-500 data-[state=active]:text-black font-bold py-2">Bütçe</TabsTrigger>
             <TabsTrigger value="dues" className="rounded-xl data-[state=active]:bg-emerald-500 data-[state=active]:text-black font-bold py-2">Aidat Takibi</TabsTrigger>
+            {canManageBudget && (
+              <TabsTrigger value="approvals" className="rounded-xl data-[state=active]:bg-amber-500 data-[state=active]:text-black font-bold py-2 relative">
+                Onay Bekleyenler
+                {(pendingTransactions?.length || 0) > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-amber-500 text-black text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
+                    {pendingTransactions?.length}
+                  </span>
+                )}
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="expenses" className="space-y-6 animate-in fade-in-50 duration-500">
@@ -571,17 +750,17 @@ export default function Budget() {
                 <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity"><Wallet className="h-16 w-16 text-emerald-400" /></div>
                 <div className="p-3 bg-emerald-500/20 rounded-xl"><Wallet className="w-5 h-5 text-emerald-400" /></div>
                 <div>
-                  <p className="text-white/50 text-xs font-medium uppercase tracking-wider">Mevcut Bütçe</p>
+                  <p className="text-foreground/50 text-xs font-medium uppercase tracking-wider">Mevcut Bütçe</p>
                   <p className={cn("text-2xl font-black", currentBudget >= 0 ? "text-emerald-400" : "text-red-400")}>₺{currentBudget.toLocaleString("tr-TR")}</p>
                   {canManageBudget && (
                     <Dialog open={isEditBudgetOpen} onOpenChange={setIsEditBudgetOpen}>
                       <DialogTrigger asChild>
                         <button className="text-emerald-400/60 hover:text-emerald-400 text-[10px] font-medium mt-0.5 flex items-center gap-1 transition-colors"><Edit2 className="w-2.5 h-2.5" /> Düzenle</button>
                       </DialogTrigger>
-                      <DialogContent className="bg-zinc-950 border border-white/10 text-white">
+                      <DialogContent className="bg-zinc-950 border border-border/10 text-foreground">
                         <DialogHeader><DialogTitle>Mevcut Bütçeyi Güncelle</DialogTitle></DialogHeader>
                         <form onSubmit={handleUpdateBudget} className="space-y-4 pt-4">
-                          <div className="space-y-2"><Label>Yeni Mevcut Bütçe (₺)</Label><Input type="number" value={newTotalBudget} onChange={(e) => setNewTotalBudget(e.target.value)} placeholder="0" className="bg-black/50 border-white/10" /></div>
+                          <div className="space-y-2"><Label>Yeni Mevcut Bütçe (₺)</Label><Input type="number" value={newTotalBudget} onChange={(e) => setNewTotalBudget(e.target.value)} placeholder="0" className="bg-foreground/5 border-border/10" /></div>
                           <Button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold" disabled={updateBudgetMutation.isPending}>{updateBudgetMutation.isPending ? "Kaydediliyor..." : "Kaydet"}</Button>
                         </form>
                       </DialogContent>
@@ -589,26 +768,26 @@ export default function Budget() {
                   )}
                 </div>
               </div>
-              <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 flex items-center gap-4">
+              <div className="bg-white/[0.03] border border-border/10 rounded-2xl p-5 flex items-center gap-4">
                 <div className="p-3 bg-red-500/20 rounded-xl"><TrendingUp className="w-5 h-5 text-red-400 rotate-180" /></div>
                 <div>
-                  <p className="text-white/50 text-xs font-medium uppercase tracking-wider">Toplam Harcama</p>
-                  <p className="text-2xl font-black text-white">₺{totalSpentAllTime.toLocaleString("tr-TR")}</p>
+                  <p className="text-foreground/50 text-xs font-medium uppercase tracking-wider">Toplam Harcama</p>
+                  <p className="text-2xl font-black text-foreground">₺{totalSpentAllTime.toLocaleString("tr-TR")}</p>
                 </div>
               </div>
             </div>
 
             {/* Transaction History */}
-            <div className="bg-white/[0.02] border border-white/10 rounded-2xl overflow-hidden backdrop-blur-xl">
-              <div className="p-4 sm:p-5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="bg-white/[0.02] border border-border/10 rounded-2xl overflow-hidden backdrop-blur-xl">
+              <div className="p-4 sm:p-5 border-b border-border/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                   <div className="flex items-center gap-2">
-                    <div className="p-2 bg-white/5 rounded-lg"><CalendarDays className="w-4 h-4 text-white/60" /></div>
+                    <div className="p-2 bg-foreground/5 rounded-lg"><CalendarDays className="w-4 h-4 text-foreground/60" /></div>
                     <h3 className="text-base font-bold">İşlem Geçmişi</h3>
                   </div>
-                  <div className="flex bg-black/50 p-0.5 rounded-lg border border-white/10">
+                  <div className="flex bg-foreground/5 p-0.5 rounded-lg border border-border/10">
                     {[{ key: "all" as const, label: "Tümü" }, { key: "income" as const, label: "Gelirler" }, { key: "expense" as const, label: "Giderler" }].map(f => (
-                      <button key={f.key} onClick={() => setHistoryFilter(f.key)} className={cn("px-3 py-1.5 text-xs font-bold rounded-md transition-all", historyFilter === f.key ? "bg-emerald-500 text-black" : "text-white/40 hover:text-white/70")}>{f.label}</button>
+                      <button key={f.key} onClick={() => setHistoryFilter(f.key)} className={cn("px-3 py-1.5 text-xs font-bold rounded-md transition-all", historyFilter === f.key ? "bg-emerald-500 text-black" : "text-foreground/40 hover:text-foreground/70")}>{f.label}</button>
                     ))}
                   </div>
                 </div>
@@ -616,28 +795,28 @@ export default function Budget() {
                   <DialogTrigger asChild>
                     <Button onClick={openAddExpense} size="sm" className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold rounded-xl gap-1.5 text-xs"><Plus className="w-3.5 h-3.5" /> Yeni Harcama</Button>
                   </DialogTrigger>
-                  <DialogContent className="bg-zinc-950 border border-white/10 text-white sm:max-w-md">
+                  <DialogContent className="bg-zinc-950 border border-border/10 text-foreground sm:max-w-md">
                     <DialogHeader><DialogTitle>{editingExpenseId ? "Harcamayı Düzenle" : "Yeni Harcama Gir"}</DialogTitle></DialogHeader>
                     <form onSubmit={handleAddExpense} className="space-y-4 pt-4">
-                      <div className="space-y-2"><Label>Harcama Tutarı (₺)</Label><Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Örn: 500" className="bg-black/50 border-white/10" required /></div>
-                      <div className="space-y-2"><Label>Açıklama</Label><Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Harcama detayları..." className="bg-black/50 border-white/10 min-h-[80px]" /></div>
+                      <div className="space-y-2"><Label>Harcama Tutarı (₺)</Label><Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Örn: 500" className="bg-foreground/5 border-border/10" required /></div>
+                      <div className="space-y-2"><Label>Açıklama</Label><Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Harcama detayları..." className="bg-foreground/5 border-border/10 min-h-[80px]" /></div>
                       <div className="space-y-2 flex flex-col">
                         <Label>Kim Tarafından Harcandı?</Label>
                         <Popover open={isSpentByOpen} onOpenChange={setIsSpentByOpen}>
                           <PopoverTrigger asChild>
-                            <Button variant="outline" role="combobox" aria-expanded={isSpentByOpen} className="w-full justify-between bg-black/50 border-white/10 text-white font-normal hover:bg-white/5 hover:text-white">
+                            <Button variant="outline" role="combobox" aria-expanded={isSpentByOpen} className="w-full justify-between bg-foreground/5 border-border/10 text-foreground font-normal hover:bg-foreground/5 hover:text-foreground">
                               {spentBy && users ? `${users.find((u) => u.id === spentBy)?.first_name} ${users.find((u) => u.id === spentBy)?.last_name}` : "Kişi arayın veya seçin..."}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-[#0c0c0c] border-white/10 !z-[9999]">
+                          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-[#0c0c0c] border-border/10 !z-[9999]">
                             <Command className="bg-transparent border-none">
-                              <CommandInput placeholder="Kişi ara..." className="text-white border-none focus:ring-0" />
+                              <CommandInput placeholder="Kişi ara..." className="text-foreground border-none focus:ring-0" />
                               <CommandList className="custom-scrollbar">
-                                <CommandEmpty className="py-6 text-center text-sm text-white/50">Kişi bulunamadı.</CommandEmpty>
+                                <CommandEmpty className="py-6 text-center text-sm text-foreground/50">Kişi bulunamadı.</CommandEmpty>
                                 <CommandGroup>
                                   {users?.map((u) => (
-                                    <CommandItem key={u.id} value={`${u.first_name} ${u.last_name}`} onSelect={() => { setSpentBy(u.id); setIsSpentByOpen(false); }} className="text-white hover:bg-white/10 cursor-pointer rounded-xl font-bold py-3 px-4 my-1 data-[selected=true]:bg-white/10 data-[selected=true]:text-white">
+                                    <CommandItem key={u.id} value={`${u.first_name} ${u.last_name}`} onSelect={() => { setSpentBy(u.id); setIsSpentByOpen(false); }} className="text-foreground hover:bg-foreground/10 cursor-pointer rounded-xl font-bold py-3 px-4 my-1 data-[selected=true]:bg-foreground/10 data-[selected=true]:text-foreground">
                                       <Check className={cn("mr-2 h-4 w-4 text-emerald-400", spentBy === u.id ? "opacity-100" : "opacity-0")} />
                                       {u.first_name} {u.last_name}
                                     </CommandItem>
@@ -651,10 +830,10 @@ export default function Budget() {
                       <div className="space-y-2">
                         <Label>İlgili Etkinlik (Opsiyonel)</Label>
                         <Select value={eventId} onValueChange={setEventId}>
-                          <SelectTrigger className="bg-black/50 border-white/10"><SelectValue placeholder="Etkinlik seçin" /></SelectTrigger>
-                          <SelectContent className="bg-[#0c0c0c] border-white/10 max-h-60 !z-[9999] !opacity-100 !visible p-2 rounded-2xl">
-                            <SelectItem value="none" className="rounded-xl py-3 font-bold !text-white hover:bg-white/10 cursor-pointer">Etkinlik Bağımsız</SelectItem>
-                            {eventList?.map((ev) => (<SelectItem key={ev.id} value={ev.id} className="rounded-xl py-3 font-bold !text-white hover:bg-white/10 cursor-pointer">{ev.title} ({new Date(ev.date).toLocaleDateString("tr-TR")})</SelectItem>))}
+                          <SelectTrigger className="bg-foreground/5 border-border/10"><SelectValue placeholder="Etkinlik seçin" /></SelectTrigger>
+                          <SelectContent className="bg-[#0c0c0c] border-border/10 max-h-60 !z-[9999] !opacity-100 !visible p-2 rounded-2xl">
+                            <SelectItem value="none" className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/10 cursor-pointer">Etkinlik Bağımsız</SelectItem>
+                            {eventList?.map((ev) => (<SelectItem key={ev.id} value={ev.id} className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/10 cursor-pointer">{ev.title} ({new Date(ev.date).toLocaleDateString("tr-TR")})</SelectItem>))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -666,7 +845,7 @@ export default function Budget() {
 
               <div className="p-0">
                 {loadingExpenses || loadingAllDuesHistory ? (
-                  <div className="p-10 text-center text-white/40 text-sm">Yükleniyor...</div>
+                  <div className="p-10 text-center text-foreground/40 text-sm">Yükleniyor...</div>
                 ) : filteredHistory && filteredHistory.length > 0 ? (
                   <div className="divide-y divide-white/[0.04]">
                     {filteredHistory.map((item) => {
@@ -681,19 +860,19 @@ export default function Budget() {
                               <div className="min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
                                   <span className="font-bold text-base text-red-400">-₺{Number(expense.amount).toLocaleString("tr-TR")}</span>
-                                  <span className="text-white/30 text-xs">{new Date(expense.created_at).toLocaleDateString("tr-TR")}</span>
+                                  <span className="text-foreground/30 text-xs">{new Date(expense.created_at).toLocaleDateString("tr-TR")}</span>
                                 </div>
-                                {expense.description && <p className="text-white/60 text-sm mt-1 line-clamp-2">{expense.description}</p>}
+                                {expense.description && <p className="text-foreground/60 text-sm mt-1 line-clamp-2">{expense.description}</p>}
                                 <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                                  <span className="inline-flex items-center gap-1 text-[10px] text-white/50 bg-white/5 px-2 py-0.5 rounded-full"><UserIcon className="w-2.5 h-2.5" />{spentUser?.first_name} {spentUser?.last_name}</span>
+                                  <span className="inline-flex items-center gap-1 text-[10px] text-foreground/50 bg-foreground/5 px-2 py-0.5 rounded-full"><UserIcon className="w-2.5 h-2.5" />{spentUser?.first_name} {spentUser?.last_name}</span>
                                   {expense.events && <span className="inline-flex items-center gap-1 text-[10px] text-blue-400/70 bg-blue-500/10 px-2 py-0.5 rounded-full"><CalendarDays className="w-2.5 h-2.5" />{Array.isArray(expense.events) ? expense.events[0]?.title : expense.events?.title}</span>}
                                 </div>
                               </div>
                             </div>
                             {canModify && (
                               <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                                <Button variant="ghost" size="icon" className="text-white/30 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg h-7 w-7" onClick={() => openEditExpense(expense)}><Edit2 className="w-3.5 h-3.5" /></Button>
-                                <Button variant="ghost" size="icon" className="text-white/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg h-7 w-7" onClick={() => { if (window.confirm("Bu harcamayı silmek istediğinize emin misiniz?")) deleteExpenseMutation.mutate(expense.id); }}><Trash2 className="w-3.5 h-3.5" /></Button>
+                                <Button variant="ghost" size="icon" className="text-foreground/30 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg h-7 w-7" onClick={() => openEditExpense(expense)}><Edit2 className="w-3.5 h-3.5" /></Button>
+                                <Button variant="ghost" size="icon" className="text-foreground/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg h-7 w-7" onClick={() => { if (window.confirm("Bu harcamayı silmek istediğinize emin misiniz?")) deleteExpenseMutation.mutate(expense.id); }}><Trash2 className="w-3.5 h-3.5" /></Button>
                               </div>
                             )}
                           </div>
@@ -716,16 +895,16 @@ export default function Budget() {
                         }
 
                         return (
-                          <div key={`due-${dueItem.id}`} className={cn("p-4 sm:p-5 flex items-start gap-3 hover:bg-white/[0.02] transition-colors border-l-2 border-transparent", isSelfPaid ? "hover:border-emerald-500/50" : "hover:border-white/20")}>
-                            <div className={cn("p-2.5 rounded-xl shrink-0", isSelfPaid ? "bg-emerald-500/10 text-emerald-400" : "bg-white/5 text-white/30")}><Wallet className="w-4 h-4" /></div>
+                          <div key={`due-${dueItem.id}`} className={cn("p-4 sm:p-5 flex items-start gap-3 hover:bg-white/[0.02] transition-colors border-l-2 border-transparent", isSelfPaid ? "hover:border-emerald-500/50" : "hover:border-border/20")}>
+                            <div className={cn("p-2.5 rounded-xl shrink-0", isSelfPaid ? "bg-emerald-500/10 text-emerald-400" : "bg-foreground/5 text-foreground/30")}><Wallet className="w-4 h-4" /></div>
                             <div className="min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className={cn("font-bold text-base", isSelfPaid ? "text-emerald-400" : "text-white/30")}>{isSelfPaid ? `+₺${Number(dueItem.amount).toLocaleString("tr-TR")}` : `₺0`}</span>
-                                {!isSelfPaid && <span className="text-[10px] border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-white/40">Admin</span>}
-                                <span className="text-white/30 text-xs">{new Date(dueItem.created_at).toLocaleDateString("tr-TR")}</span>
+                                <span className={cn("font-bold text-base", isSelfPaid ? "text-emerald-400" : "text-foreground/30")}>{isSelfPaid ? `+₺${Number(dueItem.amount).toLocaleString("tr-TR")}` : `₺0`}</span>
+                                {!isSelfPaid && <span className="text-[10px] border border-border/10 bg-foreground/5 px-1.5 py-0.5 rounded text-foreground/40">Admin</span>}
+                                <span className="text-foreground/30 text-xs">{new Date(dueItem.created_at).toLocaleDateString("tr-TR")}</span>
                               </div>
-                              <p className="text-white/50 mt-1 text-sm">
-                                <span className={isSelfPaid ? "text-emerald-400/80" : "text-white/50"}>{dueUser?.first_name} {dueUser?.last_name}</span> — {monthsText} {isSelfPaid ? 'ödendi' : 'işaretlendi'}
+                              <p className="text-foreground/50 mt-1 text-sm">
+                                <span className={isSelfPaid ? "text-emerald-400/80" : "text-foreground/50"}>{dueUser?.first_name} {dueUser?.last_name}</span> — {monthsText} {isSelfPaid ? 'ödendi' : 'işaretlendi'}
                               </p>
                             </div>
                           </div>
@@ -735,9 +914,9 @@ export default function Budget() {
                   </div>
                 ) : (
                   <div className="p-14 text-center flex flex-col items-center justify-center">
-                    <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center mb-4 text-white/15"><Wallet className="w-6 h-6" /></div>
-                    <h4 className="text-sm font-bold text-white/70 mb-1">Henüz İşlem Yok</h4>
-                    <p className="text-white/30 text-xs max-w-[250px]">Sisteme girilen harcamalar ve ödenen aidatlar burada listelenecektir.</p>
+                    <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-border/10 flex items-center justify-center mb-4 text-foreground/15"><Wallet className="w-6 h-6" /></div>
+                    <h4 className="text-sm font-bold text-foreground/70 mb-1">Henüz İşlem Yok</h4>
+                    <p className="text-foreground/30 text-xs max-w-[250px]">Sisteme girilen harcamalar ve ödenen aidatlar burada listelenecektir.</p>
                   </div>
                 )}
               </div>
@@ -760,18 +939,18 @@ export default function Budget() {
                   <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-900/10 border border-emerald-500/20 rounded-2xl p-5 flex items-center gap-4">
                     <div className="p-3 bg-emerald-500/20 rounded-xl"><Wallet className="w-5 h-5 text-emerald-400" /></div>
                     <div>
-                      <p className="text-white/50 text-xs font-medium uppercase tracking-wider">{monthNames[currentMonth - 1]} Ayında Toplanan Aidat</p>
+                      <p className="text-foreground/50 text-xs font-medium uppercase tracking-wider">{monthNames[currentMonth - 1]} Ayında Toplanan Aidat</p>
                       <p className="text-2xl font-black text-emerald-400">₺{currentMonthDuesCollected.toLocaleString("tr-TR")}</p>
-                      <p className="text-white/30 text-[10px] mt-0.5">Aylık aidat: ₺{Number(budgetSettings?.dues_amount || 100).toLocaleString("tr-TR")}</p>
+                      <p className="text-foreground/30 text-[10px] mt-0.5">Aylık aidat: ₺{Number(budgetSettings?.dues_amount || 100).toLocaleString("tr-TR")}</p>
                     </div>
                   </div>
-                  <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 flex items-center gap-4">
+                  <div className="bg-white/[0.03] border border-border/10 rounded-2xl p-5 flex items-center gap-4">
                     <div className="p-3 bg-amber-500/20 rounded-xl"><TrendingUp className="w-5 h-5 text-amber-400" /></div>
                     <div>
-                      <p className="text-white/50 text-xs font-medium uppercase tracking-wider">{monthNames[currentMonth - 1]} Ayı Tahsilat Oranı</p>
+                      <p className="text-foreground/50 text-xs font-medium uppercase tracking-wider">{monthNames[currentMonth - 1]} Ayı Tahsilat Oranı</p>
                       <div className="flex items-center gap-3">
-                        <p className="text-2xl font-black text-white">%{paymentRate}</p>
-                        <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden min-w-[60px]">
+                        <p className="text-2xl font-black text-foreground">%{paymentRate}</p>
+                        <div className="flex-1 h-2 bg-foreground/10 rounded-full overflow-hidden min-w-[60px]">
                           <div className="h-full bg-gradient-to-r from-amber-500 to-emerald-500 rounded-full transition-all duration-700" style={{ width: `${paymentRate}%` }} />
                         </div>
                       </div>
@@ -782,24 +961,24 @@ export default function Budget() {
             })()}
 
             {/* Toolbar */}
-            <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-4 backdrop-blur-xl">
+            <div className="bg-white/[0.02] border border-border/10 rounded-2xl p-4 backdrop-blur-xl">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-3">
                   <Select value={selectedYear.toString()} onValueChange={(val) => setSelectedYear(Number(val))}>
-                    <SelectTrigger className="bg-black/50 border-white/10 w-28 rounded-xl">
+                    <SelectTrigger className="bg-foreground/5 border-border/10 w-28 rounded-xl">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#0c0c0c] border-white/10 !z-[9999] rounded-2xl">
+                    <SelectContent className="bg-[#0c0c0c] border-border/10 !z-[9999] rounded-2xl">
                       {[...Array(5)].map((_, i) => {
                         const y = new Date().getFullYear() - 2 + i;
-                        return <SelectItem key={y} value={y.toString()} className="cursor-pointer hover:bg-white/10 rounded-xl">{y}</SelectItem>
+                        return <SelectItem key={y} value={y.toString()} className="cursor-pointer hover:bg-foreground/10 rounded-xl">{y}</SelectItem>
                       })}
                     </SelectContent>
                   </Select>
                   {canManageBudget && (
-                    <div className={cn("flex items-center gap-2 px-3 py-2 rounded-xl border transition-colors", isEditMode ? "bg-amber-500/10 border-amber-500/30" : "bg-black/50 border-white/10")}>
+                    <div className={cn("flex items-center gap-2 px-3 py-2 rounded-xl border transition-colors", isEditMode ? "bg-amber-500/10 border-amber-500/30" : "bg-foreground/5 border-border/10")}>
                       <Switch id="edit-mode" checked={isEditMode} onCheckedChange={setIsEditMode} />
-                      <Label htmlFor="edit-mode" className={cn("text-sm cursor-pointer whitespace-nowrap font-medium", isEditMode ? "text-amber-400" : "text-white/70")}>
+                      <Label htmlFor="edit-mode" className={cn("text-sm cursor-pointer whitespace-nowrap font-medium", isEditMode ? "text-amber-400" : "text-foreground/70")}>
                         Düzenleme Modu
                       </Label>
                     </div>
@@ -809,16 +988,16 @@ export default function Budget() {
                   <div className="flex flex-wrap items-center gap-2">
                     <Dialog open={isEditDuesOpen} onOpenChange={setIsEditDuesOpen}>
                       <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="bg-black/50 border-white/10 hover:bg-white/5 rounded-xl gap-1.5 text-xs">
+                        <Button variant="outline" size="sm" className="bg-foreground/5 border-border/10 hover:bg-foreground/5 rounded-xl gap-1.5 text-xs">
                           <Edit2 className="w-3 h-3" /> Aidat Tutarı
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="bg-zinc-950 border border-white/10 text-white sm:max-w-md">
+                      <DialogContent className="bg-zinc-950 border border-border/10 text-foreground sm:max-w-md">
                         <DialogHeader><DialogTitle>Aidat Ücretini Güncelle</DialogTitle></DialogHeader>
                         <form onSubmit={handleUpdateDuesAmount} className="space-y-4 pt-4">
                           <div className="space-y-2">
                             <Label>Yeni Aidat Tutarı (₺)</Label>
-                            <Input type="number" value={newDuesAmount} onChange={(e) => setNewDuesAmount(e.target.value)} placeholder={budgetSettings?.dues_amount?.toString() || "100"} className="bg-black/50 border-white/10" required />
+                            <Input type="number" value={newDuesAmount} onChange={(e) => setNewDuesAmount(e.target.value)} placeholder={budgetSettings?.dues_amount?.toString() || "100"} className="bg-foreground/5 border-border/10" required />
                           </div>
                           <Button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold" disabled={updateDuesAmountMutation.isPending}>
                             {updateDuesAmountMutation.isPending ? "Güncelleniyor..." : "Güncelle"}
@@ -828,16 +1007,16 @@ export default function Budget() {
                     </Dialog>
                     <Dialog open={isEditMembersOpen} onOpenChange={setIsEditMembersOpen}>
                       <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="bg-black/50 border-white/10 hover:bg-white/5 rounded-xl gap-1.5 text-xs">
+                        <Button variant="outline" size="sm" className="bg-foreground/5 border-border/10 hover:bg-foreground/5 rounded-xl gap-1.5 text-xs">
                           <Users className="w-3 h-3" /> Üyeleri Seç
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="bg-zinc-950 border border-white/10 text-white sm:max-w-md">
+                      <DialogContent className="bg-zinc-950 border border-border/10 text-foreground sm:max-w-md">
                         <DialogHeader><DialogTitle>Aidat Ödeyenleri Belirle</DialogTitle></DialogHeader>
-                        <ScrollArea className="h-[300px] w-full rounded-md border border-white/10 p-4 mt-4">
+                        <ScrollArea className="h-[300px] w-full rounded-md border border-border/10 p-4 mt-4">
                           {users?.map(u => (
                             <div key={u.id} className="flex items-center space-x-3 mb-4">
-                              <Checkbox id={`user-${u.id}`} checked={duesMembers?.includes(u.id)} onCheckedChange={() => toggleDuesMemberMutation.mutate(u.id)} disabled={toggleDuesMemberMutation.isPending && toggleDuesMemberMutation.variables === u.id} className="border-white/20 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500" />
+                              <Checkbox id={`user-${u.id}`} checked={duesMembers?.includes(u.id)} onCheckedChange={() => toggleDuesMemberMutation.mutate(u.id)} disabled={toggleDuesMemberMutation.isPending && toggleDuesMemberMutation.variables === u.id} className="border-border/20 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500" />
                               <Label htmlFor={`user-${u.id}`} className="cursor-pointer">{u.first_name} {u.last_name}</Label>
                             </div>
                           ))}
@@ -862,7 +1041,7 @@ export default function Budget() {
                     <div className="p-2 bg-emerald-500/20 rounded-lg"><UserIcon className="w-4 h-4 text-emerald-400" /></div>
                     <div>
                       <h4 className="text-base font-bold text-emerald-400">Benim Aidat Durumum</h4>
-                      <p className="text-white/40 text-xs">{selectedYear} yılı ödeme durumunuz</p>
+                      <p className="text-foreground/40 text-xs">{selectedYear} yılı ödeme durumunuz</p>
                     </div>
                   </div>
                   {(() => {
@@ -870,7 +1049,7 @@ export default function Budget() {
                     return (
                       <div className="hidden sm:flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-lg">
                         <span className="text-emerald-400 font-black text-sm">{myPaid}/12</span>
-                        <div className="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <div className="w-16 h-1.5 bg-foreground/10 rounded-full overflow-hidden">
                           <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${(myPaid / 12) * 100}%` }} />
                         </div>
                       </div>
@@ -881,25 +1060,43 @@ export default function Budget() {
                   {['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'].map((m, i) => {
                     const month = i + 1;
                     const isPaid = duesPayments?.some(p => p.user_id === user?.id && p.year === selectedYear && p.month === month);
-                    const isPending = toggleDuesMutation.variables?.userId === user?.id && toggleDuesMutation.variables?.month === month && toggleDuesMutation.isPending;
+                    const hasPendingTx = pendingTransactions?.some(pt => pt.user_id === user?.id && pt.year === selectedYear && pt.month === month);
+                    const isMutating = toggleDuesMutation.variables?.userId === user?.id && toggleDuesMutation.variables?.month === month && toggleDuesMutation.isPending;
                     const isCurrentMonth = i === new Date().getMonth() && selectedYear === new Date().getFullYear();
                     return (
                       <button
                         key={month}
                         onClick={() => {
-                          if (isPaid) { setPaymentToCancel({ userId: user!.id, month }); setIsCancelPaymentDialogOpen(true); }
-                          else { setPendingDuesPayment({ userId: user!.id, month }); setDuesPaymentAmount(budgetSettings?.dues_amount?.toString() || "100"); setIsDuesPaymentDialogOpen(true); }
+                          if (hasPendingTx) {
+                            // Cancel pending transaction
+                            toggleDuesMutation.mutate({ userId: user!.id, month });
+                          } else if (isPaid) {
+                            if (canManageBudget) {
+                              setPaymentToCancel({ userId: user!.id, month }); setIsCancelPaymentDialogOpen(true);
+                            } else {
+                              // Normal user wants to unmark - create pending
+                              toggleDuesMutation.mutate({ userId: user!.id, month });
+                            }
+                          } else {
+                            // Both admin and normal user: open amount dialog
+                            setPendingDuesPayment({ userId: user!.id, month });
+                            setDuesPaymentAmount(budgetSettings?.dues_amount?.toString() || "100");
+                            setIsDuesPaymentDialogOpen(true);
+                          }
                         }}
-                        disabled={toggleDuesMutation.isPending && isPending}
+                        disabled={toggleDuesMutation.isPending && isMutating}
                         className={cn(
                           "relative flex flex-col items-center justify-center gap-1 py-3 sm:py-4 rounded-xl border transition-all duration-300 group",
-                          isPaid ? "bg-emerald-500/15 border-emerald-500/30 hover:bg-emerald-500/25" : "bg-white/[0.02] border-white/10 hover:bg-white/[0.06] hover:border-white/20",
-                          isCurrentMonth && !isPaid && "border-emerald-500/40 ring-1 ring-emerald-500/20",
-                          isPending && "opacity-50 cursor-wait"
+                          hasPendingTx ? "bg-amber-500/15 border-amber-500/30 hover:bg-amber-500/25" :
+                          isPaid ? "bg-emerald-500/15 border-emerald-500/30 hover:bg-emerald-500/25" : "bg-white/[0.02] border-border/10 hover:bg-white/[0.06] hover:border-border/20",
+                          isCurrentMonth && !isPaid && !hasPendingTx && "border-emerald-500/40 ring-1 ring-emerald-500/20",
+                          isMutating && "opacity-50 cursor-wait"
                         )}
                       >
-                        <span className={cn("text-[10px] font-bold uppercase tracking-wider", isPaid ? "text-emerald-400/70" : "text-white/40")}>{m}</span>
-                        {isPaid ? <CheckCircle2 className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" /> : <Circle className="w-5 h-5 text-white/20 group-hover:text-white/40 transition-colors" />}
+                        <span className={cn("text-[10px] font-bold uppercase tracking-wider", hasPendingTx ? "text-amber-400/70" : isPaid ? "text-emerald-400/70" : "text-foreground/40")}>{m}</span>
+                        {hasPendingTx ? <Clock className="w-5 h-5 text-amber-400 animate-pulse group-hover:scale-110 transition-transform" /> :
+                         isPaid ? <CheckCircle2 className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" /> : <Circle className="w-5 h-5 text-foreground/20 group-hover:text-foreground/40 transition-colors" />}
+                        {hasPendingTx && <span className="text-[8px] text-amber-400/80 font-medium leading-tight">Onay Bekliyor</span>}
                         {isCurrentMonth && <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />}
                       </button>
                     );
@@ -908,23 +1105,23 @@ export default function Budget() {
               </div>
             )}
 
-            <div className="bg-white/[0.02] border border-white/10 rounded-2xl overflow-hidden backdrop-blur-xl">
-              <div className="p-5 border-b border-white/10 flex items-center justify-between">
+            <div className="bg-white/[0.02] border border-border/10 rounded-2xl overflow-hidden backdrop-blur-xl">
+              <div className="p-5 border-b border-border/10 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white/5 rounded-lg"><Users className="w-4 h-4 text-white/60" /></div>
+                  <div className="p-2 bg-foreground/5 rounded-lg"><Users className="w-4 h-4 text-foreground/60" /></div>
                   <div>
-                    <h4 className="text-base font-bold text-white">Tüm Üyeler</h4>
-                    <p className="text-white/40 text-xs">{selectedYear} yılı aidat durumları</p>
+                    <h4 className="text-base font-bold text-foreground">Tüm Üyeler</h4>
+                    <p className="text-foreground/40 text-xs">{selectedYear} yılı aidat durumları</p>
                   </div>
                 </div>
-                <span className="text-white/40 text-xs font-medium bg-white/5 px-3 py-1 rounded-lg">Toplam: {users?.filter(u => duesMembers?.includes(u.id)).length || 0} üye</span>
+                <span className="text-foreground/40 text-xs font-medium bg-foreground/5 px-3 py-1 rounded-lg">Toplam: {users?.filter(u => duesMembers?.includes(u.id)).length || 0} üye</span>
               </div>
               <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex w-max min-w-full">
                   <table className="w-full text-xs sm:text-sm text-left">
-                    <thead className="text-[9px] sm:text-xs text-white/40 uppercase bg-white/[0.03] border-b border-white/10 sticky top-0">
+                    <thead className="text-[9px] sm:text-xs text-foreground/40 uppercase bg-white/[0.03] border-b border-border/10 sticky top-0">
                       <tr>
-                        <th className="px-3 sm:px-5 py-3 font-bold sticky left-0 z-20 bg-[#0c0c0c] border-r border-white/10 min-w-[100px] sm:min-w-[160px]">Kullanıcı</th>
+                        <th className="px-3 sm:px-5 py-3 font-bold sticky left-0 z-20 bg-[#0c0c0c] border-r border-border/10 min-w-[100px] sm:min-w-[160px]">Kullanıcı</th>
                         {['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'].map((m, i) => {
                           const isCurrentMonth = i === new Date().getMonth() && selectedYear === new Date().getFullYear();
                           return (
@@ -940,20 +1137,21 @@ export default function Budget() {
                         const paidCount = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].filter(m => duesPayments?.some(p => p.user_id === u.id && p.year === selectedYear && p.month === m)).length;
                         return (
                           <tr key={u.id} className="hover:bg-white/[0.02] transition-colors group">
-                            <td className="px-3 sm:px-5 py-2.5 sm:py-3 font-medium sticky left-0 z-10 bg-[#0a0a0a] group-hover:bg-[#0e0e0e] border-r border-white/10 shadow-[2px_0_8px_rgba(0,0,0,0.4)] min-w-[100px] sm:min-w-[160px] whitespace-normal leading-tight transition-colors">
+                            <td className="px-3 sm:px-5 py-2.5 sm:py-3 font-medium sticky left-0 z-10 bg-[#0a0a0a] group-hover:bg-[#0e0e0e] border-r border-border/10 shadow-[2px_0_8px_rgba(0,0,0,0.4)] min-w-[100px] sm:min-w-[160px] whitespace-normal leading-tight transition-colors">
                               <div className="flex flex-col gap-1">
-                                <span className="text-white/90 text-xs sm:text-sm">{u.first_name} {u.last_name}</span>
+                                <span className="text-foreground/90 text-xs sm:text-sm">{u.first_name} {u.last_name}</span>
                                 <div className="flex items-center gap-1.5">
-                                  <div className="w-12 h-1 bg-white/10 rounded-full overflow-hidden">
+                                  <div className="w-12 h-1 bg-foreground/10 rounded-full overflow-hidden">
                                     <div className="h-full bg-emerald-500/60 rounded-full transition-all duration-500" style={{ width: `${(paidCount / 12) * 100}%` }} />
                                   </div>
-                                  <span className="text-[9px] text-white/30">{paidCount}/12</span>
+                                  <span className="text-[9px] text-foreground/30">{paidCount}/12</span>
                                 </div>
                               </div>
                             </td>
                             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(month => {
                               const isPaid = duesPayments?.some(p => p.user_id === u.id && p.year === selectedYear && p.month === month);
-                              const isPending = toggleDuesMutation.variables?.userId === u.id && toggleDuesMutation.variables?.month === month && toggleDuesMutation.isPending;
+                              const hasPendingTx = pendingTransactions?.some(pt => pt.user_id === u.id && pt.year === selectedYear && pt.month === month);
+                              const isMutating = toggleDuesMutation.variables?.userId === u.id && toggleDuesMutation.variables?.month === month && toggleDuesMutation.isPending;
                               const isCurrentMonthCol = (month - 1) === new Date().getMonth() && selectedYear === new Date().getFullYear();
                               return (
                                 <td key={month} className={cn("px-0.5 sm:px-1.5 py-1.5 sm:py-2.5 text-center transition-colors", isCurrentMonthCol && "bg-emerald-500/5")}>
@@ -962,17 +1160,20 @@ export default function Budget() {
                                       if (isPaid) { setPaymentToCancel({ userId: u.id, month }); setIsCancelPaymentDialogOpen(true); }
                                       else { setPendingDuesPayment({ userId: u.id, month }); setDuesPaymentAmount(budgetSettings?.dues_amount?.toString() || "100"); setIsDuesPaymentDialogOpen(true); }
                                     }}
-                                    disabled={(toggleDuesMutation.isPending && isPending) || !canManageBudget}
+                                    disabled={(toggleDuesMutation.isPending && isMutating) || !canManageBudget}
                                     className={cn(
                                       "flex items-center justify-center w-full py-1.5 sm:py-2 rounded-lg transition-all duration-200",
-                                      isPaid ? "bg-emerald-500/20 text-emerald-400" : "bg-white/[0.03] text-white/15",
+                                      hasPendingTx ? "bg-amber-500/20 text-amber-400" :
+                                      isPaid ? "bg-emerald-500/20 text-emerald-400" : "bg-white/[0.03] text-foreground/15",
                                       canManageBudget && isPaid && "hover:bg-emerald-500/30",
-                                      canManageBudget && !isPaid && "hover:bg-white/[0.08] hover:text-white/40",
-                                      isPending && "opacity-50 cursor-wait",
+                                      canManageBudget && !isPaid && !hasPendingTx && "hover:bg-white/[0.08] hover:text-foreground/40",
+                                      isMutating && "opacity-50 cursor-wait",
                                       !canManageBudget && "cursor-default"
                                     )}
+                                    title={hasPendingTx ? "Onay bekliyor" : ""}
                                   >
-                                    {isPaid ? <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Circle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                                    {hasPendingTx ? <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-pulse" /> :
+                                     isPaid ? <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Circle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                                   </button>
                                 </td>
                               )
@@ -983,15 +1184,106 @@ export default function Budget() {
                     </tbody>
                   </table>
                 </div>
-                <ScrollBar orientation="horizontal" className="bg-white/5" />
+                <ScrollBar orientation="horizontal" className="bg-foreground/5" />
               </ScrollArea>
             </div>
           </TabsContent>
+
+          {/* Pending Approvals Tab - Admin Only */}
+          {canManageBudget && (
+            <TabsContent value="approvals" className="space-y-6 animate-in fade-in-50 duration-500">
+              <div className="bg-gradient-to-br from-amber-500/10 to-amber-900/10 border border-amber-500/20 rounded-2xl p-5 flex items-center gap-4">
+                <div className="p-3 bg-amber-500/20 rounded-xl"><Clock className="w-5 h-5 text-amber-400" /></div>
+                <div>
+                  <p className="text-foreground/50 text-xs font-medium uppercase tracking-wider">Onay Bekleyen İşlemler</p>
+                  <p className="text-2xl font-black text-amber-400">{pendingTransactions?.length || 0}</p>
+                </div>
+              </div>
+
+              <div className="bg-white/[0.02] border border-border/10 rounded-2xl overflow-hidden backdrop-blur-xl">
+                <div className="p-5 border-b border-border/10 flex items-center gap-3">
+                  <div className="p-2 bg-amber-500/10 rounded-lg"><Clock className="w-4 h-4 text-amber-400" /></div>
+                  <div>
+                    <h4 className="text-base font-bold text-foreground">Onay Bekleyen İşlemler</h4>
+                    <p className="text-foreground/40 text-xs">Kullanıcıların aidat değişiklik talepleri</p>
+                  </div>
+                </div>
+
+                {loadingPending ? (
+                  <div className="p-10 text-center text-foreground/40 text-sm">Yükleniyor...</div>
+                ) : pendingTransactions && pendingTransactions.length > 0 ? (
+                  <div className="divide-y divide-white/[0.04]">
+                    {pendingTransactions.map(tx => {
+                      const txUser = users?.find(u => u.id === tx.user_id);
+                      const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+                      const isApproving = approvePendingMutation.isPending && approvePendingMutation.variables === tx.id;
+                      const isRejecting = rejectPendingMutation.isPending && rejectPendingMutation.variables === tx.id;
+
+                      return (
+                        <div key={tx.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/[0.02] transition-colors border-l-2 border-amber-500/50">
+                          <div className="flex items-start gap-3 min-w-0">
+                            <div className="p-2.5 bg-amber-500/10 text-amber-400 rounded-xl shrink-0">
+                              {tx.action_type === "mark_paid" ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-bold text-foreground">{txUser?.first_name} {txUser?.last_name}</span>
+                                <span className={cn(
+                                  "text-[10px] font-bold px-2 py-0.5 rounded-full",
+                                  tx.action_type === "mark_paid" ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"
+                                )}>
+                                  {tx.action_type === "mark_paid" ? "Aidat İşaretleme" : "Aidat Kaldırma"}
+                                </span>
+                              </div>
+                              <p className="text-foreground/50 text-sm mt-1">
+                                {tx.year} {months[tx.month - 1]} — ₺{Number(tx.amount).toLocaleString("tr-TR")}
+                              </p>
+                              <div className="flex items-center gap-2 mt-2">
+                                <span className="text-[10px] text-foreground/30">
+                                  <Clock className="w-2.5 h-2.5 inline mr-1" />
+                                  {new Date(tx.created_at).toLocaleString("tr-TR")}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <Button
+                              size="sm"
+                              onClick={() => approvePendingMutation.mutate(tx.id)}
+                              disabled={isApproving || isRejecting}
+                              className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold rounded-xl gap-1.5 text-xs"
+                            >
+                              {isApproving ? "Onaylanıyor..." : <><Check className="w-3.5 h-3.5" /> Onayla</>}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => rejectPendingMutation.mutate(tx.id)}
+                              disabled={isApproving || isRejecting}
+                              className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-xl gap-1.5 text-xs"
+                            >
+                              {isRejecting ? "Reddediliyor..." : <><XCircle className="w-3.5 h-3.5" /> Reddet</>}
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="p-14 text-center flex flex-col items-center justify-center">
+                    <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-border/10 flex items-center justify-center mb-4 text-foreground/15"><Check className="w-6 h-6" /></div>
+                    <h4 className="text-sm font-bold text-foreground/70 mb-1">Bekleyen İşlem Yok</h4>
+                    <p className="text-foreground/30 text-xs max-w-[250px]">Tüm kullanıcı talepleri işlenmiş durumda.</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          )}
         </Tabs>
       </div>
 
       <Dialog open={isDuesPaymentDialogOpen} onOpenChange={setIsDuesPaymentDialogOpen}>
-        <DialogContent className="bg-zinc-950 border border-white/10 text-white sm:max-w-md">
+        <DialogContent className="bg-zinc-950 border border-border/10 text-foreground sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Ödenen Tutarı Girin</DialogTitle>
           </DialogHeader>
@@ -1002,7 +1294,7 @@ export default function Budget() {
                 type="number"
                 value={duesPaymentAmount}
                 onChange={(e) => setDuesPaymentAmount(e.target.value)}
-                className="bg-black/50 border-white/10"
+                className="bg-foreground/5 border-border/10"
               />
             </div>
 
@@ -1013,16 +1305,16 @@ export default function Budget() {
                   <button
                     type="button"
                     onClick={() => setDistributePayment(true)}
-                    className={cn("px-3 py-2 rounded-lg text-sm font-bold transition-colors w-full", distributePayment ? "bg-emerald-500 text-black" : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white")}
+                    className={cn("px-3 py-2 rounded-lg text-sm font-bold transition-colors w-full", distributePayment ? "bg-emerald-500 text-black" : "bg-foreground/5 text-foreground/50 hover:bg-foreground/10 hover:text-foreground")}
                   >Evet</button>
                   <button
                     type="button"
                     onClick={() => setDistributePayment(false)}
-                    className={cn("px-3 py-2 rounded-lg text-sm font-bold transition-colors w-full", !distributePayment ? "bg-emerald-500 text-black" : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white")}
+                    className={cn("px-3 py-2 rounded-lg text-sm font-bold transition-colors w-full", !distributePayment ? "bg-emerald-500 text-black" : "bg-foreground/5 text-foreground/50 hover:bg-foreground/10 hover:text-foreground")}
                   >Hayır</button>
                 </div>
                 <div className="space-y-2 mt-3">
-                  <p className="text-xs text-white/50">
+                  <p className="text-xs text-foreground/50">
                     {distributePayment
                       ? "Girilen fazla tutar sıradaki ödenmemiş aylara otomatik dağıtılacaktır."
                       : "Girdiğiniz tutarın tamamı sadece seçtiğiniz ayın ödemesi olarak kaydedilecektir."}
@@ -1062,23 +1354,23 @@ export default function Budget() {
       </Dialog>
 
       <Dialog open={isCancelPaymentDialogOpen} onOpenChange={setIsCancelPaymentDialogOpen}>
-        <DialogContent className="bg-zinc-950 border border-white/10 text-white sm:max-w-md">
+        <DialogContent className="bg-zinc-950 border border-border/10 text-foreground sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-red-400">Ödemeyi İptal Et</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
-            <p className="text-white/70">Bu aya ait ödemeyi iptal etmek istediğinize emin misiniz? Bu işlem bütçeden ilgili tutarı düşecektir.</p>
+            <p className="text-foreground/70">Bu aya ait ödemeyi iptal etmek istediğinize emin misiniz? Bu işlem bütçeden ilgili tutarı düşecektir.</p>
             <div className="flex items-center gap-3 mt-6">
               <Button
                 variant="outline"
-                className="w-full bg-white/5 border-white/10 hover:bg-white/10 text-white"
+                className="w-full bg-foreground/5 border-border/10 hover:bg-foreground/10 text-foreground"
                 onClick={() => setIsCancelPaymentDialogOpen(false)}
                 disabled={toggleDuesMutation.isPending}
               >
                 Vazgeç
               </Button>
               <Button
-                className="w-full bg-red-500 hover:bg-red-600 text-white font-bold"
+                className="w-full bg-red-500 hover:bg-red-600 text-foreground font-bold"
                 disabled={toggleDuesMutation.isPending}
                 onClick={() => {
                   if (paymentToCancel) {

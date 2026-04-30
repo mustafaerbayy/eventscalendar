@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 const LoadingScreen = () => {
     return (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-background">
             {/* Background Glows */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] animate-pulse" />

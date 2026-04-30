@@ -101,19 +101,19 @@ const CalendarView = ({ events, onEventClick, isAuthenticated = true }: Calendar
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6 }}
       >
-        <Card className="overflow-hidden border border-white/20 bg-white/10 backdrop-blur-lg shadow-[0_32px_64px_rgba(0,0,0,0.4)] rounded-[2.5rem] relative">
+        <Card className="overflow-hidden border border-border/ bg-foreground/ backdrop-blur-lg shadow-[0_32px_64px_rgba(0,0,0,0.4)] rounded-[2.5rem] relative">
           {/* Background Decorative Blur */}
           <div className="hidden md:block absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[100px] pointer-events-none transform-gpu" />
           <div className="hidden md:block absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/10 blur-[100px] pointer-events-none transform-gpu" />
 
           <CardContent className="p-0 relative z-10">
             {/* Calendar Header - Month Navigation */}
-            <div className="flex items-center justify-between px-10 py-8 border-b border-white/5 bg-white/5">
+            <div className="flex items-center justify-between px-10 py-8 border-b border-border/ bg-foreground/">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                className="h-12 w-12 rounded-2xl hover:bg-white/10 transition-all border border-white/5"
+                className="h-12 w-12 rounded-2xl hover:bg-foreground/ transition-all border border-border/"
               >
                 <ChevronLeft className="h-6 w-6" />
               </Button>
@@ -137,14 +137,14 @@ const CalendarView = ({ events, onEventClick, isAuthenticated = true }: Calendar
                 variant="ghost"
                 size="icon"
                 onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                className="h-12 w-12 rounded-2xl hover:bg-white/10 transition-all border border-white/5"
+                className="h-12 w-12 rounded-2xl hover:bg-foreground/ transition-all border border-border/"
               >
                 <ChevronRight className="h-6 w-6" />
               </Button>
             </div>
 
             {/* Weekday Headers */}
-            <div className="grid grid-cols-7 border-b border-white/5 bg-white/5 px-2">
+            <div className="grid grid-cols-7 border-b border-border/ bg-foreground/ px-2">
               {weekDays.map((day) => (
                 <div
                   key={day}
@@ -172,9 +172,9 @@ const CalendarView = ({ events, onEventClick, isAuthenticated = true }: Calendar
                     className={`
                       relative min-h-[80px] md:min-h-[120px] p-3 rounded-2xl border text-left flex flex-col overflow-hidden
                       transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]
-                      ${!isCurrentMonth ? "opacity-20 pointer-events-none" : "bg-white/5 hover:bg-white/[0.08]"}
-                      ${isSelected ? "bg-primary/20 border-primary/40 shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)] z-10" : "border-transparent hover:border-white/10"}
-                      ${isTodayDate && !isSelected ? "bg-white/10 border-primary/50 shadow-[0_0_20px_rgba(var(--primary-rgb),0.2)]" : ""}
+                      ${!isCurrentMonth ? "opacity-20 pointer-events-none" : "bg-foreground/ hover:bg-white/[0.08]"}
+                      ${isSelected ? "bg-primary/20 border-primary/40 shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)] z-10" : "border-transparent hover:border-border/"}
+                      ${isTodayDate && !isSelected ? "bg-foreground/ border-primary/50 shadow-[0_0_20px_rgba(var(--primary-rgb),0.2)]" : ""}
                     `}
                   >
                     {/* Today Glow Background */}
@@ -206,7 +206,7 @@ const CalendarView = ({ events, onEventClick, isAuthenticated = true }: Calendar
                       {dayEvents.slice(0, 2).map((event) => (
                         <div
                           key={event.id}
-                          className={`text-[10px] font-bold text-foreground truncate rounded-md px-2 py-1 border-l-2 ${getCategoryDotColor(event.categoryName)} bg-white/10 shadow-sm hover:bg-white/20 transition-all`}
+                          className={`text-[10px] font-bold text-foreground truncate rounded-md px-2 py-1 border-l-2 ${getCategoryDotColor(event.categoryName)} bg-foreground/ shadow-sm hover:bg-foreground/ transition-all`}
                         >
                           {event.title}
                         </div>
@@ -222,7 +222,7 @@ const CalendarView = ({ events, onEventClick, isAuthenticated = true }: Calendar
                     {hasEvents && isCurrentMonth && (
                       <div className="md:hidden mt-auto flex justify-end">
                         <div
-                          className="h-6 w-6 rounded-full bg-gradient-to-br from-primary to-emerald-400 flex items-center justify-center shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] border border-white/20 active:scale-95 transition-transform"
+                          className="h-6 w-6 rounded-full bg-gradient-to-br from-primary to-emerald-400 flex items-center justify-center shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] border border-border/ active:scale-95 transition-transform"
                         >
                           <span className="text-[10px] font-black text-black leading-none">
                             {dayEvents.length}
@@ -248,9 +248,9 @@ const CalendarView = ({ events, onEventClick, isAuthenticated = true }: Calendar
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 200, damping: 20 }}
           >
-            <Card className="overflow-hidden border border-white/10 bg-white/5 backdrop-blur-lg shadow-2xl rounded-[2.5rem]">
+            <Card className="overflow-hidden border border-border/ bg-foreground/ backdrop-blur-lg shadow-2xl rounded-[2.5rem]">
               <CardContent className="p-8">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 pb-8 border-b border-white/5">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 pb-8 border-b border-border/">
                   <div className="flex items-center gap-6">
                     <div className="bg-primary/20 backdrop-blur-xl border border-primary/30 rounded-3xl p-5 shadow-2xl">
                       <Calendar className="h-8 w-8 text-primary" />
@@ -265,7 +265,7 @@ const CalendarView = ({ events, onEventClick, isAuthenticated = true }: Calendar
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/5 border border-white/10">
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-foreground/ border border-border/">
                     <span className="h-2 w-2 rounded-full bg-primary" />
                     <span className="text-sm font-black text-foreground uppercase tracking-wider">
                       {selectedDateEvents.length} ETKİNLİK
@@ -284,8 +284,8 @@ const CalendarView = ({ events, onEventClick, isAuthenticated = true }: Calendar
                         onClick={() => onEventClick?.(event.id)}
                         className={`
                           group flex flex-col md:flex-row md:items-center gap-4 p-6 rounded-[2rem] 
-                          border border-white/10 bg-white/10 cursor-pointer
-                          hover:bg-white/15 hover:border-primary/30 transition-all duration-300
+                          border border-border/ bg-foreground/ cursor-pointer
+                          hover:bg-foreground/ hover:border-primary/30 transition-all duration-300
                           shadow-[0_8px_30px_rgb(0,0,0,0.12)] relative overflow-hidden
                           ${event.isPast ? "opacity-50" : ""}
                         `}
@@ -293,7 +293,7 @@ const CalendarView = ({ events, onEventClick, isAuthenticated = true }: Calendar
                         {/* Side Glow Effect */}
                         <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${getCategoryDotColor(event.categoryName)} opacity-80`} />
                         <div className="flex items-center gap-4 flex-1">
-                          <div className="bg-white/10 p-3 rounded-2xl">
+                          <div className="bg-foreground/ p-3 rounded-2xl">
                             <Clock className="h-5 w-5 text-primary" />
                           </div>
                           <div>
@@ -331,7 +331,7 @@ const CalendarView = ({ events, onEventClick, isAuthenticated = true }: Calendar
                     ))}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-16 text-muted-foreground bg-white/5 rounded-[2rem] border border-dashed border-white/10">
+                  <div className="flex flex-col items-center justify-center py-16 text-muted-foreground bg-foreground/ rounded-[2rem] border border-dashed border-border/">
                     <Calendar className="h-16 w-16 mb-6 opacity-10" />
                     <p className="text-lg font-black uppercase tracking-widest opacity-40">Müsait Gün</p>
                   </div>

@@ -1,11 +1,12 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, Menu, X, User, Settings, Calendar, BarChart3, Info, Shield, Search, MessageSquare, Wallet } from "lucide-react";
+import { LogOut, Menu, X, User, Settings, Calendar, BarChart3, Info, Shield, Search, MessageSquare, Wallet, Sun, Moon } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import AboutModal from "@/components/AboutModal";
 import { NotificationsMenu } from "@/components/NotificationsMenu";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const Navbar = () => {
   const { user, profile, isAdmin, hasBudgetRole, signOut } = useAuth();
@@ -15,6 +16,7 @@ const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { theme, setTheme } = useTheme();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mobileDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -58,8 +60,8 @@ const Navbar = () => {
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className={`
             mx-auto pointer-events-auto relative flex items-center justify-between h-16
-            bg-black/40 backdrop-blur-lg border border-white/10
-            shadow-[0_8px_32px_rgba(0,0,0,0.4)]
+            bg-background/80 backdrop-blur-lg border border-border/40
+            shadow-md
             before:absolute before:inset-0 before:rounded-[inherit] before:p-[1px]
             before:bg-gradient-to-r before:from-emerald-500/20 before:via-white/5 before:to-amber-500/20
             before:-z-10 overflow-visible
@@ -96,36 +98,18 @@ const Navbar = () => {
 
           {/* Desktop Nav Links */}
           <div className="hidden md:flex items-center gap-1 mx-4">
-            <button
-              onClick={() => {
-                const scrollTarget = () => {
-                  const firstEvent = document.querySelector('[data-event-id]');
-                  const targetEl = firstEvent || document.querySelector('#calendar-section') || document.querySelector('#events-section');
-
-                  if (targetEl) {
-                    const elementTop = targetEl.getBoundingClientRect().top + window.scrollY;
-                    const offset = 120;
-                    window.scrollTo({ top: elementTop - offset, behavior: 'smooth' });
-                  }
-                };
-
-                if (window.location.pathname === '/') {
-                  scrollTarget();
-                } else {
-                  navigate('/');
-                  setTimeout(scrollTarget, 300);
-                }
-              }}
-              className="px-4 py-2 text-sm font-bold text-white/70 hover:text-white transition-all flex items-center gap-2 rounded-xl hover:bg-white/5 relative group"
+            <Link
+              to="/etkinlikler"
+              className="px-4 py-2 text-sm font-bold text-foreground/70 hover:text-foreground transition-all flex items-center gap-2 rounded-xl hover:bg-foreground/5 relative group"
             >
               <Calendar className="h-4 w-4" />
               <span>Etkinlikler</span>
               <motion.div className="absolute inset-0 bg-primary/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-            </button>
+            </Link>
 
             <Link
               to="/raporlar"
-              className="px-4 py-2 text-sm font-bold text-white/70 hover:text-white transition-all flex items-center gap-2 rounded-xl hover:bg-white/5 relative group"
+              className="px-4 py-2 text-sm font-bold text-foreground/70 hover:text-foreground transition-all flex items-center gap-2 rounded-xl hover:bg-foreground/5 relative group"
             >
               <BarChart3 className="h-4 w-4" />
               <span>Raporlar</span>
@@ -134,7 +118,7 @@ const Navbar = () => {
 
             <Link
               to="/sosyal"
-              className="px-4 py-2 text-sm font-bold text-white/70 hover:text-white transition-all flex items-center gap-2 rounded-xl hover:bg-white/5 relative group"
+              className="px-4 py-2 text-sm font-bold text-foreground/70 hover:text-foreground transition-all flex items-center gap-2 rounded-xl hover:bg-foreground/5 relative group"
             >
               <MessageSquare className="h-4 w-4" />
               <span>Fikir Meydanı</span>
@@ -152,7 +136,7 @@ const Navbar = () => {
 
             <button
               onClick={() => setAboutOpen(true)}
-              className="px-4 py-2 text-sm font-bold text-white/70 hover:text-white transition-all flex items-center gap-2 rounded-xl hover:bg-white/5 relative group"
+              className="px-4 py-2 text-sm font-bold text-foreground/70 hover:text-foreground transition-all flex items-center gap-2 rounded-xl hover:bg-foreground/5 relative group"
             >
               <Info className="h-4 w-4" />
               <span>Biz Kimiz</span>
@@ -162,7 +146,15 @@ const Navbar = () => {
 
           {/* Action Bar / User Section */}
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex h-8 w-px bg-white/10 mx-1" />
+            <div className="hidden sm:flex h-8 w-px bg-foreground/ mx-1" />
+
+            {/* Theme Toggle */}
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="flex items-center justify-center h-10 w-10 rounded-xl bg-foreground/5 border border-border/40 text-foreground/70 hover:text-foreground hover:bg-foreground/10 transition-all"
+            >
+              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </button>
 
             {/* Notifications Menu */}
             <NotificationsMenu />
@@ -173,15 +165,15 @@ const Navbar = () => {
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="flex items-center gap-3 select-none p-1 rounded-full bg-white/5 border border-white/10 hover:border-primary/50 transition-all duration-300 group"
+                    className="flex items-center gap-3 select-none p-1 rounded-full bg-foreground/5 border border-border/40 hover:border-primary/50 transition-all duration-300 group"
                   >
                     <div className="relative h-8 w-8 rounded-full overflow-hidden bg-gradient-to-tr from-emerald-500 to-amber-500 p-[1px]">
-                      <div className="flex h-full w-full items-center justify-center rounded-full bg-black text-[10px] font-black text-white">
+                      <div className="flex h-full w-full items-center justify-center rounded-full bg-background text-[10px] font-black text-foreground">
                         {profile?.first_name?.[0]?.toLocaleUpperCase('tr-TR') || "U"}
                       </div>
                     </div>
                     {!scrolled && (
-                      <span className="text-xs font-bold text-white/90 pr-2 hidden lg:inline">
+                      <span className="text-xs font-bold text-foreground/90 pr-2 hidden lg:inline">
                         {profile?.first_name}
                       </span>
                     )}
@@ -193,14 +185,14 @@ const Navbar = () => {
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="absolute top-full right-0 mt-3 w-56 rounded-2xl bg-black/80 backdrop-blur-lg border border-white/10 shadow-2xl p-2 z-[200]"
+                        className="absolute top-full right-0 mt-3 w-56 rounded-2xl bg-background/95 backdrop-blur-lg border border-border shadow-2xl p-2 z-[200]"
                       >
-                        <div className="px-3 py-2 mb-2 border-b border-white/5">
+                        <div className="px-3 py-2 mb-2 border-b border-border/40">
                           <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Panelim</p>
                         </div>
                         <DropdownItem onClick={() => { navigate("/profil"); setDropdownOpen(false); }} icon={<User className="h-4 w-4" />} label="Profil" />
                         {isAdmin && <DropdownItem onClick={() => { navigate("/yonetim"); setDropdownOpen(false); }} icon={<Shield className="h-4 w-4" />} label="Yönetim" isSpecial />}
-                        <div className="my-2 h-px bg-white/5" />
+                        <div className="my-2 h-px bg-foreground/" />
                         <button
                           onClick={handleSignOut}
                           className="flex w-full items-center gap-3 px-3 py-2 text-sm font-bold text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
@@ -217,7 +209,7 @@ const Navbar = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-white/70 hover:text-white font-bold rounded-xl"
+                    className="text-foreground/70 hover:text-foreground font-bold rounded-xl"
                     onClick={() => navigate("/giris", { state: { from: location.pathname } })}
                   >
                     Giriş
@@ -236,7 +228,7 @@ const Navbar = () => {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-white"
+              className="md:hidden flex h-10 w-10 items-center justify-center rounded-xl bg-foreground/5 border border-border/40 text-foreground"
             >
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -254,33 +246,12 @@ const Navbar = () => {
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="fixed inset-0 z-[150] md:hidden"
           >
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-            <div className="absolute right-0 top-0 bottom-0 w-[80%] max-w-sm bg-black border-l border-white/10 p-6 shadow-2xl flex flex-col pt-24">
+            <div className="absolute inset-0 bg-background/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+            <div className="absolute right-0 top-0 bottom-0 w-[80%] max-w-sm bg-background border-l border-border/40 p-6 shadow-2xl flex flex-col pt-24">
               <MobileLink
                 icon={<Calendar />}
                 label="Etkinlikler"
-                onClick={() => {
-                  const scrollTarget = () => {
-                    const firstEvent = document.querySelector('[data-event-id]');
-                    const calendarSec = document.querySelector('#calendar-section');
-                    const eventsSec = document.querySelector('#events-section');
-                    const targetEl = firstEvent || calendarSec || eventsSec;
-
-                    if (targetEl) {
-                      const elementTop = targetEl.getBoundingClientRect().top + window.scrollY;
-                      const offset = 120;
-                      window.scrollTo({ top: elementTop - offset, behavior: 'smooth' });
-                    }
-                    setMobileOpen(false);
-                  };
-
-                  if (window.location.pathname === '/') {
-                    scrollTarget();
-                  } else {
-                    navigate('/');
-                    setTimeout(scrollTarget, 400);
-                  }
-                }}
+                onClick={() => { navigate("/etkinlikler"); setMobileOpen(false); }}
               />
               <MobileLink icon={<BarChart3 />} label="Raporlar" onClick={() => { navigate("/raporlar"); setMobileOpen(false); }} />
 
@@ -290,22 +261,22 @@ const Navbar = () => {
 
               <MobileLink icon={<Info />} label="Biz Kimiz" onClick={() => { setAboutOpen(true); setMobileOpen(false); }} />
 
-              <div className="mt-auto pt-6 border-t border-white/10 space-y-4">
+              <div className="mt-auto pt-6 border-t border-border/ space-y-4">
                 {user ? (
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 mb-4">
+                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-foreground/5 border border-border/40 mb-4">
                       <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-emerald-500 to-amber-500 flex items-center justify-center text-black font-black">
                         {profile?.first_name?.[0]?.toLocaleUpperCase('tr-TR') || "U"}
                       </div>
                       <div className="flex flex-col overflow-hidden">
-                        <span className="text-sm font-black text-white truncate">{profile?.first_name} {profile?.last_name}</span>
+                        <span className="text-sm font-black text-foreground truncate">{profile?.first_name} {profile?.last_name}</span>
                         <span className="text-[10px] text-emerald-400/80 font-bold truncate">{user?.email}</span>
                       </div>
                     </div>
                     <div className="grid grid-cols-1 gap-2">
                       <Button
                         variant="outline"
-                        className="justify-start gap-2 border-white/10 font-bold rounded-xl text-xs h-10"
+                        className="justify-start gap-2 border-border/40 font-bold rounded-xl text-xs h-10"
                         onClick={() => { navigate("/profil"); setMobileOpen(false); }}
                       >
                         <User className="h-3 w-3" /> Profil
@@ -313,7 +284,7 @@ const Navbar = () => {
                       {isAdmin && (
                         <Button
                           variant="outline"
-                          className="justify-start gap-2 border-white/10 font-bold rounded-xl text-emerald-400 h-10 text-xs"
+                          className="justify-start gap-2 border-border/40 font-bold rounded-xl text-emerald-400 h-10 text-xs"
                           onClick={() => { navigate("/yonetim"); setMobileOpen(false); }}
                         >
                           <Shield className="h-4 w-4" /> Yönetim Paneli
@@ -330,7 +301,7 @@ const Navbar = () => {
                   </div>
                 ) : (
                   <>
-                    <Button variant="outline" className="w-full font-bold border-white/10 rounded-xl py-6" onClick={() => navigate("/giris", { state: { from: location.pathname } })}>Giriş Yap</Button>
+                    <Button variant="outline" className="w-full font-bold border-border/ rounded-xl py-6" onClick={() => navigate("/giris", { state: { from: location.pathname } })}>Giriş Yap</Button>
                     <Button className="w-full font-black bg-emerald-500 text-black rounded-xl py-6" onClick={() => navigate("/kayit", { state: { from: location.pathname } })}>Kayıt Ol</Button>
                   </>
                 )}
@@ -349,7 +320,7 @@ const DropdownItem = ({ onClick, icon, label, isSpecial }: { onClick: () => void
   <button
     type="button"
     onClick={onClick}
-    className={`flex w-full items-center gap-3 px-3 py-2.5 text-sm font-bold rounded-xl transition-all group ${isSpecial ? 'text-emerald-400 hover:bg-emerald-500/10' : 'text-white/70 hover:text-white hover:bg-white/5'
+    className={`flex w-full items-center gap-3 px-3 py-2.5 text-sm font-bold rounded-xl transition-all group ${isSpecial ? 'text-emerald-400 hover:bg-emerald-500/10' : 'text-foreground/70 hover:text-foreground hover:bg-foreground/5'
       }`}
   >
     <div className="transition-transform group-hover:scale-110">{icon}</div>
@@ -361,7 +332,7 @@ const MobileLink = ({ icon, label, onClick }: { icon: React.ReactNode; label: st
   <button
     type="button"
     onClick={onClick}
-    className="flex items-center gap-4 w-full p-4 rounded-2xl text-lg font-black text-white/70 hover:text-white hover:bg-emerald-500/10 transition-all border border-transparent hover:border-emerald-500/30 mb-2"
+    className="flex items-center gap-4 w-full p-4 rounded-2xl text-lg font-black text-foreground/70 hover:text-foreground hover:bg-emerald-500/10 transition-all border border-transparent hover:border-emerald-500/30 mb-2"
   >
     <div className="text-emerald-500">{icon}</div>
     <span>{label}</span>

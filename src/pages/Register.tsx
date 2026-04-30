@@ -162,8 +162,8 @@ const Register = () => {
         whileHover={{ y: -5 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="relative group rounded-[2.5rem] p-px bg-gradient-to-b from-white/20 to-transparent border border-white/10 backdrop-blur-xl shadow-[0_32px_64px_-12px_rgba(0,0,0,0.7)]">
-          <div className="rounded-[2.45rem] bg-black/40 p-8 md:p-10 backdrop-blur-sm border border-white/5 relative z-10">
+        <div className="relative group rounded-[2.5rem] p-px bg-gradient-to-b from-white/20 to-transparent border border-border/ backdrop-blur-xl shadow-[0_32px_64px_-12px_rgba(0,0,0,0.7)]">
+          <div className="rounded-[2.45rem] bg-foreground/5 p-8 md:p-10 backdrop-blur-sm border border-border/ relative z-10">
 
             <div className="flex flex-col items-center mb-8">
               <Link to="/" className="relative transition-transform duration-300 hover:scale-110">
@@ -172,7 +172,7 @@ const Register = () => {
             </div>
 
             <div className="mb-8 text-center">
-              <h1 className="font-display text-4xl font-bold tracking-tight text-white mb-2">Hesap Oluştur</h1>
+              <h1 className="font-display text-4xl font-bold tracking-tight text-foreground mb-2">Hesap Oluştur</h1>
               <p className="text-slate-400 font-medium">Ayrıcalıklı dünyaya adım atın</p>
             </div>
 
@@ -182,12 +182,12 @@ const Register = () => {
                   <Label htmlFor="firstName" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Ad</Label>
                   <div className="relative group/input">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within/input:text-primary transition-colors" />
-                    <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} required placeholder="Ali" className="pl-11 h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-white transition-all" />
+                    <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} required placeholder="Ali" className="pl-11 h-12 bg-foreground/ border-border/ rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-foreground transition-all" />
                   </div>
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="lastName" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Soyad</Label>
-                  <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} required placeholder="Yılmaz" className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-white transition-all" />
+                  <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} required placeholder="Yılmaz" className="h-12 bg-foreground/ border-border/ rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-foreground transition-all" />
                 </div>
               </div>
 
@@ -195,7 +195,7 @@ const Register = () => {
                 <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">E-posta</Label>
                 <div className="relative group/input">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within/input:text-primary transition-colors" />
-                  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="ornek@email.com" className="pl-11 h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-white transition-all" />
+                  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="ornek@email.com" className="pl-11 h-12 bg-foreground/ border-border/ rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-foreground transition-all" />
                 </div>
               </div>
 
@@ -203,7 +203,7 @@ const Register = () => {
                 <Label htmlFor="emailConfirm" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">E-posta Onay</Label>
                 <div className="relative group/input">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within/input:text-primary transition-colors" />
-                  <Input id="emailConfirm" type="email" value={emailConfirm} onChange={(e) => setEmailConfirm(e.target.value)} required placeholder="E-posta tekrar" className="pl-11 h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-white transition-all" />
+                  <Input id="emailConfirm" type="email" value={emailConfirm} onChange={(e) => setEmailConfirm(e.target.value)} required placeholder="E-posta tekrar" className="pl-11 h-12 bg-foreground/ border-border/ rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-foreground transition-all" />
                 </div>
               </div>
 
@@ -213,8 +213,8 @@ const Register = () => {
                   <div className="relative group/input">
                     <div className="absolute inset-0 bg-primary/5 rounded-xl blur-md opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300 pointer-events-none" />
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within/input:text-primary transition-colors pointer-events-none" />
-                    <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="pl-11 pr-10 h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-white" />
-                    <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
+                    <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="pl-11 pr-10 h-12 bg-foreground/ border-border/ rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-foreground" />
+                    <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-foreground" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
@@ -222,8 +222,8 @@ const Register = () => {
                 <div className="space-y-1.5">
                   <Label htmlFor="passwordConfirm" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Onay</Label>
                   <div className="relative group/input">
-                    <Input id="passwordConfirm" type={showPasswordConfirm ? "text" : "password"} value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} required minLength={6} className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-white" />
-                    <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white" onClick={() => setShowPasswordConfirm(!showPasswordConfirm)} tabIndex={-1}>
+                    <Input id="passwordConfirm" type={showPasswordConfirm ? "text" : "password"} value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} required minLength={6} className="h-12 bg-foreground/ border-border/ rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-foreground" />
+                    <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-foreground" onClick={() => setShowPasswordConfirm(!showPasswordConfirm)} tabIndex={-1}>
                       {showPasswordConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
@@ -240,14 +240,14 @@ const Register = () => {
             </form>
 
             <div className="relative my-7">
-              <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-white/5" /></div>
-              <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest"><span className="bg-black/40 px-3 text-slate-600">veya</span></div>
+              <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border/" /></div>
+              <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest"><span className="bg-foreground/5 px-3 text-slate-600">veya</span></div>
             </div>
 
             <Button
               type="button"
               variant="outline"
-              className="w-full h-14 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold transition-all flex gap-3"
+              className="w-full h-14 rounded-xl border-border/ bg-foreground/ hover:bg-foreground/ text-foreground font-bold transition-all flex gap-3"
               onClick={handleGoogleSignup}
               disabled={loading || googleLoading}
             >

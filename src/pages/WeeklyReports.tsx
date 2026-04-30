@@ -386,7 +386,7 @@ const WeeklyReports = () => {
   });
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-primary/30 selection:text-white overflow-x-hidden font-body">
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 selection:text-foreground overflow-x-hidden font-body">
       <Navbar />
 
       {/* Dynamic Background */}
@@ -416,13 +416,13 @@ const WeeklyReports = () => {
 
           <div className="flex items-center gap-4">
             <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 group-focus-within:text-primary transition-colors" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/30 group-focus-within:text-primary transition-colors" />
               <input
                 type="text"
                 placeholder="Raporlarda ara..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full lg:w-[320px] h-14 bg-white/[0.03] border border-white/10 rounded-2xl pl-12 pr-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 focus:bg-white/[0.05] transition-all backdrop-blur-xl"
+                className="w-full lg:w-[320px] h-14 bg-white/[0.03] border border-border/10 rounded-2xl pl-12 pr-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 focus:bg-white/[0.05] transition-all backdrop-blur-xl"
               />
             </div>
             {canReport && (
@@ -449,18 +449,18 @@ const WeeklyReports = () => {
           `}>
             <div className="flex items-center justify-between px-2">
               <div className="flex items-center gap-2">
-                <h2 className="text-xs font-black text-white/40 uppercase tracking-[0.3em]">Kayıtlar / {filteredReports.length}</h2>
+                <h2 className="text-xs font-black text-foreground/40 uppercase tracking-[0.3em]">Kayıtlar / {filteredReports.length}</h2>
                 {canReport && (
-                  <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 gap-1 ml-2">
+                  <div className="flex bg-foreground/5 p-1 rounded-xl border border-border/10 gap-1 ml-2">
                     <button
                       onClick={() => setShowArchived(false)}
-                      className={`px-3 py-1 text-[9px] font-black rounded-lg transition-all ${!showArchived ? 'bg-primary text-black' : 'text-white/40 hover:text-white'}`}
+                      className={`px-3 py-1 text-[9px] font-black rounded-lg transition-all ${!showArchived ? 'bg-primary text-black' : 'text-foreground/40 hover:text-foreground'}`}
                     >
                       AKTİF
                     </button>
                     <button
                       onClick={() => setShowArchived(true)}
-                      className={`px-3 py-1 text-[9px] font-black rounded-lg transition-all ${showArchived ? 'bg-amber-500 text-black' : 'text-white/40 hover:text-white'}`}
+                      className={`px-3 py-1 text-[9px] font-black rounded-lg transition-all ${showArchived ? 'bg-amber-500 text-black' : 'text-foreground/40 hover:text-foreground'}`}
                     >
                       ARŞİV
                     </button>
@@ -496,7 +496,7 @@ const WeeklyReports = () => {
                     </motion.div>
                   </div>
                   <motion.p
-                    className="text-lg text-white/40 font-bold"
+                    className="text-lg text-foreground/40 font-bold"
                     animate={{ opacity: [0.4, 0.8, 0.4] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
@@ -504,11 +504,11 @@ const WeeklyReports = () => {
                   </motion.p>
                 </motion.div>
               ) : filteredReports.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-12 bg-white/[0.02] rounded-[2.5rem] border border-dashed border-white/10 group">
-                  <div className="w-16 h-16 rounded-3xl bg-white/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-500">
-                    <FileText className="w-8 h-8 text-white/20" />
+                <div className="flex flex-col items-center justify-center p-12 bg-white/[0.02] rounded-[2.5rem] border border-dashed border-border/10 group">
+                  <div className="w-16 h-16 rounded-3xl bg-foreground/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-500">
+                    <FileText className="w-8 h-8 text-foreground/20" />
                   </div>
-                  <p className="text-white/40 font-bold tracking-tight">Kayıt Bulunamadı</p>
+                  <p className="text-foreground/40 font-bold tracking-tight">Kayıt Bulunamadı</p>
                 </div>
               ) : (
                 <AnimatePresence mode="popLayout">
@@ -528,7 +528,7 @@ const WeeklyReports = () => {
                         group relative p-6 rounded-[2rem] cursor-pointer transition-all duration-500 border
                         ${selectedReport?.id === report.id
                           ? 'bg-gradient-to-br from-primary/20 via-primary/5 to-transparent border-primary/30 shadow-[0_20px_40px_rgba(16,185,129,0.1)]'
-                          : 'bg-white/[0.03] border-white/5 hover:border-white/10 hover:bg-white/[0.05]'}
+                          : 'bg-white/[0.03] border-border/5 hover:border-border/10 hover:bg-white/[0.05]'}
                       `}
                     >
                       {selectedReport?.id === report.id && (
@@ -540,17 +540,17 @@ const WeeklyReports = () => {
 
                       <div className="flex items-start justify-between gap-4 mb-3">
                         <div className="flex-1 min-w-0">
-                          <h3 className={`font-display text-lg font-bold truncate transition-colors ${selectedReport?.id === report.id ? 'text-primary' : 'text-white/80 group-hover:text-white'}`}>
+                          <h3 className={`font-display text-lg font-bold truncate transition-colors ${selectedReport?.id === report.id ? 'text-primary' : 'text-foreground/80 group-hover:text-foreground'}`}>
                             {report.title}
                           </h3>
                         </div>
-                        <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center border transition-all ${selectedReport?.id === report.id ? 'bg-primary border-primary rotate-45' : 'bg-white/5 border-white/10'}`}>
-                          <ChevronRight className={`w-4 h-4 transition-transform ${selectedReport?.id === report.id ? 'text-black' : 'text-white/40 group-hover:translate-x-0.5'}`} />
+                        <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center border transition-all ${selectedReport?.id === report.id ? 'bg-primary border-primary rotate-45' : 'bg-foreground/5 border-border/10'}`}>
+                          <ChevronRight className={`w-4 h-4 transition-transform ${selectedReport?.id === report.id ? 'text-black' : 'text-foreground/40 group-hover:translate-x-0.5'}`} />
                         </div>
                       </div>
 
                       <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 border border-white/10 text-[10px] font-black tracking-widest text-white/60">
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-foreground/5 border border-border/10 text-[10px] font-black tracking-widest text-foreground/60">
                           <Calendar className="w-3 h-3 text-primary" />
                           {new Date(report.week_start).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' }).toUpperCase()}
                         </div>
@@ -567,8 +567,8 @@ const WeeklyReports = () => {
                           const remaining = 365 - diffDays;
                           return (
                             <div className="ml-auto flex flex-col items-end">
-                              <span className="text-[8px] font-black text-white/20 uppercase tracking-widest leading-none mb-1">Silinmesine Kalan Süre</span>
-                              <span className={`text-[10px] font-black tracking-tight ${remaining < 30 ? 'text-amber-500' : 'text-white/40'}`}>
+                              <span className="text-[8px] font-black text-foreground/20 uppercase tracking-widest leading-none mb-1">Silinmesine Kalan Süre</span>
+                              <span className={`text-[10px] font-black tracking-tight ${remaining < 30 ? 'text-amber-500' : 'text-foreground/40'}`}>
                                 {remaining > 0 ? `${remaining} GÜN` : 'SÜRE DOLDU'}
                               </span>
                             </div>
@@ -584,7 +584,7 @@ const WeeklyReports = () => {
 
           {/* Detailed Content View */}
           <div className={`
-            flex-1 h-full bg-[#050505] lg:bg-white/[0.02] lg:rounded-[3rem] border-white/5 backdrop-blur-3xl overflow-hidden shadow-2xl flex flex-col transition-all duration-500
+            flex-1 h-full bg-background lg:bg-white/[0.02] lg:rounded-[3rem] border-border/5 backdrop-blur-3xl overflow-hidden shadow-2xl flex flex-col transition-all duration-500
             ${isMobileDetailOpen
               ? 'translate-x-0 pointer-events-auto fixed lg:relative inset-0 lg:inset-auto z-[200] lg:z-20'
               : 'translate-x-full lg:translate-x-0 pointer-events-none lg:pointer-events-auto absolute lg:relative inset-0 lg:inset-auto'}
@@ -600,23 +600,23 @@ const WeeklyReports = () => {
                   className="flex flex-col h-full"
                 >
                   {/* Detail Header - Minimalist & Compact */}
-                  <div className="p-3 md:p-5 border-b border-white/5 flex flex-col gap-3 bg-gradient-to-b from-white/[0.02] to-transparent pt-20 lg:pt-5">
+                  <div className="p-3 md:p-5 border-b border-border/5 flex flex-col gap-3 bg-gradient-to-b from-white/[0.02] to-transparent pt-20 lg:pt-5">
                     {/* Row 1: Mobile Back & Title & Date */}
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-3 min-w-0">
                         <button
                           onClick={() => setIsMobileDetailOpen(false)}
-                          className="lg:hidden w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 active:scale-90 transition-transform shrink-0"
+                          className="lg:hidden w-8 h-8 rounded-full bg-foreground/5 flex items-center justify-center border border-border/10 active:scale-90 transition-transform shrink-0"
                         >
                           <ChevronRight className="w-4 h-4 rotate-180" />
                         </button>
-                        <h2 className="text-lg md:text-xl font-display font-black leading-tight text-white truncate">
+                        <h2 className="text-lg md:text-xl font-display font-black leading-tight text-foreground truncate">
                           {selectedReport.title}
                         </h2>
                       </div>
 
                       {/* Date Box - Compact version moved to top row */}
-                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 shrink-0">
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-foreground/5 border border-border/10 shrink-0">
                         <Clock className="w-3 h-3 text-primary" />
                         <span className="text-primary font-black text-[9px] md:text-[10px] tracking-tight uppercase">
                           {new Date(selectedReport.week_start).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -629,13 +629,13 @@ const WeeklyReports = () => {
                       {/* Creator Info */}
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-primary to-accent p-[1px]">
-                          <div className="w-full h-full rounded-lg bg-black flex items-center justify-center text-[8px] font-black">
+                          <div className="w-full h-full rounded-lg bg-background flex items-center justify-center text-[8px] font-black">
                             {selectedReport.creator_name?.[0]?.toUpperCase()}
                           </div>
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[8px] font-black text-white/30 uppercase tracking-[0.2em] leading-none mb-0.5">Yazar</span>
-                          <span className="text-[10px] font-bold text-white/80 leading-none">{selectedReport.creator_name}</span>
+                          <span className="text-[8px] font-black text-foreground/30 uppercase tracking-[0.2em] leading-none mb-0.5">Yazar</span>
+                          <span className="text-[10px] font-bold text-foreground/80 leading-none">{selectedReport.creator_name}</span>
                         </div>
                       </div>
 
@@ -658,7 +658,7 @@ const WeeklyReports = () => {
                               disabled={archiveLoading}
                               className={`flex items-center gap-1 h-7 px-2.5 rounded-lg border transition-all active:scale-95 text-[8px] md:text-[9px] tracking-tight shrink-0 ${selectedReport.is_archived
                                 ? 'bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20'
-                                : 'bg-white/5 border-white/10 text-white/40 hover:text-primary hover:border-primary/40'
+                                : 'bg-foreground/5 border-border/10 text-foreground/40 hover:text-primary hover:border-primary/40'
                                 }`}
                               title={selectedReport.is_archived ? "Arşivden Çıkar" : "Arşive Al"}
                             >
@@ -668,7 +668,7 @@ const WeeklyReports = () => {
 
                             <button
                               onClick={() => openEditDialog(selectedReport)}
-                              className="flex items-center gap-1 h-7 px-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/40 hover:text-primary transition-all active:scale-95 text-[8px] md:text-[9px] tracking-tight shrink-0"
+                              className="flex items-center gap-1 h-7 px-2.5 rounded-lg bg-foreground/5 hover:bg-foreground/10 border border-border/10 text-foreground/40 hover:text-primary transition-all active:scale-95 text-[8px] md:text-[9px] tracking-tight shrink-0"
                               title="Düzenle"
                             >
                               <Pencil className="w-3 h-3" />
@@ -677,7 +677,7 @@ const WeeklyReports = () => {
 
                             <button
                               onClick={() => handleDelete(selectedReport)}
-                              className="flex items-center gap-1 h-7 px-2.5 rounded-lg bg-white/5 hover:bg-destructive/10 border border-white/10 text-white/40 hover:text-destructive transition-all active:scale-95 text-[8px] md:text-[9px] tracking-tight shrink-0"
+                              className="flex items-center gap-1 h-7 px-2.5 rounded-lg bg-foreground/5 hover:bg-destructive/10 border border-border/10 text-foreground/40 hover:text-destructive transition-all active:scale-95 text-[8px] md:text-[9px] tracking-tight shrink-0"
                               title="Sil"
                             >
                               <Trash2 className="w-3 h-3" />
@@ -695,14 +695,14 @@ const WeeklyReports = () => {
                       <div className="prose prose-invert prose-sm md:prose-lg max-w-none">
                         {selectedReport.content ? (
                           <div className="relative">
-                            <p className="text-white/70 leading-[1.8] text-lg font-medium whitespace-pre-wrap selection:bg-primary/40">
+                            <p className="text-foreground/70 leading-[1.8] text-lg font-medium whitespace-pre-wrap selection:bg-primary/40">
                               {selectedReport.content}
                             </p>
                           </div>
                         ) : (
-                          <div className="flex flex-col items-center justify-center py-20 bg-white/5 rounded-[3rem] border border-dashed border-white/10">
-                            <AlertCircle className="w-12 h-12 text-white/10 mb-4" />
-                            <p className="text-white/30 font-bold">Resmi metin içeriği girilmemiş.</p>
+                          <div className="flex flex-col items-center justify-center py-20 bg-foreground/5 rounded-[3rem] border border-dashed border-border/10">
+                            <AlertCircle className="w-12 h-12 text-foreground/10 mb-4" />
+                            <p className="text-foreground/30 font-bold">Resmi metin içeriği girilmemiş.</p>
                           </div>
                         )}
                       </div>
@@ -710,12 +710,12 @@ const WeeklyReports = () => {
                       {selectedReport.file_url && (
                         <div className="mt-16 group/doc">
                           <div className="flex items-center justify-between mb-6">
-                            <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em]">EK DOSYALAR</h4>
+                            <h4 className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.4em]">EK DOSYALAR</h4>
                             <div className="flex items-center gap-2">
                               {canReport && (
                                 <button
                                   onClick={() => handleDeleteDocument(selectedReport)}
-                                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 text-[10px] font-black tracking-widest transition-all"
+                                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-foreground hover:border-red-500 text-[10px] font-black tracking-widest transition-all"
                                   title="Dökümanı Sil"
                                 >
                                   <Trash2 className="w-3 h-3" />
@@ -726,7 +726,7 @@ const WeeklyReports = () => {
                           </div>
                           <div className="relative p-1 rounded-[2.5rem] bg-gradient-to-br from-primary/30 via-white/5 to-white/5 group-hover/doc:from-primary/50 transition-all duration-500">
                             <div className="bg-[#0c0c0c] rounded-[2.4rem] p-8 flex items-center gap-6">
-                              <div className="w-20 h-20 rounded-[1.5rem] bg-white/5 border border-white/10 flex items-center justify-center group-hover/doc:scale-110 group-hover/doc:rotate-3 transition-transform duration-500 relative">
+                              <div className="w-20 h-20 rounded-[1.5rem] bg-foreground/5 border border-border/10 flex items-center justify-center group-hover/doc:scale-110 group-hover/doc:rotate-3 transition-transform duration-500 relative">
                                 <div className="absolute inset-0 bg-primary/20 blur-2xl opacity-0 group-hover/doc:opacity-100 transition-opacity" />
                                 <FileText className="w-10 h-10 text-primary relative z-10" />
                               </div>
@@ -734,8 +734,8 @@ const WeeklyReports = () => {
                                 <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-[9px] font-black uppercase tracking-widest mb-2 border border-primary/20">
                                   {selectedReport.file_type?.toUpperCase()} BELGESİ
                                 </span>
-                                <h5 className="text-2xl font-display font-black text-white">Faaliyet Dökümanı</h5>
-                                <p className="text-white/30 text-sm font-bold mt-1">Aşağıdan görüntüle veya indir</p>
+                                <h5 className="text-2xl font-display font-black text-foreground">Faaliyet Dökümanı</h5>
+                                <p className="text-foreground/30 text-sm font-bold mt-1">Aşağıdan görüntüle veya indir</p>
                               </div>
                               {/* Action buttons: view + download */}
                               <div className="flex flex-col gap-3">
@@ -744,9 +744,9 @@ const WeeklyReports = () => {
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   title="Yeni sekmede görüntüle"
-                                  className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all duration-300"
+                                  className="w-14 h-14 rounded-full bg-foreground/5 border border-border/10 flex items-center justify-center hover:bg-foreground/10 hover:border-border/20 transition-all duration-300"
                                 >
-                                  <FileText className="w-5 h-5 text-white/60" />
+                                  <FileText className="w-5 h-5 text-foreground/60" />
                                 </a>
                                 <button
                                   onClick={() => {
@@ -776,14 +776,14 @@ const WeeklyReports = () => {
                         rotate: [0, 5, -5, 0]
                       }}
                       transition={{ duration: 6, repeat: Infinity }}
-                      className="w-32 h-32 rounded-[2.5rem] bg-gradient-to-tr from-white/5 to-white/10 border border-white/10 flex items-center justify-center backdrop-blur-3xl relative z-10"
+                      className="w-32 h-32 rounded-[2.5rem] bg-gradient-to-tr from-white/5 to-white/10 border border-border/10 flex items-center justify-center backdrop-blur-3xl relative z-10"
                     >
-                      <Layers className="w-14 h-14 text-white/20" />
+                      <Layers className="w-14 h-14 text-foreground/20" />
                     </motion.div>
                     <div className="absolute inset-0 bg-primary/5 blur-3xl rounded-full animate-pulse" />
                   </div>
-                  <h3 className="text-3xl font-display font-black text-white selection:bg-transparent">Rapor Seçin</h3>
-                  <p className="text-white/30 font-bold mt-4 max-w-sm mx-auto leading-relaxed">
+                  <h3 className="text-3xl font-display font-black text-foreground selection:bg-transparent">Rapor Seçin</h3>
+                  <p className="text-foreground/30 font-bold mt-4 max-w-sm mx-auto leading-relaxed">
                     Sistemdeki güncel faaliyetleri detaylıca incelemek için sol panelden bir kayıt seçebilirsiniz.
                   </p>
                 </div>
@@ -803,14 +803,14 @@ const WeeklyReports = () => {
       `}>
         <Zap className="w-4 h-4 text-amber-500 fill-amber-500/30 shrink-0" />
         <p className="text-[9px] md:text-[10px] font-black text-amber-500/80 uppercase tracking-widest leading-tight">
-          Sistem Veri Politikası: <span className="text-white/60">Raporlar 1 yıl süreyle bulutta saklanır sonrasında silinir.</span>
+          Sistem Veri Politikası: <span className="text-foreground/60">Raporlar 1 yıl süreyle bulutta saklanır sonrasında silinir.</span>
         </p>
       </footer>
 
       {/* Premium Dialog Implementation */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="w-[95vw] sm:max-w-2xl bg-[#050505]/95 backdrop-blur-3xl border-white/10 p-0 rounded-[1.5rem] sm:rounded-[2.5rem] selection:bg-primary/30 max-h-[90vh] overflow-hidden flex flex-col">
-          <div className="p-6 sm:p-10 pb-6 border-b border-white/5 bg-white/[0.02] backdrop-blur-xl relative z-10">
+        <DialogContent className="w-[95vw] sm:max-w-2xl bg-background/95 backdrop-blur-3xl border-border/10 p-0 rounded-[1.5rem] sm:rounded-[2.5rem] selection:bg-primary/30 max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="p-6 sm:p-10 pb-6 border-b border-border/5 bg-white/[0.02] backdrop-blur-xl relative z-10">
             <DialogHeader>
               <DialogTitle className="text-2xl font-display font-black flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
@@ -818,7 +818,7 @@ const WeeklyReports = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-display font-black">{editingReport ? "Raporu Güncelle" : "Yeni Rapor Oluştur"}</h3>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Haftalık Veri Yönetimi</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-foreground/30">Haftalık Veri Yönetimi</p>
                 </div>
               </DialogTitle>
             </DialogHeader>
@@ -828,38 +828,38 @@ const WeeklyReports = () => {
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">BAŞLIK</label>
+                  <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest ml-1">BAŞLIK</label>
                   <input
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     placeholder="Haftalık Rapor Başlığı..."
-                    className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-6 text-sm font-bold text-white placeholder:text-white/20 focus:outline-none focus:border-primary/40 transition-all"
+                    className="w-full h-14 bg-foreground/5 border border-border/10 rounded-2xl px-6 text-sm font-bold text-foreground placeholder:text-foreground/20 focus:outline-none focus:border-primary/40 transition-all"
                   />
                 </div>
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">İŞLEM TARİHİ</label>
+                  <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest ml-1">İŞLEM TARİHİ</label>
                   <input
                     type="date"
                     value={formData.report_date}
                     onChange={(e) => setFormData({ ...formData, report_date: e.target.value })}
-                    className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-6 text-sm font-bold text-white focus:outline-none focus:border-primary/40 transition-all [color-scheme:dark]"
+                    className="w-full h-14 bg-foreground/5 border border-border/10 rounded-2xl px-6 text-sm font-bold text-foreground focus:outline-none focus:border-primary/40 transition-all [color-scheme:dark]"
                   />
                 </div>
               </div>
 
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">İÇERİK (OPSİYONEL)</label>
+                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest ml-1">İÇERİK (OPSİYONEL)</label>
                 <textarea
                   rows={6}
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                   placeholder="Rapor detayı veya açıklama ekleyebilirsiniz..."
-                  className="w-full bg-white/5 border border-white/10 rounded-[1.5rem] p-6 text-sm font-medium text-white/80 placeholder:text-white/20 focus:outline-none focus:border-primary/40 transition-all resize-none leading-relaxed"
+                  className="w-full bg-foreground/5 border border-border/10 rounded-[1.5rem] p-6 text-sm font-medium text-foreground/80 placeholder:text-foreground/20 focus:outline-none focus:border-primary/40 transition-all resize-none leading-relaxed"
                 />
               </div>
 
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">BELGE YÜKLE (PDF/DOC/JPG)</label>
+                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-widest ml-1">BELGE YÜKLE (PDF/DOC/JPG)</label>
                 <div className="relative group/upload w-full">
                   <input
                     type="file"
@@ -869,15 +869,15 @@ const WeeklyReports = () => {
                   />
                   <label
                     htmlFor="file-upload"
-                    className="flex flex-col items-center justify-center p-8 rounded-[1.5rem] border-2 border-dashed border-white/5 bg-white/[0.02] hover:bg-white/[0.04] hover:border-primary/30 transition-all cursor-pointer group-hover/upload:scale-[1.01]"
+                    className="flex flex-col items-center justify-center p-8 rounded-[1.5rem] border-2 border-dashed border-border/5 bg-white/[0.02] hover:bg-white/[0.04] hover:border-primary/30 transition-all cursor-pointer group-hover/upload:scale-[1.01]"
                   >
                     <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 transition-all group-hover/upload:bg-primary group-hover/upload:text-black">
-                      <Plus className="w-5 h-5 text-primary group-hover/upload:text-white" />
+                      <Plus className="w-5 h-5 text-primary group-hover/upload:text-foreground" />
                     </div>
-                    <p className="text-xs font-black text-white/60 text-center uppercase tracking-widest">
+                    <p className="text-xs font-black text-foreground/60 text-center uppercase tracking-widest">
                       {file ? file.name : (editingReport?.file_url ? 'BELGE YÜKLÜ (Değiştir)' : 'DÖKÜMAN VEYA RAPOR EKLE')}
                     </p>
-                    <p className="text-[9px] font-bold text-white/20 mt-2 uppercase tracking-[0.2em] text-center">PDF, DOC, JPG Desteklenir</p>
+                    <p className="text-[9px] font-bold text-foreground/20 mt-2 uppercase tracking-[0.2em] text-center">PDF, DOC, JPG Desteklenir</p>
                   </label>
                 </div>
               </div>
