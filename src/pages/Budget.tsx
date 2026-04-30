@@ -143,11 +143,56 @@ export default function Budget() {
     },
   });
 
+  type GroupedDuesPayment = {
+    id: string;
+    user_id: string;
+    created_by: string;
+    created_at: string;
+    amount: number;
+    months_paid: { month: number; year: number }[];
+    isExpense: false;
+  };
+
+  // Group dues payments that were made at the same time by the same user
+  const groupedDuesPayments: GroupedDuesPayment[] = [];
+  if (allDuesPaymentsHistory) {
+    const duesItems = allDuesPaymentsHistory.filter(d => d.created_by === d.user_id);
+    const processedIds = new Set();
+    
+    duesItems.forEach(item => {
+      if (processedIds.has(item.id)) return;
+      
+      // Find other items from the same user created within 5 seconds
+      const itemTime = new Date(item.created_at).getTime();
+      const relatedItems = duesItems.filter(d => 
+        !processedIds.has(d.id) &&
+        d.user_id === item.user_id &&
+        Math.abs(new Date(d.created_at).getTime() - itemTime) < 5000
+      );
+      
+      relatedItems.forEach(r => processedIds.add(r.id));
+      
+      // Sort related items by year and month
+      relatedItems.sort((a, b) => {
+        if (a.year !== b.year) return a.year - b.year;
+        return a.month - b.month;
+      });
+      
+      groupedDuesPayments.push({
+        id: relatedItems.map(r => r.id).join(','),
+        user_id: item.user_id,
+        created_by: item.created_by,
+        created_at: item.created_at, // Use the earliest or same
+        amount: relatedItems.reduce((sum, r) => sum + Number(r.amount), 0),
+        months_paid: relatedItems.map(r => ({ month: r.month, year: r.year })),
+        isExpense: false as const
+      });
+    });
+  }
+
   const combinedHistory = [
     ...(expenses || []).map(e => ({ ...e, isExpense: true as const })),
-    ...(allDuesPaymentsHistory || [])
-      .filter(d => d.created_by === d.user_id)
-      .map(d => ({ ...d, isExpense: false as const }))
+    ...groupedDuesPayments
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
 
@@ -654,10 +699,22 @@ export default function Budget() {
                           </div>
                         );
                       } else {
-                        const dueItem = item as Extract<typeof combinedHistory[number], { isExpense: false }>;
+                        const dueItem = item as GroupedDuesPayment;
                         const dueUser = users?.find(u => u.id === dueItem.user_id);
                         const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
                         const isSelfPaid = dueItem.created_by === dueItem.user_id;
+
+                        let monthsText = '';
+                        if (dueItem.months_paid && dueItem.months_paid.length > 1) {
+                          const formattedMonths = dueItem.months_paid.map(m => `${m.year} ${months[m.month - 1]}`);
+                          monthsText = `${formattedMonths.join(', ')} aidatları`;
+                        } else if (dueItem.months_paid && dueItem.months_paid.length === 1) {
+                           const m = dueItem.months_paid[0];
+                           monthsText = `${m.year} ${months[m.month - 1]} aidatı`;
+                        } else {
+                           monthsText = `${(dueItem as any).year} ${months[(dueItem as any).month - 1]} aidatı`;
+                        }
+
                         return (
                           <div key={`due-${dueItem.id}`} className={cn("p-4 sm:p-5 flex items-start gap-3 hover:bg-white/[0.02] transition-colors border-l-2 border-transparent", isSelfPaid ? "hover:border-emerald-500/50" : "hover:border-white/20")}>
                             <div className={cn("p-2.5 rounded-xl shrink-0", isSelfPaid ? "bg-emerald-500/10 text-emerald-400" : "bg-white/5 text-white/30")}><Wallet className="w-4 h-4" /></div>
@@ -668,7 +725,7 @@ export default function Budget() {
                                 <span className="text-white/30 text-xs">{new Date(dueItem.created_at).toLocaleDateString("tr-TR")}</span>
                               </div>
                               <p className="text-white/50 mt-1 text-sm">
-                                <span className={isSelfPaid ? "text-emerald-400/80" : "text-white/50"}>{dueUser?.first_name} {dueUser?.last_name}</span> — {dueItem.year} {months[dueItem.month - 1]} aidatı {isSelfPaid ? 'ödendi' : 'işaretlendi'}
+                                <span className={isSelfPaid ? "text-emerald-400/80" : "text-white/50"}>{dueUser?.first_name} {dueUser?.last_name}</span> — {monthsText} {isSelfPaid ? 'ödendi' : 'işaretlendi'}
                               </p>
                             </div>
                           </div>
