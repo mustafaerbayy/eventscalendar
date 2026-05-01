@@ -182,12 +182,12 @@ const Register = () => {
                   <Label htmlFor="firstName" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Ad</Label>
                   <div className="relative group/input">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within/input:text-primary transition-colors" />
-                    <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} required placeholder="Ali" className="pl-11 h-12 bg-foreground/ border-border/ rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-foreground transition-all" />
+                    <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} required placeholder="Ali" className="pl-11 h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-foreground transition-all" />
                   </div>
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="lastName" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Soyad</Label>
-                  <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} required placeholder="Yılmaz" className="h-12 bg-foreground/ border-border/ rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-foreground transition-all" />
+                  <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} required placeholder="Yılmaz" className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-foreground transition-all" />
                 </div>
               </div>
 
@@ -195,7 +195,7 @@ const Register = () => {
                 <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">E-posta</Label>
                 <div className="relative group/input">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within/input:text-primary transition-colors" />
-                  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="ornek@email.com" className="pl-11 h-12 bg-foreground/ border-border/ rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-foreground transition-all" />
+                  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="ornek@email.com" className="pl-11 h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-foreground transition-all" />
                 </div>
               </div>
 
@@ -203,7 +203,7 @@ const Register = () => {
                 <Label htmlFor="emailConfirm" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">E-posta Onay</Label>
                 <div className="relative group/input">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within/input:text-primary transition-colors" />
-                  <Input id="emailConfirm" type="email" value={emailConfirm} onChange={(e) => setEmailConfirm(e.target.value)} required placeholder="E-posta tekrar" className="pl-11 h-12 bg-foreground/ border-border/ rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-foreground transition-all" />
+                  <Input id="emailConfirm" type="email" value={emailConfirm} onChange={(e) => setEmailConfirm(e.target.value)} required placeholder="E-posta tekrar" className="pl-11 h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-foreground transition-all" />
                 </div>
               </div>
 
@@ -213,7 +213,7 @@ const Register = () => {
                   <div className="relative group/input">
                     <div className="absolute inset-0 bg-primary/5 rounded-xl blur-md opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300 pointer-events-none" />
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within/input:text-primary transition-colors pointer-events-none" />
-                    <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="pl-11 pr-10 h-12 bg-foreground/ border-border/ rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-foreground" />
+                    <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="pl-11 pr-10 h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-foreground" />
                     <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-foreground" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -222,7 +222,7 @@ const Register = () => {
                 <div className="space-y-1.5">
                   <Label htmlFor="passwordConfirm" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Onay</Label>
                   <div className="relative group/input">
-                    <Input id="passwordConfirm" type={showPasswordConfirm ? "text" : "password"} value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} required minLength={6} className="h-12 bg-foreground/ border-border/ rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-foreground" />
+                    <Input id="passwordConfirm" type={showPasswordConfirm ? "text" : "password"} value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} required minLength={6} className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/20 focus:border-primary/40 text-sm text-foreground" />
                     <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-foreground" onClick={() => setShowPasswordConfirm(!showPasswordConfirm)} tabIndex={-1}>
                       {showPasswordConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -247,7 +247,7 @@ const Register = () => {
             <Button
               type="button"
               variant="outline"
-              className="w-full h-14 rounded-xl border-border/ bg-foreground/ hover:bg-foreground/ text-foreground font-bold transition-all flex gap-3"
+              className="w-full h-14 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-foreground font-bold transition-all flex gap-3"
               onClick={handleGoogleSignup}
               disabled={loading || googleLoading}
             >

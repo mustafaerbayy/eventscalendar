@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Wallet, Plus, Trash2, Edit2, Info, User as UserIcon, CalendarDays, Users, TrendingUp, ShieldCheck, Clock, XCircle } from "lucide-react";
+import { Wallet, Plus, Trash2, Edit2, Info, User as UserIcon, CalendarDays, Users, TrendingUp, ShieldCheck, Clock, XCircle, Landmark, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,6 +56,21 @@ export default function Budget() {
   // Cancel payment dialog state
   const [isCancelPaymentDialogOpen, setIsCancelPaymentDialogOpen] = useState(false);
   const [paymentToCancel, setPaymentToCancel] = useState<{ userId: string, month: number } | null>(null);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeoutRef = useRef<any>(null);
+
+  // Payment Info state
+  const [isEditPaymentInfoOpen, setIsEditPaymentInfoOpen] = useState(false);
+  const [paymentName, setPaymentName] = useState("");
+  const [paymentIban, setPaymentIban] = useState("");
+
+  const handleScroll = () => {
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    setIsScrolling(true);
+    scrollTimeoutRef.current = setTimeout(() => {
+      setIsScrolling(false);
+    }, 150);
+  };
 
   useEffect(() => {
     if (profile?.id && !spentBy) {
@@ -287,6 +302,27 @@ export default function Budget() {
     },
     onError: (error: Error) => {
       toast.error("Bütçe güncellenirken hata oluştu: " + error.message);
+    }
+  });
+
+  const updatePaymentInfoMutation = useMutation({
+    mutationFn: async ({ name, iban }: { name: string; iban: string }) => {
+      if (budgetSettings?.id) {
+        const { error } = await supabase
+          .from("budget_settings")
+          // @ts-ignore
+          .update({ payment_name: name, payment_iban: iban, updated_at: new Date().toISOString(), updated_by: user.id })
+          .eq("id", budgetSettings.id);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["budgetSettings"] });
+      setIsEditPaymentInfoOpen(false);
+      toast.success("Ödeme bilgileri güncellendi");
+    },
+    onError: (error: Error) => {
+      toast.error("Ödeme bilgileri güncellenirken hata oluştu: " + error.message);
     }
   });
 
@@ -728,11 +764,11 @@ export default function Budget() {
         </div>
 
         <Tabs defaultValue="expenses" className="w-full">
-          <TabsList className={cn("bg-foreground/5 border border-border/10 p-1 rounded-2xl mb-8 grid w-full", canManageBudget ? "max-w-xl grid-cols-3" : "max-w-md grid-cols-2")}>
-            <TabsTrigger value="expenses" className="rounded-xl data-[state=active]:bg-emerald-500 data-[state=active]:text-black font-bold py-2">Bütçe</TabsTrigger>
-            <TabsTrigger value="dues" className="rounded-xl data-[state=active]:bg-emerald-500 data-[state=active]:text-black font-bold py-2">Aidat Takibi</TabsTrigger>
+          <TabsList className={cn("h-12 bg-foreground/5 border border-border/10 p-1 gap-2 rounded-2xl mb-8 grid w-full", canManageBudget ? "max-w-2xl grid-cols-3" : "max-w-md grid-cols-2")}>
+            <TabsTrigger value="expenses" className="rounded-xl data-[state=active]:bg-emerald-500 data-[state=active]:text-black data-[state=active]:shadow-none font-bold h-full px-6">Bütçe</TabsTrigger>
+            <TabsTrigger value="dues" className="rounded-xl data-[state=active]:bg-emerald-500 data-[state=active]:text-black data-[state=active]:shadow-none font-bold h-full px-6">Aidat Takibi</TabsTrigger>
             {canManageBudget && (
-              <TabsTrigger value="approvals" className="rounded-xl data-[state=active]:bg-amber-500 data-[state=active]:text-black font-bold py-2 relative">
+              <TabsTrigger value="approvals" className="rounded-xl data-[state=active]:bg-amber-500 data-[state=active]:text-black data-[state=active]:shadow-none font-bold h-full px-6 relative">
                 Onay Bekleyenler
                 {(pendingTransactions?.length || 0) > 0 && (
                   <span className="absolute -top-1 -right-1 bg-amber-500 text-black text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
@@ -757,8 +793,8 @@ export default function Budget() {
                       <DialogTrigger asChild>
                         <button className="text-emerald-400/60 hover:text-emerald-400 text-[10px] font-medium mt-0.5 flex items-center gap-1 transition-colors"><Edit2 className="w-2.5 h-2.5" /> Düzenle</button>
                       </DialogTrigger>
-                      <DialogContent className="bg-zinc-950 border border-border/10 text-foreground">
-                        <DialogHeader><DialogTitle>Mevcut Bütçeyi Güncelle</DialogTitle></DialogHeader>
+                      <DialogContent className="bg-background border border-border/40 text-foreground rounded-[2rem] p-8 top-[10%] translate-y-0 sm:top-[50%] sm:translate-y-[-50%]">
+                        <DialogHeader><DialogTitle className="text-xl font-black">Mevcut Bütçeyi Güncelle</DialogTitle></DialogHeader>
                         <form onSubmit={handleUpdateBudget} className="space-y-4 pt-4">
                           <div className="space-y-2"><Label>Yeni Mevcut Bütçe (₺)</Label><Input type="number" value={newTotalBudget} onChange={(e) => setNewTotalBudget(e.target.value)} placeholder="0" className="bg-foreground/5 border-border/10" /></div>
                           <Button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold" disabled={updateBudgetMutation.isPending}>{updateBudgetMutation.isPending ? "Kaydediliyor..." : "Kaydet"}</Button>
@@ -795,8 +831,8 @@ export default function Budget() {
                   <DialogTrigger asChild>
                     <Button onClick={openAddExpense} size="sm" className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold rounded-xl gap-1.5 text-xs"><Plus className="w-3.5 h-3.5" /> Yeni Harcama</Button>
                   </DialogTrigger>
-                  <DialogContent className="bg-zinc-950 border border-border/10 text-foreground sm:max-w-md">
-                    <DialogHeader><DialogTitle>{editingExpenseId ? "Harcamayı Düzenle" : "Yeni Harcama Gir"}</DialogTitle></DialogHeader>
+                  <DialogContent className="bg-background border border-border/40 text-foreground sm:max-w-md rounded-[2.5rem] p-8 top-[10%] translate-y-0 sm:top-[50%] sm:translate-y-[-50%]">
+                    <DialogHeader><DialogTitle className="text-xl font-black">{editingExpenseId ? "Harcamayı Düzenle" : "Yeni Harcama Gir"}</DialogTitle></DialogHeader>
                     <form onSubmit={handleAddExpense} className="space-y-4 pt-4">
                       <div className="space-y-2"><Label>Harcama Tutarı (₺)</Label><Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Örn: 500" className="bg-foreground/5 border-border/10" required /></div>
                       <div className="space-y-2"><Label>Açıklama</Label><Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Harcama detayları..." className="bg-foreground/5 border-border/10 min-h-[80px]" /></div>
@@ -809,7 +845,7 @@ export default function Budget() {
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-[#0c0c0c] border-border/10 !z-[9999]">
+                          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-background border-border/40 !z-[9999]">
                             <Command className="bg-transparent border-none">
                               <CommandInput placeholder="Kişi ara..." className="text-foreground border-none focus:ring-0" />
                               <CommandList className="custom-scrollbar">
@@ -831,7 +867,7 @@ export default function Budget() {
                         <Label>İlgili Etkinlik (Opsiyonel)</Label>
                         <Select value={eventId} onValueChange={setEventId}>
                           <SelectTrigger className="bg-foreground/5 border-border/10"><SelectValue placeholder="Etkinlik seçin" /></SelectTrigger>
-                          <SelectContent className="bg-[#0c0c0c] border-border/10 max-h-60 !z-[9999] !opacity-100 !visible p-2 rounded-2xl">
+                          <SelectContent className="bg-background border-border/40 max-h-60 !z-[9999] !opacity-100 !visible p-2 rounded-2xl">
                             <SelectItem value="none" className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/10 cursor-pointer">Etkinlik Bağımsız</SelectItem>
                             {eventList?.map((ev) => (<SelectItem key={ev.id} value={ev.id} className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/10 cursor-pointer">{ev.title} ({new Date(ev.date).toLocaleDateString("tr-TR")})</SelectItem>))}
                           </SelectContent>
@@ -847,7 +883,7 @@ export default function Budget() {
                 {loadingExpenses || loadingAllDuesHistory ? (
                   <div className="p-10 text-center text-foreground/40 text-sm">Yükleniyor...</div>
                 ) : filteredHistory && filteredHistory.length > 0 ? (
-                  <div className="divide-y divide-white/[0.04]">
+                  <div className="divide-y divide-border/40">
                     {filteredHistory.map((item) => {
                       if (item.isExpense) {
                         const expense = item as Extract<typeof combinedHistory[number], { isExpense: true }>;
@@ -960,6 +996,99 @@ export default function Budget() {
               );
             })()}
 
+            {/* Payment Info Box */}
+            <div className="bg-gradient-to-br from-indigo-500/10 to-indigo-900/10 border border-indigo-500/20 rounded-2xl p-5 flex items-center justify-between gap-4 relative">
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="p-3 bg-indigo-500/20 rounded-xl shrink-0"><Landmark className="w-5 h-5 text-indigo-400" /></div>
+                <div className="min-w-0">
+                  <p className="text-foreground/50 text-xs font-medium uppercase tracking-wider">Aidat Ödeme Bilgileri</p>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-1">
+                    <div 
+                      className="flex items-start sm:items-center gap-2 cursor-pointer group hover:bg-white/[0.05] p-1.5 -ml-1.5 rounded-md transition-colors active:scale-95"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const textToCopy = (budgetSettings as any)?.payment_name;
+                        if (!textToCopy) {
+                          toast.error("Kopyalanacak isim bulunamadı.");
+                          return;
+                        }
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                          navigator.clipboard.writeText(textToCopy)
+                            .then(() => toast.success("İsim kopyalandı!"))
+                            .catch(() => toast.error("Kopyalama başarısız oldu."));
+                        } else {
+                          const textArea = document.createElement("textarea");
+                          textArea.value = textToCopy;
+                          document.body.appendChild(textArea);
+                          textArea.select();
+                          try {
+                            document.execCommand('copy');
+                            toast.success("İsim kopyalandı!");
+                          } catch (err) {
+                            toast.error("Tarayıcınız kopyalamayı desteklemiyor.");
+                          }
+                          document.body.removeChild(textArea);
+                        }
+                      }}
+                    >
+                      <p className="font-bold text-foreground text-sm sm:text-base break-words">{(budgetSettings as any)?.payment_name || "Belirtilmemiş"}</p>
+                      <Copy className="w-3.5 h-3.5 text-foreground/30 group-hover:text-indigo-400 transition-colors shrink-0 mt-1 sm:mt-0" />
+                    </div>
+                    
+                    <div className="hidden sm:block text-foreground/20">•</div>
+
+                    <div 
+                      className="flex items-start sm:items-center gap-2 cursor-pointer group hover:bg-white/[0.05] p-1.5 -ml-1.5 rounded-md transition-colors active:scale-95"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const textToCopy = (budgetSettings as any)?.payment_iban;
+                        if (!textToCopy) {
+                          toast.error("Kopyalanacak IBAN bulunamadı.");
+                          return;
+                        }
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                          navigator.clipboard.writeText(textToCopy)
+                            .then(() => toast.success("IBAN kopyalandı!"))
+                            .catch(() => toast.error("Kopyalama başarısız oldu."));
+                        } else {
+                          const textArea = document.createElement("textarea");
+                          textArea.value = textToCopy;
+                          document.body.appendChild(textArea);
+                          textArea.select();
+                          try {
+                            document.execCommand('copy');
+                            toast.success("IBAN kopyalandı!");
+                          } catch (err) {
+                            toast.error("Tarayıcınız kopyalamayı desteklemiyor.");
+                          }
+                          document.body.removeChild(textArea);
+                        }
+                      }}
+                    >
+                      <p className="text-indigo-400 font-mono text-[11px] sm:text-sm tracking-wider sm:tracking-widest break-all">{(budgetSettings as any)?.payment_iban || "TR..."}</p>
+                      <Copy className="w-3.5 h-3.5 text-foreground/30 group-hover:text-indigo-400 transition-colors shrink-0 mt-0.5 sm:mt-0" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {canManageBudget && (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-foreground/30 hover:text-indigo-400 hover:bg-indigo-500/10 shrink-0"
+                  onClick={() => {
+                    setPaymentName((budgetSettings as any)?.payment_name || "");
+                    setPaymentIban((budgetSettings as any)?.payment_iban || "");
+                    setIsEditPaymentInfoOpen(true);
+                  }}
+                >
+                  <Edit2 className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+
             {/* Toolbar */}
             <div className="bg-white/[0.02] border border-border/10 rounded-2xl p-4 backdrop-blur-xl">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -968,7 +1097,7 @@ export default function Budget() {
                     <SelectTrigger className="bg-foreground/5 border-border/10 w-28 rounded-xl">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#0c0c0c] border-border/10 !z-[9999] rounded-2xl">
+                    <SelectContent className="bg-background border-border/40 !z-[9999] rounded-2xl">
                       {[...Array(5)].map((_, i) => {
                         const y = new Date().getFullYear() - 2 + i;
                         return <SelectItem key={y} value={y.toString()} className="cursor-pointer hover:bg-foreground/10 rounded-xl">{y}</SelectItem>
@@ -992,7 +1121,7 @@ export default function Budget() {
                           <Edit2 className="w-3 h-3" /> Aidat Tutarı
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="bg-zinc-950 border border-border/10 text-foreground sm:max-w-md">
+                      <DialogContent className="bg-background border border-border/40 text-foreground sm:max-w-md rounded-[2rem] p-8 top-[10%] translate-y-0 sm:top-[50%] sm:translate-y-[-50%]">
                         <DialogHeader><DialogTitle>Aidat Ücretini Güncelle</DialogTitle></DialogHeader>
                         <form onSubmit={handleUpdateDuesAmount} className="space-y-4 pt-4">
                           <div className="space-y-2">
@@ -1011,15 +1140,45 @@ export default function Budget() {
                           <Users className="w-3 h-3" /> Üyeleri Seç
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="bg-zinc-950 border border-border/10 text-foreground sm:max-w-md">
-                        <DialogHeader><DialogTitle>Aidat Ödeyenleri Belirle</DialogTitle></DialogHeader>
-                        <ScrollArea className="h-[300px] w-full rounded-md border border-border/10 p-4 mt-4">
-                          {users?.map(u => (
-                            <div key={u.id} className="flex items-center space-x-3 mb-4">
-                              <Checkbox id={`user-${u.id}`} checked={duesMembers?.includes(u.id)} onCheckedChange={() => toggleDuesMemberMutation.mutate(u.id)} disabled={toggleDuesMemberMutation.isPending && toggleDuesMemberMutation.variables === u.id} className="border-border/20 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500" />
-                              <Label htmlFor={`user-${u.id}`} className="cursor-pointer">{u.first_name} {u.last_name}</Label>
-                            </div>
-                          ))}
+                      <DialogContent className="bg-background border border-border/40 text-foreground sm:max-w-md rounded-[2.5rem] p-8 shadow-2xl top-[10%] translate-y-0 sm:top-[50%] sm:translate-y-[-50%]">
+                        <DialogHeader>
+                          <DialogTitle className="text-2xl font-black text-center mb-2">Aidat Ödeyenler</DialogTitle>
+                          <p className="text-center text-foreground/40 text-sm mb-4">Aidat listesinde görünecek üyeleri seçin</p>
+                        </DialogHeader>
+                        <ScrollArea 
+                          className="h-[400px] w-full pr-4 mt-2" 
+                          onScroll={handleScroll}
+                        >
+                          <div className={cn("space-y-1", isScrolling && "pointer-events-none")}>
+                            {users?.map(u => (
+                              <div 
+                                key={u.id} 
+                                className="flex items-center justify-between p-3 rounded-2xl hover:bg-emerald-500/5 transition-all group border-b border-border/5 last:border-0 cursor-pointer"
+                                onClick={() => {
+                                  if (!isScrolling) {
+                                    toggleDuesMemberMutation.mutate(u.id);
+                                  }
+                                }}
+                              >
+                                <div className="flex items-center space-x-4">
+                                  <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-emerald-500/20 to-emerald-500/5 flex items-center justify-center text-xs font-black text-emerald-400 border border-emerald-500/20 group-hover:scale-110 transition-transform">
+                                    {u.first_name?.[0]?.toLocaleUpperCase('tr-TR')}{u.last_name?.[0]?.toLocaleUpperCase('tr-TR')}
+                                  </div>
+                                  <div className="flex flex-col">
+                                    <span className="font-black text-sm text-foreground/90 group-hover:text-emerald-400 transition-colors">{u.first_name} {u.last_name}</span>
+                                    <span className="text-[10px] text-foreground/30 font-medium">Topluluk Üyesi</span>
+                                  </div>
+                                </div>
+                                <Checkbox 
+                                  id={`user-${u.id}`} 
+                                  checked={duesMembers?.includes(u.id)} 
+                                  onCheckedChange={() => {}} // Handled by div onClick to prevent double trigger and scroll issues
+                                  disabled={toggleDuesMemberMutation.isPending && toggleDuesMemberMutation.variables === u.id} 
+                                  className="h-5 w-5 border-border/20 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500 rounded-lg transition-all pointer-events-none" 
+                                />
+                              </div>
+                            ))}
+                          </div>
                         </ScrollArea>
                       </DialogContent>
                     </Dialog>
@@ -1121,7 +1280,7 @@ export default function Budget() {
                   <table className="w-full text-xs sm:text-sm text-left">
                     <thead className="text-[9px] sm:text-xs text-foreground/40 uppercase bg-white/[0.03] border-b border-border/10 sticky top-0">
                       <tr>
-                        <th className="px-3 sm:px-5 py-3 font-bold sticky left-0 z-20 bg-[#0c0c0c] border-r border-border/10 min-w-[100px] sm:min-w-[160px]">Kullanıcı</th>
+                        <th className="px-3 sm:px-5 py-3 font-bold sticky left-0 z-20 bg-background border-r border-border/10 min-w-[100px] sm:min-w-[160px]">Kullanıcı</th>
                         {['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'].map((m, i) => {
                           const isCurrentMonth = i === new Date().getMonth() && selectedYear === new Date().getFullYear();
                           return (
@@ -1132,12 +1291,12 @@ export default function Budget() {
                         })}
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/[0.04]">
+                    <tbody className="divide-y divide-border/40">
                       {users?.filter(u => duesMembers?.includes(u.id) && u.id !== user?.id).map(u => {
                         const paidCount = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].filter(m => duesPayments?.some(p => p.user_id === u.id && p.year === selectedYear && p.month === m)).length;
                         return (
                           <tr key={u.id} className="hover:bg-white/[0.02] transition-colors group">
-                            <td className="px-3 sm:px-5 py-2.5 sm:py-3 font-medium sticky left-0 z-10 bg-[#0a0a0a] group-hover:bg-[#0e0e0e] border-r border-border/10 shadow-[2px_0_8px_rgba(0,0,0,0.4)] min-w-[100px] sm:min-w-[160px] whitespace-normal leading-tight transition-colors">
+                            <td className="px-3 sm:px-5 py-2.5 sm:py-3 font-medium sticky left-0 z-10 bg-background group-hover:bg-muted/30 border-r border-border/10 shadow-[2px_0_8px_rgba(0,0,0,0.05)] min-w-[100px] sm:min-w-[160px] whitespace-normal leading-tight transition-colors">
                               <div className="flex flex-col gap-1">
                                 <span className="text-foreground/90 text-xs sm:text-sm">{u.first_name} {u.last_name}</span>
                                 <div className="flex items-center gap-1.5">
@@ -1283,9 +1442,9 @@ export default function Budget() {
       </div>
 
       <Dialog open={isDuesPaymentDialogOpen} onOpenChange={setIsDuesPaymentDialogOpen}>
-        <DialogContent className="bg-zinc-950 border border-border/10 text-foreground sm:max-w-md">
+        <DialogContent className="bg-background border border-border/40 text-foreground sm:max-w-md rounded-[2rem] p-8 top-[10%] translate-y-0 sm:top-[50%] sm:translate-y-[-50%]">
           <DialogHeader>
-            <DialogTitle>Ödenen Tutarı Girin</DialogTitle>
+            <DialogTitle className="text-xl font-black">Ödeme Onayı</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div className="space-y-2">
@@ -1354,9 +1513,9 @@ export default function Budget() {
       </Dialog>
 
       <Dialog open={isCancelPaymentDialogOpen} onOpenChange={setIsCancelPaymentDialogOpen}>
-        <DialogContent className="bg-zinc-950 border border-border/10 text-foreground sm:max-w-md">
+        <DialogContent className="bg-background border border-border/40 text-foreground sm:max-w-md rounded-[2rem] p-8 top-[10%] translate-y-0 sm:top-[50%] sm:translate-y-[-50%]">
           <DialogHeader>
-            <DialogTitle className="text-red-400">Ödemeyi İptal Et</DialogTitle>
+            <DialogTitle className="text-xl font-black text-red-400">Ödemeyi İptal Et</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <p className="text-foreground/70">Bu aya ait ödemeyi iptal etmek istediğinize emin misiniz? Bu işlem bütçeden ilgili tutarı düşecektir.</p>
@@ -1389,6 +1548,46 @@ export default function Budget() {
                 {toggleDuesMutation.isPending ? "İptal Ediliyor..." : "İptal Et"}
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isEditPaymentInfoOpen} onOpenChange={setIsEditPaymentInfoOpen}>
+        <DialogContent className="bg-background border border-border/40 text-foreground sm:max-w-md rounded-[2rem] p-8 top-[10%] translate-y-0 sm:top-[50%] sm:translate-y-[-50%]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black">Ödeme Bilgilerini Güncelle</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>İsim Soyisim</Label>
+              <Input
+                value={paymentName}
+                onChange={(e) => setPaymentName(e.target.value)}
+                placeholder="Örn: Refik Topluluğu"
+                className="bg-foreground/5 border-border/10"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>IBAN</Label>
+              <Input
+                value={paymentIban}
+                onChange={(e) => setPaymentIban(e.target.value)}
+                placeholder="TR..."
+                className="bg-foreground/5 border-border/10 font-mono"
+              />
+            </div>
+            <Button
+              className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold mt-4"
+              disabled={updatePaymentInfoMutation.isPending}
+              onClick={() => {
+                updatePaymentInfoMutation.mutate({ name: paymentName, iban: paymentIban });
+              }}
+            >
+              {updatePaymentInfoMutation.isPending ? "Kaydediliyor..." : "Kaydet"}
+            </Button>
+            <p className="text-[10px] text-foreground/40 text-center mt-2 leading-snug">
+              Not: Bu bilgilerin kaydedilebilmesi için Supabase panelinizden <code className="bg-foreground/10 px-1 rounded">budget_settings</code> tablosuna <code className="bg-foreground/10 px-1 rounded">payment_name</code> ve <code className="bg-foreground/10 px-1 rounded">payment_iban</code> sütunlarının eklenmiş olması gerekmektedir.
+            </p>
           </div>
         </DialogContent>
       </Dialog>

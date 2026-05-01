@@ -85,10 +85,10 @@ const Navbar = () => {
 
           {/* Mobile Login Button (Centered) - Only for unauthenticated users */}
           {!user && (
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:hidden">
+            <div className="flex-1 flex justify-center md:hidden">
               <button
                 onClick={() => navigate("/giris")}
-                className="flex items-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 font-bold rounded-xl text-[11px] px-4 py-1.5 transition-all shadow-[0_0_15px_rgba(16,185,129,0.1)] whitespace-nowrap"
+                className="flex items-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 font-bold rounded-xl text-[11px] px-3 py-1.5 transition-all shadow-[0_0_15px_rgba(16,185,129,0.1)] whitespace-nowrap"
               >
                 <User className="w-3 h-3" />
                 Giriş Yap / Kayıt Ol
@@ -148,10 +148,10 @@ const Navbar = () => {
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex h-8 w-px bg-foreground/ mx-1" />
 
-            {/* Theme Toggle */}
+            {/* Theme Toggle - Desktop only */}
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="flex items-center justify-center h-10 w-10 rounded-xl bg-foreground/5 border border-border/40 text-foreground/70 hover:text-foreground hover:bg-foreground/10 transition-all"
+              className="hidden md:flex items-center justify-center h-10 w-10 rounded-xl bg-foreground/5 border border-border/40 text-foreground/70 hover:text-foreground hover:bg-foreground/10 transition-all"
             >
               {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </button>
@@ -261,7 +261,20 @@ const Navbar = () => {
 
               <MobileLink icon={<Info />} label="Biz Kimiz" onClick={() => { setAboutOpen(true); setMobileOpen(false); }} />
 
-              <div className="mt-auto pt-6 border-t border-border/ space-y-4">
+              {/* Theme Toggle - Mobile */}
+              <div className="mt-6 mb-2">
+                <button
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  className="flex items-center gap-4 w-full p-4 rounded-2xl text-lg font-black text-foreground/70 hover:text-foreground hover:bg-emerald-500/10 transition-all border border-transparent hover:border-emerald-500/30"
+                >
+                  <div className="text-emerald-500">
+                    {theme === 'dark' ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
+                  </div>
+                  <span>{theme === 'dark' ? 'Aydınlık Mod' : 'Karanlık Mod'}</span>
+                </button>
+              </div>
+
+              <div className="mt-auto pt-6 border-t border-border/40 space-y-4">
                 {user ? (
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 p-3 rounded-2xl bg-foreground/5 border border-border/40 mb-4">

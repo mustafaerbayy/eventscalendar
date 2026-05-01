@@ -240,7 +240,7 @@ const Login = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="pl-12 h-14 bg-foreground/ border-border/ rounded-2xl focus:ring-primary/20 focus:border-primary/50 text-foreground placeholder:text-slate-600 transition-all font-medium"
+                    className="pl-12 h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20 focus:border-primary/50 text-foreground placeholder:text-slate-600 transition-all font-medium"
                   />
                 </div>
               </div>
@@ -261,7 +261,7 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="pl-12 pr-12 h-14 bg-foreground/ border-border/ rounded-2xl focus:ring-primary/20 focus:border-primary/50 text-foreground placeholder:text-slate-600 transition-all font-medium"
+                    className="pl-12 pr-12 h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20 focus:border-primary/50 text-foreground placeholder:text-slate-600 transition-all font-medium"
                   />
                   <button
                     type="button"
@@ -304,7 +304,7 @@ const Login = () => {
             <Button
               type="button"
               variant="outline"
-              className="w-full h-14 rounded-2xl border-border/ bg-foreground/ hover:bg-foreground/ text-foreground font-bold transition-all active:scale-[0.98] flex gap-3"
+              className="w-full h-14 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-foreground font-bold transition-all active:scale-[0.98] flex gap-3"
               onClick={handleGoogleLogin}
               disabled={loading || googleLoading}
             >
