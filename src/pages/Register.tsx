@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/error-messages";
 import { Eye, EyeOff, UserPlus, Mail, Lock, User, ArrowRight } from "lucide-react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { formatName } from "@/lib/utils";
+
 
 const Register = () => {
   const navigate = useNavigate();
@@ -66,14 +68,18 @@ const Register = () => {
       console.warn("Email check failed, proceeding with signup:", err);
     }
 
+    const formattedFirstName = formatName(firstName);
+    const formattedLastName = formatName(lastName);
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { first_name: firstName.trim(), last_name: lastName.trim() },
+        data: { first_name: formattedFirstName, last_name: formattedLastName },
         emailRedirectTo: window.location.origin,
       },
     });
+
 
     setLoading(false);
 

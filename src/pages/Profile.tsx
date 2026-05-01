@@ -19,8 +19,9 @@ import {
 import Navbar from "@/components/Navbar";
 import SocialProfileForm from "@/components/SocialProfileForm";
 import { getErrorMessage } from "@/lib/error-messages";
-import { cn } from "@/lib/utils";
+import { cn, formatName } from "@/lib/utils";
 import LoadingScreen from "@/components/LoadingScreen";
+
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -95,13 +96,23 @@ const Profile = () => {
     if (!user) return;
     if (!firstName.trim()) { toast.error("İsim boş olamaz."); return; }
     setSavingName(true);
+    const formattedFirst = formatName(firstName);
+    const formattedLast = formatName(lastName);
+    
     const { error } = await supabase
       .from("profiles")
-      .update({ first_name: firstName.trim(), last_name: lastName.trim() })
+      .update({ first_name: formattedFirst, last_name: formattedLast })
       .eq("id", user.id);
+
     setSavingName(false);
     if (error) toast.error(getErrorMessage(error));
-    else { toast.success("İsim bilgileri güncellendi."); refreshProfile(); }
+    else { 
+      toast.success("İsim bilgileri güncellendi."); 
+      setFirstName(formattedFirst);
+      setLastName(formattedLast);
+      refreshProfile(); 
+    }
+
   };
 
   const handleSaveEmail = async () => {

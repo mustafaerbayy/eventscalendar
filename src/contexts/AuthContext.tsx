@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import { formatName } from "@/lib/utils";
+
 
 interface Profile {
   id: string;
@@ -48,24 +50,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .select("*")
       .eq("id", userId)
       .single();
-    setProfile(data);
+    
+    if (data) {
+      const formattedFirst = formatName(data.first_name);
+      const formattedLast = formatName(data.last_name);
+      
+      if (formattedFirst !== data.first_name || formattedLast !== data.last_name) {
+        console.log("Automatically formatting names for user:", userId);
+        const { data: updatedData, error } = await supabase
+          .from("profiles")
+          .update({ 
+            first_name: formattedFirst, 
+            last_name: formattedLast 
+          })
+          .eq("id", userId)
+          .select()
+          .single();
+          
+        if (!error && updatedData) {
+          setProfile(updatedData);
+        } else {
+          setProfile(data);
+        }
+      } else {
+        setProfile(data);
+      }
+    } else {
+      setProfile(null);
+    }
   };
+
 
   const updateProfileFromGoogleIfNeeded = async (userId: string, user: User) => {
     try {
-      // Check if user has Google identity
       const googleIdentity = user.identities?.find(i => i.provider === 'google');
       
-      if (!googleIdentity) {
-        console.log("No Google identity found");
-        return;
-      }
-
-      console.log("Full user object:", user);
-      console.log("raw_user_meta_data:", user.raw_user_meta_data);
-      console.log("user_metadata:", user.user_metadata);
-      console.log("Google identity:", googleIdentity);
-
       // Get current profile
       const { data: profile } = await supabase
         .from("profiles")
@@ -73,73 +92,56 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .eq("id", userId)
         .single();
 
-      console.log("Current profile:", profile);
-
-      // If first_name and last_name are empty, extract from Google data
-      if (profile && (profile.first_name === '' || profile.last_name === '')) {
+      if (profile) {
         let firstName = profile.first_name || '';
         let lastName = profile.last_name || '';
+        let needsUpdate = false;
 
-        // Extract from Google OAuth metadata - try multiple locations
-        let firstName_google = '';
-        let lastName_google = '';
-        let fullName = '';
+        // If names are missing, try to extract from Google
+        if ((firstName === '' || lastName === '') && googleIdentity) {
+          let firstName_google = '';
+          let lastName_google = '';
+          let fullName = '';
 
-        // Try raw_user_meta_data
-        if (user.raw_user_meta_data) {
-          firstName_google = user.raw_user_meta_data?.given_name || '';
-          lastName_google = user.raw_user_meta_data?.family_name || '';
-          fullName = user.raw_user_meta_data?.name || '';
-        }
+          const userAny = user as any;
+          if (userAny.raw_user_meta_data) {
+            firstName_google = userAny.raw_user_meta_data?.given_name || '';
+            lastName_google = userAny.raw_user_meta_data?.family_name || '';
+            fullName = userAny.raw_user_meta_data?.name || '';
+          }
 
-        // Try user_metadata
-        if (!firstName_google && user.user_metadata) {
-          firstName_google = user.user_metadata?.given_name || '';
-          lastName_google = user.user_metadata?.family_name || '';
-          fullName = user.user_metadata?.name || '';
-        }
+          if (!firstName_google && user.user_metadata) {
+            firstName_google = user.user_metadata?.given_name || '';
+            lastName_google = user.user_metadata?.family_name || '';
+            fullName = user.user_metadata?.name || '';
+          }
 
-        // Try identity metadata
-        if (!firstName_google && googleIdentity.identity_data) {
-          firstName_google = googleIdentity.identity_data?.given_name || '';
-          lastName_google = googleIdentity.identity_data?.family_name || '';
-          fullName = googleIdentity.identity_data?.name || '';
-        }
+          if (!firstName && firstName_google) firstName = firstName_google;
+          if (!lastName && lastName_google) lastName = lastName_google;
 
-        console.log("Extracted Google data - given_name:", firstName_google, "family_name:", lastName_google, "name:", fullName);
-
-        // Use Google data if we have it
-        if (!firstName && firstName_google) {
-          firstName = firstName_google;
-        }
-        if (!lastName && lastName_google) {
-          lastName = lastName_google;
-        }
-
-        // If names are still empty, try to split the full name
-        if ((!firstName || !lastName) && fullName) {
-          const nameParts = fullName.trim().split(' ').filter(part => part.length > 0);
-          
-          if (nameParts.length >= 2) {
-            // Strategy: Last part is surname, everything else is first name
-            if (!firstName) {
-              firstName = nameParts.slice(0, -1).join(' ');
-            }
-            if (!lastName) {
-              lastName = nameParts[nameParts.length - 1];
-            }
-          } else if (nameParts.length === 1) {
-            // Only one word: treat as first name
-            if (!firstName) {
+          if ((!firstName || !lastName) && fullName) {
+            const nameParts = fullName.trim().split(' ').filter(part => part.length > 0);
+            if (nameParts.length >= 2) {
+              if (!firstName) firstName = nameParts.slice(0, -1).join(' ');
+              if (!lastName) lastName = nameParts[nameParts.length - 1];
+            } else if (nameParts.length === 1 && !firstName) {
               firstName = nameParts[0];
             }
           }
+          needsUpdate = true;
         }
 
-        console.log("Final names to update - firstName:", firstName, "lastName:", lastName);
+        // Always format names
+        const formattedFirst = formatName(firstName);
+        const formattedLast = formatName(lastName);
 
-        // Update profile if we have names to update
-        if (firstName || lastName) {
+        if (formattedFirst !== profile.first_name || formattedLast !== profile.last_name) {
+          firstName = formattedFirst;
+          lastName = formattedLast;
+          needsUpdate = true;
+        }
+
+        if (needsUpdate && (firstName || lastName)) {
           const { error } = await supabase
             .from("profiles")
             .update({
@@ -148,23 +150,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             })
             .eq("id", userId);
 
-          if (error) {
-            console.error("Error updating profile:", error);
-          } else {
-            console.log("Profile updated successfully");
-            // Refresh profile to reflect changes
+          if (!error) {
             await fetchProfile(userId);
           }
-        } else {
-          console.log("No names to update");
         }
-      } else {
-        console.log("Profile already has names or doesn't exist");
       }
     } catch (err) {
       console.error("Error updating profile from Google:", err);
     }
   };
+
 
   const checkAdmin = async (userId: string) => {
     try {

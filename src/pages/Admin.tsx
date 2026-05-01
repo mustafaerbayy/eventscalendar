@@ -18,8 +18,9 @@ import { Pencil, Trash2, Plus, Calendar, MapPin, Tag, Shield, Users, Send, Megap
 import Navbar from "@/components/Navbar";
 import LoadingScreen from "@/components/LoadingScreen";
 import { getErrorMessage } from "@/lib/error-messages";
-import { cn } from "@/lib/utils";
+import { cn, formatName } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+
 
 interface City { id: string; name: string }
 interface Category { id: string; name: string }
@@ -271,8 +272,14 @@ const Admin = () => {
     setUsersLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("manage-users", {
-        body: { action: "create", ...newUserData },
+        body: { 
+          action: "create", 
+          ...newUserData,
+          first_name: formatName(newUserData.first_name),
+          last_name: formatName(newUserData.last_name)
+        },
       });
+
       if (error) { toast.error(getErrorMessage(error)); return; }
       if (data?.error) { toast.error(data.error); return; }
       toast.success("Kullanıcı oluşturuldu.");
@@ -306,9 +313,10 @@ const Admin = () => {
         action: "update",
         user_id: editUserData.id,
         email: editUserData.email.trim(),
-        first_name: editUserData.first_name.trim(),
-        last_name: editUserData.last_name.trim()
+        first_name: formatName(editUserData.first_name),
+        last_name: formatName(editUserData.last_name)
       };
+
       if (editUserData.new_password) {
         updatePayload.new_password = editUserData.new_password;
       }
