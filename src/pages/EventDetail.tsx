@@ -13,13 +13,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Calendar, Clock, MapPin, Users, UserCheck, UserX, Info, AlertCircle, ExternalLink, FileText, Video, Music, File as FileIcon, Download, Minus, Plus } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, UserCheck, UserX, Info, AlertCircle, ExternalLink, FileText, Video, Music, File as FileIcon, Download, Minus, Plus, ChevronDown, Sparkles } from "lucide-react";
 import { formatTurkishDate, formatTurkishTime } from "@/lib/date-utils";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import { EventMemories } from "@/components/EventMemories";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Sparkles } from "lucide-react";
+
 
 interface EventDetail {
   id: string;
