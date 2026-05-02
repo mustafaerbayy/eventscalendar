@@ -13,11 +13,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Calendar, Clock, MapPin, Users, UserCheck, UserX, Info, AlertCircle, ExternalLink } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, UserCheck, UserX, Info, AlertCircle, ExternalLink, FileText, Video, Music, File as FileIcon, Download } from "lucide-react";
 import { formatTurkishDate, formatTurkishTime } from "@/lib/date-utils";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import { EventMemories } from "@/components/EventMemories";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown, Sparkles } from "lucide-react";
 
 interface EventDetail {
   id: string;
@@ -32,6 +34,14 @@ interface EventDetail {
   venues: { name: string } | null;
 }
 
+interface EventContent {
+  id: string;
+  content_type: string;
+  title: string;
+  file_url: string;
+  file_format: string | null;
+}
+
 interface RsvpWithProfile {
   id: string;
   user_id: string;
@@ -42,18 +52,20 @@ interface RsvpWithProfile {
 
 const EventDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [event, setEvent] = useState<EventDetail | null>(null);
+  const [eventContents, setEventContents] = useState<EventContent[]>([]);
   const [rsvps, setRsvps] = useState<RsvpWithProfile[]>([]);
   const [myRsvp, setMyRsvp] = useState<{ status: string; guest_count: number } | null>(null);
   const [guestCount, setGuestCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [isMemoriesOpen, setIsMemoriesOpen] = useState(false);
 
   const fetchData = async () => {
     if (!id) return;
-    const [eventRes, rsvpRes] = await Promise.all([
+    const [eventRes, rsvpRes, eventContentsRes] = await Promise.all([
       supabase
         .from("events")
         .select("*, cities(name), categories(name), venues(name)")
@@ -63,8 +75,14 @@ const EventDetailPage = () => {
         .from("rsvps")
         .select("*, profiles(first_name, last_name)")
         .eq("event_id", id),
+      supabase
+        .from("event_contents")
+        .select("*")
+        .eq("event_id", id)
+        .order("created_at", { ascending: true }),
     ]);
     setEvent(eventRes.data as unknown as EventDetail);
+    setEventContents(eventContentsRes.data as unknown as EventContent[] || []);
     const rsvpData = (rsvpRes.data as unknown as RsvpWithProfile[]) || [];
     setRsvps(rsvpData);
 
@@ -181,7 +199,60 @@ const EventDetailPage = () => {
           </div>
 
           {event.description && (
-            <p className="mt-6 text-foreground/80 leading-relaxed">{event.description}</p>
+            <p className="mt-6 text-foreground/80 leading-relaxed text-lg">{event.description}</p>
+          )}
+
+          {/* Event Contents Section */}
+          {(isAdmin || myRsvp?.status === "attending") && eventContents.length > 0 && (
+            <div className="mt-10">
+              <h3 className="font-display text-xl font-bold mb-4 flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" />
+                Etkinlik İçerikleri
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {eventContents.map((content) => (
+                  <a
+                    key={content.id}
+                    href={content.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative overflow-hidden rounded-2xl bg-foreground/5 hover:bg-foreground/10 border border-border/20 transition-all duration-300 p-5 flex items-start gap-4 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    
+                    <div className="relative p-3 bg-background/50 rounded-xl text-primary shrink-0 shadow-sm border border-border/10 group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-300">
+                      {content.content_type === "Video" ? (
+                        <Video className="h-6 w-6" />
+                      ) : content.content_type === "Müzik" ? (
+                        <Music className="h-6 w-6" />
+                      ) : content.content_type === "Sunum" ? (
+                        <FileText className="h-6 w-6" />
+                      ) : (
+                        <FileIcon className="h-6 w-6" />
+                      )}
+                    </div>
+                    
+                    <div className="relative flex-1 min-w-0">
+                      <h4 className="font-bold text-foreground text-base mb-1 truncate group-hover:text-primary transition-colors">
+                        {content.title}
+                      </h4>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
+                        <Badge variant="secondary" className="text-[10px] px-2 py-0.5 rounded-md bg-background/80 border-border/20">
+                          {content.content_type}
+                        </Badge>
+                        {content.file_format && (
+                          <span className="truncate opacity-70 uppercase tracking-wider">{content.file_format}</span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="relative w-8 h-8 rounded-full bg-background/50 flex items-center justify-center shrink-0 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 border border-border/10">
+                      <Download className="h-4 w-4 text-primary" />
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* RSVP Section */}
@@ -364,13 +435,47 @@ const EventDetailPage = () => {
             </CardContent>
           </Card>
 
-          {/* Media Archive Section */}
-          <EventMemories 
-            eventId={event.id} 
-            isAttendee={myRsvp?.status === "attending"} 
-            eventDate={event.date}
-            eventTitle={event.title}
-          />
+          {/* Media Archive Section (Collapsible) */}
+          <div className="mt-12 pt-8 border-t border-border/10 mb-10">
+            <button 
+              onClick={() => setIsMemoriesOpen(!isMemoriesOpen)}
+              className="group flex items-center justify-between w-full p-5 bg-foreground/5 hover:bg-foreground/10 rounded-3xl transition-all duration-300 border border-border/5 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-2xl text-primary group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-300">
+                  <Sparkles className="w-6 h-6" />
+                </div>
+                <div className="text-left">
+                  <h3 className="font-display font-bold text-xl text-foreground">Etkinlik Anıları</h3>
+                  <p className="text-sm text-muted-foreground font-medium mt-0.5">Medya arşivi ve fotoğraflar</p>
+                </div>
+              </div>
+              <div className={`p-2 rounded-full bg-background/50 transition-transform duration-500 ${isMemoriesOpen ? "rotate-180" : ""}`}>
+                <ChevronDown className="w-5 h-5 text-foreground/60" />
+              </div>
+            </button>
+            
+            <AnimatePresence>
+              {isMemoriesOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.4, ease: [0.04, 0.62, 0.23, 0.98] }}
+                  className="overflow-hidden"
+                >
+                  <div className="pt-6">
+                    <EventMemories 
+                      eventId={event.id} 
+                      isAttendee={myRsvp?.status === "attending"} 
+                      eventDate={event.date}
+                      eventTitle={event.title}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
         </div>
 

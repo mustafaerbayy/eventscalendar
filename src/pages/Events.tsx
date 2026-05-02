@@ -1,5 +1,5 @@
 // Scroll to nearest upcoming event (list view) or events section (calendar view)
-export function scrollToNearestEvent(viewMode: "list" | "calendar", upcomingEvents: any[]) {
+function scrollToNearestEvent(viewMode: "list" | "calendar", upcomingEvents: any[]) {
   if (viewMode === "calendar") {
     // Takvim görünümündeyse takvim bölümüne kaydır (offset ile)
     const calendarSection = document.querySelector('#calendar-section') || document.querySelector('#events-section');
@@ -36,7 +36,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, CalendarDays, Loader, Clock, Plus, Minus, Calendar, MapPin, Users, UserCheck, UserX, List, LayoutGrid, Sparkles, ChevronDown, Pencil, ExternalLink } from "lucide-react";
+import { Search, CalendarDays, Loader, Clock, Plus, Minus, Calendar, MapPin, Users, UserCheck, UserX, List, LayoutGrid, Sparkles, ChevronDown, Pencil, ExternalLink, Upload, X, File as FileIcon, FileText, Video, Music, Download } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatTurkishDate, formatTurkishTime } from "@/lib/date-utils";
@@ -44,6 +44,18 @@ import EventCard from "@/components/EventCard";
 import CalendarView from "@/components/CalendarView";
 import Navbar from "@/components/Navbar";
 import { EventMemories } from "@/components/EventMemories";
+import { generateUUID } from "@/lib/uuid";
+
+export interface EventContentInput {
+  id?: string;
+  content_type: string;
+  title: string;
+  file?: File;
+  file_url?: string;
+  file_format?: string;
+  _isNew?: boolean;
+  _isDeleted?: boolean;
+}
 
 interface EventWithRelations {
   id: string;
@@ -99,6 +111,8 @@ const Events = () => {
   // Event management dialog
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventWithRelations | null>(null);
+  const [viewEventContents, setViewEventContents] = useState<any[]>([]);
+  const [isViewMemoriesOpen, setIsViewMemoriesOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -110,16 +124,28 @@ const Events = () => {
     category_id: "",
     location_url: "",
   });
+  const [eventContents, setEventContents] = useState<EventContentInput[]>([]);
+  const [contentTypes, setContentTypes] = useState<string[]>(["Sunum", "Makale", "Müzik", "Video", "Dosya", "Diğer"]);
+  const contentFileInputRef = useRef<HTMLInputElement>(null);
   const [isPastEventsOpen, setIsPastEventsOpen] = useState(false);
   const fetchData = async () => {
-    const [eventsRes, citiesRes, categoriesRes] = await Promise.all([
+    const [eventsRes, citiesRes, categoriesRes, contentsRes] = await Promise.all([
       supabase
         .from("events")
         .select("*, cities(name), venues(name), categories(name), rsvps(*, profiles(first_name, last_name))")
         .order("date", { ascending: true }),
       supabase.from("cities").select("*").order("name"),
       supabase.from("categories").select("*").order("name"),
+      supabase.from("event_contents").select("content_type")
     ]);
+    
+    if (contentsRes.data) {
+      const types = new Set(["Sunum", "Makale", "Müzik", "Video", "Dosya", "Diğer"]);
+      contentsRes.data.forEach(c => {
+        if (c.content_type) types.add(c.content_type);
+      });
+      setContentTypes(Array.from(types));
+    }
     setEvents((eventsRes.data as unknown as EventWithRelations[]) || []);
     setCities(citiesRes.data || []);
     setCategories(categoriesRes.data || []);
@@ -247,6 +273,21 @@ const Events = () => {
     if (!event) return;
 
     setSelectedEvent(event);
+    setViewEventContents([]);
+    setIsViewMemoriesOpen(false);
+    
+    // Fetch event contents
+    supabase
+      .from("event_contents")
+      .select("*")
+      .eq("event_id", eventId)
+      .order("created_at", { ascending: true })
+      .then(({ data }) => {
+        if (data) {
+          setViewEventContents(data);
+        }
+      });
+
     const rsvpData = event.rsvps || [];
     setSelectedEventRsvps(rsvpData);
 
@@ -345,6 +386,7 @@ const Events = () => {
       category_id: "",
       location_url: "",
     });
+    setEventContents([]);
     setDialogOpen(true);
   };
 
@@ -360,6 +402,19 @@ const Events = () => {
       category_id: event.category_id,
       location_url: event.location_url || "",
     });
+    setEventContents([]); // Assuming we edit contents via another way, or we can fetch them. Let's reset for now, since editing contents might be complex, or we can fetch them if needed. Actually we'll fetch them.
+    
+    // Fetch event contents
+    supabase
+      .from("event_contents")
+      .select("*")
+      .eq("event_id", event.id)
+      .then(({ data }) => {
+        if (data) {
+          setEventContents(data.map(d => ({ ...d, _isNew: false })));
+        }
+      });
+      
     setDialogOpen(true);
   };
 
@@ -382,6 +437,8 @@ const Events = () => {
         location_url: formData.location_url,
       };
 
+      let createdEventId = editingEvent?.id;
+      
       if (editingEvent) {
         const { error } = await supabase
           .from("events")
@@ -390,12 +447,50 @@ const Events = () => {
         if (error) throw error;
         toast.success("Etkinlik güncellendi.");
       } else {
-        const { error } = await supabase
+        const { data: newEvent, error } = await supabase
           .from("events")
-          .insert([eventData]);
+          .insert([eventData])
+          .select("id")
+          .single();
         if (error) throw error;
+        createdEventId = newEvent.id;
         toast.success("Etkinlik oluşturuldu.");
       }
+      
+      // Handle Event Contents
+      if (createdEventId && eventContents.length > 0) {
+        toast.info("İçerikler yükleniyor, lütfen bekleyin...", { duration: 3000 });
+        for (const content of eventContents) {
+          if (content._isDeleted && content.id) {
+            await supabase.from("event_contents").delete().eq("id", content.id);
+          } else if (content._isNew) {
+            let fileUrl = content.file_url || "";
+            if (content.file) {
+              const fileExt = content.file.name.split('.').pop();
+              const fileName = `${createdEventId}/${generateUUID()}.${fileExt}`;
+              const { error: uploadError } = await supabase.storage
+                .from("event_contents")
+                .upload(fileName, content.file, { upsert: true });
+              
+              if (!uploadError) {
+                const { data: publicUrlData } = supabase.storage
+                  .from("event_contents")
+                  .getPublicUrl(fileName);
+                fileUrl = publicUrlData.publicUrl;
+              }
+            }
+            
+            await supabase.from("event_contents").insert({
+              event_id: createdEventId,
+              content_type: content.content_type,
+              title: content.title,
+              file_url: fileUrl,
+              file_format: content.file_format || null
+            });
+          }
+        }
+      }
+
       setDialogOpen(false);
       window.location.reload();
     } catch (error: any) {
@@ -673,6 +768,138 @@ const Events = () => {
                     />
                   </div>
 
+                  {/* Event Contents Section */}
+                  <div className="space-y-3 pt-4 border-t border-border/10">
+                    <div className="flex items-center justify-between ml-1">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/60">ETKİNLİK İÇERİKLERİ</Label>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setEventContents([
+                            ...eventContents,
+                            { _isNew: true, content_type: "Diğer", title: "" }
+                          ]);
+                        }}
+                        className="h-8 px-3 text-[10px] font-bold text-primary hover:text-primary hover:bg-primary/10 rounded-xl"
+                      >
+                        <Plus className="w-3 h-3 mr-1" /> İÇERİK EKLE
+                      </Button>
+                    </div>
+                    
+                    {eventContents.filter(c => !c._isDeleted).map((content, index) => {
+                      const realIndex = eventContents.findIndex(c => c === content);
+                      return (
+                        <div key={realIndex} className="bg-foreground/5 border border-border/20 p-4 rounded-2xl space-y-3 relative group">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newContents = [...eventContents];
+                              if (newContents[realIndex]._isNew) {
+                                newContents.splice(realIndex, 1);
+                              } else {
+                                newContents[realIndex]._isDeleted = true;
+                              }
+                              setEventContents(newContents);
+                            }}
+                            className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <Label className="text-[10px] text-foreground/60 mb-1 block">TÜR *</Label>
+                              <Input
+                                list={`content-types-${realIndex}`}
+                                value={content.content_type}
+                                onChange={(e) => {
+                                  const newContents = [...eventContents];
+                                  newContents[realIndex].content_type = e.target.value;
+                                  setEventContents(newContents);
+                                }}
+                                placeholder="Kategori seçin veya yazın..."
+                                className="bg-background/50 border-border/20 h-10 rounded-xl text-xs"
+                              />
+                              <datalist id={`content-types-${realIndex}`}>
+                                {contentTypes.map((type, idx) => (
+                                  <option key={idx} value={type} />
+                                ))}
+                              </datalist>
+                            </div>
+                            <div>
+                              <Label className="text-[10px] text-foreground/60 mb-1 block">BAŞLIK *</Label>
+                              <Input
+                                value={content.title}
+                                onChange={(e) => {
+                                  const newContents = [...eventContents];
+                                  newContents[realIndex].title = e.target.value;
+                                  setEventContents(newContents);
+                                }}
+                                placeholder="Örn: Açılış Sunumu"
+                                className="bg-background/50 border-border/20 h-10 rounded-xl text-xs"
+                              />
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <Label className="text-[10px] text-foreground/60 mb-1 block">DOSYA VEYA LİNK</Label>
+                            {content._isNew ? (
+                              <div className="flex gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="flex-1 bg-background/50 border-border/20 h-10 text-xs rounded-xl overflow-hidden relative"
+                                  onClick={() => {
+                                    const input = document.createElement("input");
+                                    input.type = "file";
+                                    input.onchange = (e) => {
+                                      const file = (e.target as HTMLInputElement).files?.[0];
+                                      if (file) {
+                                        const newContents = [...eventContents];
+                                        newContents[realIndex].file = file;
+                                        newContents[realIndex].file_format = file.name.split('.').pop()?.toUpperCase() || "DOSYA";
+                                        setEventContents(newContents);
+                                      }
+                                    };
+                                    input.click();
+                                  }}
+                                >
+                                  {content.file ? (
+                                    <span className="truncate flex items-center gap-2 text-primary">
+                                      <FileIcon className="w-4 h-4 shrink-0" /> {content.file.name}
+                                    </span>
+                                  ) : (
+                                    <span className="flex items-center gap-2 text-foreground/70">
+                                      <Upload className="w-4 h-4 shrink-0" /> Bilgisayardan Seç
+                                    </span>
+                                  )}
+                                </Button>
+                                <span className="flex items-center justify-center text-xs text-foreground/40 font-bold px-1">veya</span>
+                                <Input
+                                  value={content.file_url || ""}
+                                  onChange={(e) => {
+                                    const newContents = [...eventContents];
+                                    newContents[realIndex].file_url = e.target.value;
+                                    setEventContents(newContents);
+                                  }}
+                                  placeholder="Link yapıştırın"
+                                  className="flex-1 bg-background/50 border-border/20 h-10 rounded-xl text-xs"
+                                />
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2 bg-background/50 p-2 rounded-xl border border-border/20">
+                                <FileIcon className="w-4 h-4 text-primary" />
+                                <span className="text-xs truncate flex-1">{content.title} ({content.file_format || "Link"})</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
                   <motion.button
                     whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}
@@ -906,6 +1133,59 @@ const Events = () => {
                 <p className="text-sm text-foreground/80 leading-relaxed">{selectedEvent.description}</p>
               )}
 
+              {/* Event Contents Section */}
+              {(isAdmin || myRsvp?.status === "attending") && viewEventContents.length > 0 && (
+                <div className="mt-8 border-t border-border/10 pt-6">
+                  <h4 className="font-display text-lg font-black text-foreground flex items-center gap-2 mb-4">
+                    <FileText className="h-5 w-5 text-primary" />
+                    Etkinlik İçerikleri
+                  </h4>
+                  <div className="grid grid-cols-1 gap-3">
+                    {viewEventContents.map((content) => (
+                      <a
+                        key={content.id}
+                        href={content.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative overflow-hidden rounded-2xl bg-foreground/5 hover:bg-foreground/10 border border-border/20 transition-all duration-300 p-4 flex items-center gap-4 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        
+                        <div className="relative p-2.5 bg-background/50 rounded-xl text-primary shrink-0 shadow-sm border border-border/10 group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-300">
+                          {content.content_type === "Video" ? (
+                            <Video className="h-5 w-5" />
+                          ) : content.content_type === "Müzik" ? (
+                            <Music className="h-5 w-5" />
+                          ) : content.content_type === "Sunum" ? (
+                            <FileText className="h-5 w-5" />
+                          ) : (
+                            <FileIcon className="h-5 w-5" />
+                          )}
+                        </div>
+                        
+                        <div className="relative flex-1 min-w-0">
+                          <h4 className="font-bold text-foreground text-sm mb-0.5 truncate group-hover:text-primary transition-colors">
+                            {content.title}
+                          </h4>
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium">
+                            <Badge variant="secondary" className="px-1.5 py-0 rounded-md bg-background/80 border-border/20">
+                              {content.content_type}
+                            </Badge>
+                            {content.file_format && (
+                              <span className="truncate opacity-70 uppercase tracking-wider">{content.file_format}</span>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="relative w-8 h-8 rounded-full bg-background/50 flex items-center justify-center shrink-0 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 border border-border/10">
+                          <Download className="h-4 w-4 text-primary" />
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* RSVP Section */}
               {/* Enhanced RSVP Section */}
               <div className="relative mt-8 rounded-3xl overflow-hidden border border-border/20 bg-foreground/5 backdrop-blur-2xl shadow-2xl">
@@ -1013,13 +1293,47 @@ const Events = () => {
                 </div>
               </div>
 
-              {/* Medya Arşivi */}
-              <EventMemories
-                eventId={selectedEvent.id}
-                isAttendee={myRsvp?.status === "attending"}
-                eventDate={selectedEvent.date}
-                eventTitle={selectedEvent.title}
-              />
+              {/* Medya Arşivi (Collapsible) */}
+              <div className="mt-8 rounded-3xl overflow-hidden border border-border/20 bg-foreground/5 backdrop-blur-2xl shadow-2xl">
+                <button 
+                  onClick={() => setIsViewMemoriesOpen(!isViewMemoriesOpen)}
+                  className="w-full px-6 py-5 flex items-center justify-between hover:bg-foreground/5 transition-colors group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-primary/10 rounded-xl text-primary group-hover:scale-110 transition-transform">
+                      <Sparkles className="w-5 h-5" />
+                    </div>
+                    <div className="text-left">
+                      <h4 className="font-display text-lg font-black text-foreground">Medya Arşivi</h4>
+                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mt-0.5">Etkinlikten Anılar</p>
+                    </div>
+                  </div>
+                  <div className={`p-2 rounded-full bg-background/50 transition-transform duration-500 ${isViewMemoriesOpen ? "rotate-180" : ""}`}>
+                    <ChevronDown className="w-4 h-4 text-foreground/60" />
+                  </div>
+                </button>
+                
+                <AnimatePresence>
+                  {isViewMemoriesOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.4, ease: [0.04, 0.62, 0.23, 0.98] }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-6 pb-6 pt-2 border-t border-border/10">
+                        <EventMemories
+                          eventId={selectedEvent.id}
+                          isAttendee={myRsvp?.status === "attending"}
+                          eventDate={selectedEvent.date}
+                          eventTitle={selectedEvent.title}
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           )}
         </DialogContent>
