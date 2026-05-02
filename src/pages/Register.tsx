@@ -168,8 +168,8 @@ const Register = () => {
         whileHover={{ y: -5 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="relative group rounded-[2.5rem] p-px bg-gradient-to-b from-white/20 to-transparent border border-border/ backdrop-blur-xl shadow-[0_32px_64px_-12px_rgba(0,0,0,0.7)]">
-          <div className="rounded-[2.45rem] bg-foreground/5 p-8 md:p-10 backdrop-blur-sm border border-border/ relative z-10">
+        <div className="relative group rounded-[2.5rem] p-px bg-gradient-to-b from-white/20 to-transparent border border-border/20 backdrop-blur-xl shadow-[0_32px_64px_-12px_rgba(0,0,0,0.7)]">
+          <div className="rounded-[2.45rem] bg-foreground/5 p-8 md:p-10 backdrop-blur-sm border border-border/20 relative z-10">
 
             <div className="flex flex-col items-center mb-8">
               <Link to="/" className="relative transition-transform duration-300 hover:scale-110">
@@ -246,7 +246,7 @@ const Register = () => {
             </form>
 
             <div className="relative my-7">
-              <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border/" /></div>
+              <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border/20" /></div>
               <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest"><span className="bg-foreground/5 px-3 text-slate-600">veya</span></div>
             </div>
 

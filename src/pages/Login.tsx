@@ -205,9 +205,9 @@ const Login = () => {
         whileHover={{ y: -5 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="relative group rounded-[2.5rem] p-px bg-gradient-to-b from-white/20 to-transparent border border-border/ backdrop-blur-xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)]">
+        <div className="relative group rounded-[2.5rem] p-px bg-gradient-to-b from-white/20 to-transparent border border-border/20 backdrop-blur-xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)]">
           {/* Inner glass layer */}
-          <div className="rounded-[2.45rem] bg-foreground/5 p-8 md:p-10 backdrop-blur-md border border-border/ relative">
+          <div className="rounded-[2.45rem] bg-foreground/5 p-8 md:p-10 backdrop-blur-md border border-border/20 relative">
 
             <div className="flex flex-col items-center mb-10">
               <Link to="/" className="relative group">
@@ -294,7 +294,7 @@ const Login = () => {
 
             <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border/" />
+                <span className="w-full border-t border-border/20" />
               </div>
               <div className="relative flex justify-center text-xs uppercase tracking-tighter">
                 <span className="bg-foreground/5 px-3 text-slate-500 font-bold backdrop-blur-sm">VEYA</span>
@@ -309,7 +309,7 @@ const Login = () => {
               disabled={loading || googleLoading}
             >
               {googleLoading ? (
-                <span className="h-5 w-5 rounded-full border-2 border-border/ border-t-white animate-spin" />
+                <span className="h-5 w-5 rounded-full border-2 border-border/20 border-t-white animate-spin" />
               ) : (
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

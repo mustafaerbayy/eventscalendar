@@ -183,9 +183,9 @@ export const NotificationsMenu = () => {
     <div className="relative" ref={outsideRef}>
       <button
         onClick={() => setOpen(!open)}
-        className="relative flex items-center justify-center w-10 h-10 rounded-full bg-foreground/ border border-border/ hover:border-primary/50 transition-all duration-300"
+        className="relative flex items-center justify-center w-10 h-10 rounded-full bg-foreground/5 border border-border/20 hover:border-primary/50 transition-all duration-300"
       >
-        <Bell className="w-5 h-5 text-foreground/" />
+        <Bell className="w-5 h-5 text-foreground/60" />
         {unreadCount > 0 && (
           <span className="absolute top-0 right-0 h-4 min-w-[1rem] px-1 rounded-full bg-red-500 text-foreground text-[9px] font-black flex items-center justify-center transform translate-x-1/4 -translate-y-1/4 shadow-[0_0_10px_rgba(239,68,68,0.5)]">
             {unreadCount > 9 ? "9+" : unreadCount}
@@ -202,10 +202,10 @@ export const NotificationsMenu = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-[85px] sm:top-full mt-0 sm:mt-3 sm:w-[380px] bg-black/85 backdrop-blur-2xl border border-border/ shadow-2xl rounded-[1.5rem] z-[200] overflow-hidden"
+            className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-[85px] sm:top-full mt-0 sm:mt-3 sm:w-[380px] bg-black/85 backdrop-blur-2xl border border-border/20 shadow-2xl rounded-[1.5rem] z-[200] overflow-hidden"
           >
             {/* Header */}
-            <div className="p-4 border-b border-border/ flex items-center justify-between bg-white/[0.02]">
+            <div className="p-4 border-b border-border/20 flex items-center justify-between bg-white/[0.02]">
               <div className="flex items-center gap-2">
                 <Bell className="w-4 h-4 text-primary" />
                 <h3 className="font-bold text-foreground text-sm">Bildirimler</h3>
@@ -246,7 +246,7 @@ export const NotificationsMenu = () => {
               {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-12 px-4">
                   <Loader2 className="w-6 h-6 animate-spin text-primary/40 mb-3" />
-                  <p className="text-xs text-foreground/ animate-pulse">Bildirimler yükleniyor...</p>
+                  <p className="text-xs text-foreground/60 animate-pulse">Bildirimler yükleniyor...</p>
                 </div>
               ) : notifications && notifications.length > 0 ? (
                 <div className="flex flex-col divide-y divide-white/5">
@@ -259,19 +259,19 @@ export const NotificationsMenu = () => {
                         className={`p-4 gap-3 cursor-pointer transition-all hover:bg-white/[0.04] group ${isUnread ? "bg-primary/5" : ""}`}
                       >
                         <div className="flex items-start gap-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border ${isUnread ? "border-primary/20 bg-primary/10" : "border-border/ bg-foreground/"}`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border ${isUnread ? "border-primary/20 bg-primary/10" : "border-border/20 bg-foreground/5"}`}>
                             {getIcon(item.type)}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex justify-between items-start gap-2 mb-0.5">
-                              <p className={`text-xs font-black uppercase tracking-widest truncate ${isUnread ? "text-primary" : "text-foreground/"}`}>
+                              <p className={`text-xs font-black uppercase tracking-widest truncate ${isUnread ? "text-primary" : "text-foreground/60"}`}>
                                 {item.title}
                               </p>
-                              <span className="text-[9px] text-foreground/ whitespace-nowrap font-medium">
+                              <span className="text-[9px] text-foreground/60 whitespace-nowrap font-medium">
                                 {timeAgo(item.created_at)}
                               </span>
                             </div>
-                            <p className="text-sm font-medium text-foreground/ line-clamp-2 leading-snug">
+                            <p className="text-sm font-medium text-foreground/60 line-clamp-2 leading-snug">
                               {item.description}
                             </p>
                           </div>
@@ -286,7 +286,7 @@ export const NotificationsMenu = () => {
                                   deleteGlobalNotificationMutation.mutate(item);
                                 }
                               }}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-red-500/20 rounded-xl text-foreground/ hover:text-red-400 shrink-0"
+                              className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-red-500/20 rounded-xl text-foreground/60 hover:text-red-400 shrink-0"
                               title="Tüm kullanıcılardan sil (Süper Admin)"
                             >
                               <X className="w-4 h-4" />
@@ -299,11 +299,11 @@ export const NotificationsMenu = () => {
                 </div>
               ) : (
                 <div className="py-12 px-4 text-center">
-                  <div className="w-12 h-12 bg-foreground/ rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Bell className="w-5 h-5 text-foreground/" />
+                  <div className="w-12 h-12 bg-foreground/5 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Bell className="w-5 h-5 text-foreground/60" />
                   </div>
-                  <p className="text-sm font-bold text-foreground/">Bildiriminiz Yok</p>
-                  <p className="text-xs text-foreground/ mt-1">Gelişmeler olduğunda burada görünecek.</p>
+                  <p className="text-sm font-bold text-foreground/60">Bildiriminiz Yok</p>
+                  <p className="text-xs text-foreground/60 mt-1">Gelişmeler olduğunda burada görünecek.</p>
                 </div>
               )}
             </div>

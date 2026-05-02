@@ -98,9 +98,9 @@ const ForgotPassword = () => {
         whileHover={{ y: -5 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="relative group rounded-[2.5rem] p-px bg-gradient-to-b from-white/20 to-transparent border border-border/ backdrop-blur-xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)]">
+        <div className="relative group rounded-[2.5rem] p-px bg-gradient-to-b from-white/20 to-transparent border border-border/20 backdrop-blur-xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)]">
           {/* Inner glass layer */}
-          <div className="rounded-[2.45rem] bg-foreground/5 p-8 md:p-10 backdrop-blur-md border border-border/ relative">
+          <div className="rounded-[2.45rem] bg-foreground/5 p-8 md:p-10 backdrop-blur-md border border-border/20 relative">
 
             <div className="flex flex-col items-center mb-10">
               <Link to="/" className="relative group">

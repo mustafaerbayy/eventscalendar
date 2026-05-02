@@ -449,7 +449,7 @@ const Events = () => {
 
           {/* Enhanced Filters */}
           <motion.div
-            className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center p-4 rounded-[2rem] bg-card/40 backdrop-blur-lg border border-border/ shadow-2xl relative overflow-hidden group"
+            className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center p-4 rounded-[2rem] bg-card/40 backdrop-blur-lg border border-border/20 shadow-2xl relative overflow-hidden group"
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
@@ -464,37 +464,37 @@ const Events = () => {
                 placeholder="Etkinlik ara"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-14 h-14 bg-foreground/ border-border/ focus:bg-foreground/ focus:border-primary/30 rounded-2xl transition-all placeholder:text-muted-foreground/50 text-base shadow-inner"
+                className="pl-14 h-14 bg-foreground/5 border-border/20 focus:bg-foreground/10 focus:border-primary/30 rounded-2xl transition-all placeholder:text-muted-foreground/50 text-base shadow-inner"
               />
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <Select value={cityFilter} onValueChange={setCityFilter}>
-                <SelectTrigger className="w-full sm:w-[180px] h-14 bg-foreground/ border-border/ focus:bg-foreground/ focus:border-primary/30 rounded-2xl transition-all shadow-inner">
+                <SelectTrigger className="w-full sm:w-[180px] h-14 bg-foreground/5 border-border/20 focus:bg-foreground/10 focus:border-primary/30 rounded-2xl transition-all shadow-inner">
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-primary/60" />
                     <SelectValue placeholder="Şehir" />
                   </div>
                 </SelectTrigger>
-                <SelectContent className="!rounded-2xl border-border/ !bg-[#0c0c0c]/95 !backdrop-blur-xl !z-[9999] p-2 !opacity-100 !visible">
-                  <SelectItem value="all" className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/ cursor-pointer">Tüm Şehirler</SelectItem>
+                <SelectContent className="!rounded-2xl border-border/20 !bg-[#0c0c0c]/95 !backdrop-blur-xl !z-[9999] p-2 !opacity-100 !visible">
+                  <SelectItem value="all" className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/10 cursor-pointer">Tüm Şehirler</SelectItem>
                   {cities.map((c) => (
-                    <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/ cursor-pointer">{c.name}</SelectItem>
+                    <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/10 cursor-pointer">{c.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-full sm:w-[180px] h-14 bg-foreground/ border-border/ focus:bg-foreground/ focus:border-primary/30 rounded-2xl transition-all shadow-inner">
+                <SelectTrigger className="w-full sm:w-[180px] h-14 bg-foreground/5 border-border/20 focus:bg-foreground/10 focus:border-primary/30 rounded-2xl transition-all shadow-inner">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-primary/60" />
                     <SelectValue placeholder="Kategori" />
                   </div>
                 </SelectTrigger>
-                <SelectContent className="!rounded-2xl border-border/ !bg-[#0c0c0c]/95 !backdrop-blur-xl !z-[9999] p-2 !opacity-100 !visible">
-                  <SelectItem value="all" className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/ cursor-pointer">Tüm Kategoriler</SelectItem>
+                <SelectContent className="!rounded-2xl border-border/20 !bg-[#0c0c0c]/95 !backdrop-blur-xl !z-[9999] p-2 !opacity-100 !visible">
+                  <SelectItem value="all" className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/5 cursor-pointer">Tüm Kategoriler</SelectItem>
                   {categories.map((c) => (
-                    <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/ cursor-pointer">{c.name}</SelectItem>
+                    <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/10 cursor-pointer">{c.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -570,8 +570,8 @@ const Events = () => {
 
           {/* Event Management Dialog */}
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogContent className="w-[95vw] sm:max-w-xl bg-background/95 backdrop-blur-lg border-border/ p-0 rounded-[1.5rem] sm:rounded-[2.5rem] selection:bg-primary/30 max-h-[90vh] overflow-hidden flex flex-col">
-              <div className="p-6 sm:p-10 pb-6 border-b border-border/ bg-white/[0.02] backdrop-blur-xl relative z-10">
+            <DialogContent className="w-[95vw] sm:max-w-xl bg-background/95 backdrop-blur-lg border-border/20 p-0 rounded-[1.5rem] sm:rounded-[2.5rem] selection:bg-primary/30 max-h-[90vh] overflow-hidden flex flex-col">
+              <div className="p-6 sm:p-10 pb-6 border-b border-border/20 bg-white/[0.02] backdrop-blur-xl relative z-10">
                 <DialogHeader>
                   <DialogTitle className="text-2xl font-display font-black flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
@@ -579,7 +579,7 @@ const Events = () => {
                     </div>
                     <div>
                       <h3 className="text-xl font-display font-black">{editingEvent ? "Etkinliği Düzenle" : "Yeni Etkinlik Ekle"}</h3>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-foreground/">Etkinlik Yönetimi</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-foreground/60">Etkinlik Yönetimi</p>
                     </div>
                   </DialogTitle>
                 </DialogHeader>
@@ -588,88 +588,88 @@ const Events = () => {
               <div className="p-6 sm:p-10 pt-8 overflow-y-auto custom-scrollbar flex-1">
                 <div className="space-y-6">
                   <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">ETKİNLİK BAŞLIĞI *</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/60 ml-1">ETKİNLİK BAŞLIĞI *</Label>
                     <Input
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       placeholder="Etkinlik adını girin..."
-                      className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-foreground placeholder:text-foreground/"
+                      className="bg-foreground/5 border-border/20 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-foreground placeholder:text-foreground/30"
                     />
                   </div>
 
                   <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">AÇIKLAMA</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/60 ml-1">AÇIKLAMA</Label>
                     <Textarea
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       placeholder="Etkinlik detayı..."
-                      className="bg-foreground/ border-border/ rounded-2xl min-h-[120px] p-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-medium leading-relaxed resize-none text-foreground placeholder:text-foreground/"
+                      className="bg-foreground/5 border-border/20 rounded-2xl min-h-[120px] p-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-medium leading-relaxed resize-none text-foreground placeholder:text-foreground/30"
                       rows={3}
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-3">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">TARİH *</Label>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/60 ml-1">TARİH *</Label>
                       <Input
                         type="date"
                         value={formData.date}
                         onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                        className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-foreground [color-scheme:dark]"
+                        className="bg-foreground/5 border-border/20 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-foreground [color-scheme:dark]"
                       />
                     </div>
                     <div className="space-y-3">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">SAAT *</Label>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/60 ml-1">SAAT *</Label>
                       <Input
                         type="time"
                         value={formData.time}
                         onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                        className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-foreground [color-scheme:dark]"
+                        className="bg-foreground/5 border-border/20 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-foreground [color-scheme:dark]"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">ŞEHİR *</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/60 ml-1">ŞEHİR *</Label>
                     <Select value={formData.city_id} onValueChange={(val) => setFormData({ ...formData, city_id: val })}>
-                      <SelectTrigger className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 transition-all font-bold text-foreground">
+                      <SelectTrigger className="bg-foreground/5 border-border/20 rounded-2xl h-14 px-6 transition-all font-bold text-foreground">
                         <SelectValue placeholder="Şehir seçiniz" />
                       </SelectTrigger>
-                      <SelectContent className="!bg-[#0c0c0c] border-border/ rounded-2xl p-2 !z-[9999] !opacity-100 !visible">
-                        {cities.map(c => <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/ cursor-pointer">{c.name}</SelectItem>)}
+                      <SelectContent className="!bg-[#0c0c0c] border-border/20 rounded-2xl p-2 !z-[9999] !opacity-100 !visible">
+                        {cities.map(c => <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/5 cursor-pointer">{c.name}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">KATEGORİ *</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/60 ml-1">KATEGORİ *</Label>
                     <Select value={formData.category_id} onValueChange={(val) => setFormData({ ...formData, category_id: val })}>
-                      <SelectTrigger className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 transition-all font-bold text-foreground">
+                      <SelectTrigger className="bg-foreground/5 border-border/20 rounded-2xl h-14 px-6 transition-all font-bold text-foreground">
                         <SelectValue placeholder="Kategori seçiniz" />
                       </SelectTrigger>
-                      <SelectContent className="!bg-[#0c0c0c] border-border/ rounded-2xl p-2 !z-[9999] !opacity-100 !visible">
-                        {categories.map(c => <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/ cursor-pointer">{c.name}</SelectItem>)}
+                      <SelectContent className="!bg-[#0c0c0c] border-border/20 rounded-2xl p-2 !z-[9999] !opacity-100 !visible">
+                        {categories.map(c => <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/5 cursor-pointer">{c.name}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">MEKAN</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/60 ml-1">MEKAN</Label>
                     <Input
                       value={formData.venue_name}
                       onChange={(e) => setFormData({ ...formData, venue_name: e.target.value })}
                       placeholder="Mekan adı"
-                      className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-foreground placeholder:text-foreground/"
+                      className="bg-foreground/5 border-border/20 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-foreground placeholder:text-foreground/30"
                     />
                   </div>
 
                   <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/ ml-1">HARİTA BAĞLANTISI (OPSİYONEL)</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/60 ml-1">HARİTA BAĞLANTISI (OPSİYONEL)</Label>
                     <Input
                       value={formData.location_url}
                       onChange={(e) => setFormData({ ...formData, location_url: e.target.value })}
                       placeholder="Bağlantıyı yapıştırın..."
-                      className="bg-foreground/ border-border/ rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-foreground placeholder:text-foreground/"
+                      className="bg-foreground/5 border-border/20 rounded-2xl h-14 px-6 focus:border-primary/40 focus:ring-primary/20 transition-all font-bold text-foreground placeholder:text-foreground/30"
                     />
                   </div>
 
@@ -807,7 +807,7 @@ const Events = () => {
           <div className="container mx-auto px-4 relative z-10">
             <button
               onClick={() => setIsPastEventsOpen(!isPastEventsOpen)}
-              className="w-full flex items-center justify-between p-6 rounded-[2rem] bg-card/40 border border-border/ hover:bg-card/60 transition-all hover:scale-[1.005] active:scale-[0.995] group"
+              className="w-full flex items-center justify-between p-6 rounded-[2rem] bg-card/40 border border-border/20 hover:bg-card/60 transition-all hover:scale-[1.005] active:scale-[0.995] group"
             >
               <div className="flex items-center gap-4">
                 <div className={`flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-500 ${isPastEventsOpen ? 'bg-primary/20 rotate-180' : 'bg-muted/30'}`}>
@@ -820,7 +820,7 @@ const Events = () => {
                   <p className="text-muted-foreground/60 mt-1 text-sm font-medium">Önceki etkinlikleri görüntülemek için tıklayın</p>
                 </div>
               </div>
-              <div className={`w-12 h-12 rounded-full border border-border/ flex items-center justify-center transition-transform duration-500 ${isPastEventsOpen ? 'rotate-180 bg-primary/10 border-primary/20' : 'bg-foreground/'}`}>
+              <div className={`w-12 h-12 rounded-full border border-border/20 flex items-center justify-center transition-transform duration-500 ${isPastEventsOpen ? 'rotate-180 bg-primary/10 border-primary/20' : 'bg-foreground/'}`}>
                 <ChevronDown className={`w-6 h-6 transition-colors ${isPastEventsOpen ? 'text-primary' : 'text-muted-foreground'}`} />
               </div>
             </button>
@@ -908,8 +908,8 @@ const Events = () => {
 
               {/* RSVP Section */}
               {/* Enhanced RSVP Section */}
-              <div className="relative mt-8 rounded-3xl overflow-hidden border border-border/ bg-foreground/ backdrop-blur-2xl shadow-2xl">
-                <div className="px-6 py-5 bg-foreground/ border-b border-border/ flex items-center justify-between">
+              <div className="relative mt-8 rounded-3xl overflow-hidden border border-border/20 bg-foreground/5 backdrop-blur-2xl shadow-2xl">
+                <div className="px-6 py-5 bg-foreground/5 border-b border-border/20 flex items-center justify-between">
                   <h4 className="font-display text-lg font-black text-foreground flex items-center gap-2">
                     <UserCheck className="h-5 w-5 text-primary" />
                     Katılım Durumu
@@ -929,7 +929,7 @@ const Events = () => {
                       onClick={() => handleRsvp("attending")}
                       className={`h-16 rounded-2xl border-2 transition-all duration-300 flex flex-col gap-1 ${myRsvp?.status === "attending"
                         ? "bg-primary/20 border-primary shadow-[0_0_20px_rgba(var(--primary-rgb),0.2)] text-primary"
-                        : "bg-foreground/ border-border/ hover:bg-foreground/ hover:border-border/ text-muted-foreground"
+                        : "bg-foreground/5 border-border/20 hover:bg-foreground/5 hover:border-border/20 text-muted-foreground"
                         }`}
                     >
                       <UserCheck className="h-5 w-5" />
@@ -940,7 +940,7 @@ const Events = () => {
                       onClick={() => handleRsvp("not_attending")}
                       className={`h-16 rounded-2xl border-2 transition-all duration-300 flex flex-col gap-1 ${myRsvp?.status === "not_attending"
                         ? "bg-red-500/20 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)] text-red-500"
-                        : "bg-foreground/ border-border/ hover:bg-foreground/ hover:border-border/ text-muted-foreground"
+                        : "bg-foreground/5 border-border/20 hover:bg-foreground/5 hover:border-border/20 text-muted-foreground"
                         }`}
                     >
                       <UserX className="h-5 w-5" />
@@ -952,7 +952,7 @@ const Events = () => {
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
-                      className="space-y-4 pt-4 border-t border-border/"
+                      className="space-y-4 pt-4 border-t border-border/20"
                     >
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="space-y-1">
@@ -962,13 +962,13 @@ const Events = () => {
                           </p>
                         </div>
 
-                        <div className="flex items-center gap-4 bg-foreground/ p-2 rounded-2xl border border-border/">
+                        <div className="flex items-center gap-4 bg-foreground/5 p-2 rounded-2xl border border-border/20">
                           <Button
                             variant="ghost"
                             size="icon"
                             disabled={guestCount <= 0}
                             onClick={() => updateGuestCount(Math.max(0, guestCount - 1))}
-                            className="h-10 w-10 rounded-xl hover:bg-foreground/ text-primary transition-all active:scale-95"
+                            className="h-10 w-10 rounded-xl hover:bg-foreground/5 text-primary transition-all active:scale-95"
                           >
                             <Minus className="h-4 w-4" />
                           </Button>
@@ -980,7 +980,7 @@ const Events = () => {
                             size="icon"
                             disabled={guestCount >= 10}
                             onClick={() => updateGuestCount(Math.min(10, guestCount + 1))}
-                            className="h-10 w-10 rounded-xl hover:bg-foreground/ text-primary transition-all active:scale-95"
+                            className="h-10 w-10 rounded-xl hover:bg-foreground/5 text-primary transition-all active:scale-95"
                           >
                             <Plus className="h-4 w-4" />
                           </Button>
@@ -991,7 +991,7 @@ const Events = () => {
 
                   {/* Attendees List (Compact Glass Design) */}
                   {selectedEventRsvps.filter(r => r.status === "attending").length > 0 && (
-                    <div className="mt-8 pt-6 border-t border-border/">
+                    <div className="mt-8 pt-6 border-t border-border/20">
                       <h5 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
                         <Users className="h-3 w-3" />
                         Katılımcı Listesi
@@ -1000,7 +1000,7 @@ const Events = () => {
                         {selectedEventRsvps.filter(r => r.status === "attending").map((rsvp) => (
                           <div
                             key={rsvp.id}
-                            className="px-3 py-1.5 rounded-full bg-foreground/ border border-border/ text-xs font-semibold text-foreground/80 flex items-center gap-2 whitespace-nowrap"
+                            className="px-3 py-1.5 rounded-full bg-foreground/5 border border-border/20 text-xs font-semibold text-foreground/80 flex items-center gap-2 whitespace-nowrap"
                           >
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                             {rsvp.profiles?.first_name} {rsvp.profiles?.last_name?.[0]}.

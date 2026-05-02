@@ -264,7 +264,7 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
                 <Plus className="h-5 w-5 mr-2" /> Fotoğraf Ekle
               </Button>
             </DialogTrigger>
-            <DialogContent className="w-[95vw] sm:max-w-lg max-h-[95dvh] overflow-y-auto rounded-[2rem] border-none shadow-2xl p-0 bg-foreground/ backdrop-blur-xl scrollbar-hide">
+            <DialogContent className="w-[95vw] sm:max-w-lg max-h-[95dvh] overflow-y-auto rounded-[2rem] border-none shadow-2xl p-0 bg-foreground/5 backdrop-blur-xl scrollbar-hide">
               <DialogHeader className="p-6 sm:p-8 bg-gradient-to-r from-primary/10 to-transparent">
                 <DialogTitle className="text-xl sm:text-2xl font-black text-gray-900 flex items-center gap-3">
                   <div className="p-2 sm:p-2.5 bg-white rounded-2xl shadow-sm text-primary">
@@ -356,7 +356,7 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
         )}
       </div>
 
-      <div className="bg-foreground/ backdrop-blur-sm rounded-[2.5rem] p-4 sm:p-6 border border-border/ shadow-xl overflow-hidden min-h-[300px]">
+      <div className="bg-foreground/5 backdrop-blur-sm rounded-[2.5rem] p-4 sm:p-6 border border-border/20 shadow-xl overflow-hidden min-h-[300px]">
         {memories && memories.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             <AnimatePresence>
@@ -379,7 +379,7 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
                       <p className="text-sm text-foreground font-medium line-clamp-3 mb-3 leading-snug">{memory.caption}</p>
                     )}
                     <div className="flex items-center gap-2">
-                       <div className="w-6 h-6 rounded-full bg-primary/20 backdrop-blur-md flex items-center justify-center text-[10px] font-black text-foreground border border-border/">
+                       <div className="w-6 h-6 rounded-full bg-primary/20 backdrop-blur-md flex items-center justify-center text-[10px] font-black text-foreground border border-border/20">
                           {memory.profiles?.first_name?.[0]?.toUpperCase()}
                        </div>
                        <span className="text-[11px] text-gray-200 font-bold tracking-wide">
@@ -462,7 +462,7 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
 
       {/* Fullscreen Photo Lightbox Dialog */}
       <Dialog open={!!selectedPhoto} onOpenChange={(open) => !open && setSelectedPhoto(null)}>
-        <DialogContent className="max-w-[90vw] md:max-w-[80vw] lg:max-w-5xl p-1 bg-black/95 backdrop-blur-3xl border-border/ shadow-2xl overflow-hidden rounded-[2rem]">
+        <DialogContent className="max-w-[90vw] md:max-w-[80vw] lg:max-w-5xl p-1 bg-black/95 backdrop-blur-3xl border-border/20 shadow-2xl overflow-hidden rounded-[2rem]">
           {selectedPhoto && (
             <div className="relative flex flex-col">
               <div className="absolute top-6 right-20 z-50 flex items-center gap-3">
@@ -499,14 +499,14 @@ export const EventMemories: React.FC<EventMemoriesProps> = ({ eventId, isAttende
                       <h4 className="text-foreground font-bold leading-none mb-1 shadow-black drop-shadow-md">
                         {selectedPhoto.profiles?.first_name} {selectedPhoto.profiles?.last_name}
                       </h4>
-                      <p className="text-foreground/ text-xs font-medium">
+                      <p className="text-foreground/60 text-xs font-medium">
                         {new Date(selectedPhoto.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
                       </p>
                     </div>
                   </div>
                 </div>
                 {selectedPhoto.caption && (
-                  <p className="mt-4 text-foreground/ text-sm md:text-base max-w-2xl font-medium leading-relaxed drop-shadow-md pointer-events-auto">
+                  <p className="mt-4 text-foreground/60 text-sm md:text-base max-w-2xl font-medium leading-relaxed drop-shadow-md pointer-events-auto">
                     {selectedPhoto.caption}
                   </p>
                 )}

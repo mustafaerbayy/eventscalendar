@@ -146,7 +146,7 @@ const Navbar = () => {
 
           {/* Action Bar / User Section */}
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex h-8 w-px bg-foreground/ mx-1" />
+            <div className="hidden sm:flex h-8 w-px bg-foreground/5 mx-1" />
 
             {/* Theme Toggle - Desktop only */}
             <button
@@ -192,7 +192,7 @@ const Navbar = () => {
                         </div>
                         <DropdownItem onClick={() => { navigate("/profil"); setDropdownOpen(false); }} icon={<User className="h-4 w-4" />} label="Profil" />
                         {isAdmin && <DropdownItem onClick={() => { navigate("/yonetim"); setDropdownOpen(false); }} icon={<Shield className="h-4 w-4" />} label="Yönetim" isSpecial />}
-                        <div className="my-2 h-px bg-foreground/" />
+                        <div className="my-2 h-px bg-foreground/5" />
                         <button
                           onClick={handleSignOut}
                           className="flex w-full items-center gap-3 px-3 py-2 text-sm font-bold text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
@@ -314,7 +314,7 @@ const Navbar = () => {
                   </div>
                 ) : (
                   <>
-                    <Button variant="outline" className="w-full font-bold border-border/ rounded-xl py-6" onClick={() => navigate("/giris", { state: { from: location.pathname } })}>Giriş Yap</Button>
+                    <Button variant="outline" className="w-full font-bold border-border/20 rounded-xl py-6" onClick={() => navigate("/giris", { state: { from: location.pathname } })}>Giriş Yap</Button>
                     <Button className="w-full font-black bg-emerald-500 text-black rounded-xl py-6" onClick={() => navigate("/kayit", { state: { from: location.pathname } })}>Kayıt Ol</Button>
                   </>
                 )}
