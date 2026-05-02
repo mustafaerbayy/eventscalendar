@@ -13,7 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Calendar, Clock, MapPin, Users, UserCheck, UserX, Info, AlertCircle, ExternalLink, FileText, Video, Music, File as FileIcon, Download } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, UserCheck, UserX, Info, AlertCircle, ExternalLink, FileText, Video, Music, File as FileIcon, Download, Minus, Plus } from "lucide-react";
 import { formatTurkishDate, formatTurkishTime } from "@/lib/date-utils";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
