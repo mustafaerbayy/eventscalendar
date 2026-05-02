@@ -125,27 +125,17 @@ const Events = () => {
     location_url: "",
   });
   const [eventContents, setEventContents] = useState<EventContentInput[]>([]);
-  const [contentTypes, setContentTypes] = useState<string[]>(["Sunum", "Makale", "Müzik", "Video", "Dosya", "Diğer"]);
   const contentFileInputRef = useRef<HTMLInputElement>(null);
   const [isPastEventsOpen, setIsPastEventsOpen] = useState(false);
   const fetchData = async () => {
-    const [eventsRes, citiesRes, categoriesRes, contentsRes] = await Promise.all([
+    const [eventsRes, citiesRes, categoriesRes] = await Promise.all([
       supabase
         .from("events")
         .select("*, cities(name), venues(name), categories(name), rsvps(*, profiles(first_name, last_name))")
         .order("date", { ascending: true }),
       supabase.from("cities").select("*").order("name"),
-      supabase.from("categories").select("*").order("name"),
-      supabase.from("event_contents").select("content_type")
+      supabase.from("categories").select("*").order("name")
     ]);
-    
-    if (contentsRes.data) {
-      const types = new Set(["Sunum", "Makale", "Müzik", "Video", "Dosya", "Diğer"]);
-      contentsRes.data.forEach(c => {
-        if (c.content_type) types.add(c.content_type);
-      });
-      setContentTypes(Array.from(types));
-    }
     setEvents((eventsRes.data as unknown as EventWithRelations[]) || []);
     setCities(citiesRes.data || []);
     setCategories(categoriesRes.data || []);
@@ -779,7 +769,7 @@ const Events = () => {
                         onClick={() => {
                           setEventContents([
                             ...eventContents,
-                            { _isNew: true, content_type: "Diğer", title: "" }
+                            { _isNew: true, content_type: "Dosya", title: "" }
                           ]);
                         }}
                         className="h-8 px-3 text-[10px] font-bold text-primary hover:text-primary hover:bg-primary/10 rounded-xl"
@@ -808,26 +798,7 @@ const Events = () => {
                             <X className="w-3 h-3" />
                           </button>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                              <Label className="text-[10px] text-foreground/60 mb-1 block">TÜR *</Label>
-                              <Input
-                                list={`content-types-${realIndex}`}
-                                value={content.content_type}
-                                onChange={(e) => {
-                                  const newContents = [...eventContents];
-                                  newContents[realIndex].content_type = e.target.value;
-                                  setEventContents(newContents);
-                                }}
-                                placeholder="Kategori seçin veya yazın..."
-                                className="bg-background/50 border-border/20 h-10 rounded-xl text-xs"
-                              />
-                              <datalist id={`content-types-${realIndex}`}>
-                                {contentTypes.map((type, idx) => (
-                                  <option key={idx} value={type} />
-                                ))}
-                              </datalist>
-                            </div>
+                          <div className="grid grid-cols-1 gap-3">
                             <div>
                               <Label className="text-[10px] text-foreground/60 mb-1 block">BAŞLIK *</Label>
                               <Input
@@ -1168,9 +1139,6 @@ const Events = () => {
                             {content.title}
                           </h4>
                           <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium">
-                            <Badge variant="secondary" className="px-1.5 py-0 rounded-md bg-background/80 border-border/20">
-                              {content.content_type}
-                            </Badge>
                             {content.file_format && (
                               <span className="truncate opacity-70 uppercase tracking-wider">{content.file_format}</span>
                             )}

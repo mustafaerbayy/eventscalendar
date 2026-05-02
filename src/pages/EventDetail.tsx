@@ -237,9 +237,6 @@ const EventDetailPage = () => {
                         {content.title}
                       </h4>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-                        <Badge variant="secondary" className="text-[10px] px-2 py-0.5 rounded-md bg-background/80 border-border/20">
-                          {content.content_type}
-                        </Badge>
                         {content.file_format && (
                           <span className="truncate opacity-70 uppercase tracking-wider">{content.file_format}</span>
                         )}
@@ -255,185 +252,111 @@ const EventDetailPage = () => {
             </div>
           )}
 
-          {/* RSVP Section */}
-          <Card className="mt-8 border-l-4 border-l-primary">
-            <CardHeader className="pb-3">
-              <CardTitle className="font-display text-2xl flex items-center gap-2">
-                <Users className="h-6 w-6 text-primary" />
+          {/* RSVP Section (Enhanced Glass Design) */}
+          <div className="relative mt-8 rounded-3xl overflow-hidden border border-border/20 bg-foreground/5 backdrop-blur-2xl shadow-2xl">
+            <div className="px-6 py-5 bg-foreground/5 border-b border-border/20 flex items-center justify-between">
+              <h4 className="font-display text-lg font-black text-foreground flex items-center gap-2">
+                <UserCheck className="h-5 w-5 text-primary" />
                 Katılım Durumu
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* Statistics */}
-              <div className="grid grid-cols-3 gap-4 mb-6 p-4 bg-muted/50 rounded-lg">
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-2 mb-1">
-                    <Users className="h-5 w-5 text-primary" />
-                  </div>
-                  <p className="text-2xl font-bold text-primary">{totalAttendees}</p>
-                  <p className="text-xs text-muted-foreground">Toplam Katılımcı</p>
-                </div>
-                <div className="text-center border-l border-r border-border">
-                  <div className="flex items-center justify-center gap-2 mb-1">
-                    <UserCheck className="h-5 w-5 text-green-600" />
-                  </div>
-                  <p className="text-2xl font-bold text-green-600">{attendingRsvps.length}</p>
-                  <p className="text-xs text-muted-foreground">Katılıyor</p>
-                </div>
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-2 mb-1">
-                    <UserX className="h-5 w-5 text-destructive" />
-                  </div>
-                  <p className="text-2xl font-bold text-destructive">{notAttendingRsvps.length}</p>
-                  <p className="text-xs text-muted-foreground">Katılmıyor</p>
+              </h4>
+              <div className="flex gap-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                  {attendingRsvps.reduce((s: number, r) => s + 1 + r.guest_count, 0)} Toplam
                 </div>
               </div>
+            </div>
 
-              {/* RSVP Actions */}
-              <div className="space-y-4">
-                <div className="flex flex-wrap items-center gap-3">
-                  <Button
-                    variant={myRsvp?.status === "attending" ? "default" : "outline"}
-                    onClick={() => handleRsvp("attending")}
-                    className="px-6"
-                  >
-                    <UserCheck className="h-4 w-4 mr-2" />
-                    Katılıyorum
-                  </Button>
-                  <Button
-                    variant={myRsvp?.status === "not_attending" ? "destructive" : "outline"}
-                    onClick={() => handleRsvp("not_attending")}
-                    className="px-6"
-                  >
-                    <UserX className="h-4 w-4 mr-2" />
-                    Katılmıyorum
-                  </Button>
-                </div>
+            <div className="p-6">
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                <Button
+                  variant="ghost"
+                  onClick={() => handleRsvp("attending")}
+                  className={`h-16 rounded-2xl border-2 transition-all duration-300 flex flex-col gap-1 ${myRsvp?.status === "attending"
+                    ? "bg-primary/20 border-primary shadow-[0_0_20px_rgba(var(--primary-rgb),0.2)] text-primary"
+                    : "bg-foreground/5 border-border/20 hover:bg-foreground/5 hover:border-border/20 text-muted-foreground"
+                    }`}
+                >
+                  <UserCheck className="h-5 w-5" />
+                  <span className="text-xs font-black uppercase tracking-widest">Katılıyorum</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => handleRsvp("not_attending")}
+                  className={`h-16 rounded-2xl border-2 transition-all duration-300 flex flex-col gap-1 ${myRsvp?.status === "not_attending"
+                    ? "bg-red-500/20 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)] text-red-500"
+                    : "bg-foreground/5 border-border/20 hover:bg-foreground/5 hover:border-border/20 text-muted-foreground"
+                    }`}
+                >
+                  <UserX className="h-5 w-5" />
+                  <span className="text-xs font-black uppercase tracking-widest">Katılmıyorum</span>
+                </Button>
+              </div>
 
-                {/* Guest Count Section */}
-                {myRsvp?.status === "attending" && (
-                  <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-3">
-                          Misafir Ekleme
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <label htmlFor="guest-count" className="text-sm font-medium text-foreground">
-                            Misafir Sayısı:
-                          </label>
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Info className="h-4 w-4 text-muted-foreground cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="max-w-xs">Buradan sizinle beraber gelecek misafir sayısını belirtebilirsiniz</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                          <Input
-                            id="guest-count"
-                            type="number"
-                            min={0}
-                            value={guestCount}
-                            onChange={(e) => updateGuestCount(Math.max(0, parseInt(e.target.value) || 0))}
-                            className="w-24 h-9"
-                          />
-                          <span className="text-sm text-muted-foreground ml-1">kişi</span>
-                        </div>
+              {myRsvp?.status === "attending" && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="space-y-4 pt-4 border-t border-border/20"
+                >
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <p className="text-sm font-bold text-foreground">Misafir Ekle</p>
+                      <p className="text-xs text-muted-foreground italic">
+                        Lütfen sizinle birlikte katılacak misafir sayısını belirtiniz
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-4 bg-foreground/5 p-2 rounded-2xl border border-border/20">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={guestCount <= 0}
+                        onClick={() => updateGuestCount(Math.max(0, guestCount - 1))}
+                        className="h-10 w-10 rounded-xl hover:bg-foreground/5 text-primary transition-all active:scale-95"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <span className="text-xl font-black text-foreground min-w-[1.5rem] text-center">
+                        {guestCount}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={guestCount >= 10}
+                        onClick={() => updateGuestCount(Math.min(10, guestCount + 1))}
+                        className="h-10 w-10 rounded-xl hover:bg-foreground/5 text-primary transition-all active:scale-95"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Attendees List (Compact Glass Design) */}
+              {attendingRsvps.length > 0 && (
+                <div className="mt-8 pt-6 border-t border-border/20">
+                  <h5 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                    <Users className="h-3 w-3" />
+                    Katılımcı Listesi
+                  </h5>
+                  <div className="flex flex-wrap gap-2 pr-2 custom-scrollbar">
+                    {attendingRsvps.map((rsvp) => (
+                      <div
+                        key={rsvp.id}
+                        className="px-3 py-1.5 rounded-full bg-foreground/5 border border-border/20 text-xs font-semibold text-foreground/80 flex items-center gap-2 whitespace-nowrap"
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                        {rsvp.profiles?.first_name} {rsvp.profiles?.last_name?.[0]}.
+                        {rsvp.guest_count > 0 && <span className="text-primary/70">+{rsvp.guest_count}</span>}
                       </div>
-                    </div>
+                    ))}
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Attendance List */}
-          <Card className="mt-6 border-l-4 border-l-green-600">
-            <CardHeader className="pb-3">
-              <CardTitle className="font-display text-2xl flex items-center gap-2">
-                <Users className="h-6 w-6 text-green-600" />
-                Katılımcı Listesi
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {rsvps.length === 0 ? (
-                <div className="text-center py-8">
-                  <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Henüz katılım kaydı yok.</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {/* Attending Section */}
-                  {attendingRsvps.length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-green-600 mb-3 flex items-center gap-2">
-                        <UserCheck className="h-4 w-4" />
-                        Katılıyor ({attendingRsvps.length})
-                      </h3>
-                      <Table>
-                        <TableHeader>
-                          <TableRow className="bg-green-50 dark:bg-green-950/30">
-                            <TableHead className="text-green-900 dark:text-green-300">Ad Soyad</TableHead>
-                            <TableHead className="text-center text-green-900 dark:text-green-300">Durumu</TableHead>
-                            <TableHead className="text-right text-green-900 dark:text-green-300">+Misafir</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {attendingRsvps.map((r) => (
-                            <TableRow key={r.id} className="border-b border-green-100 dark:border-green-900/20 hover:bg-green-50/50 dark:hover:bg-green-950/20">
-                              <TableCell className="font-medium">{r.profiles?.first_name} {r.profiles?.last_name}</TableCell>
-                              <TableCell className="text-center">
-                                <Badge variant="default" className="bg-green-600 hover:bg-green-700">
-                                  Katılıyor
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-right font-semibold">{r.guest_count > 0 ? `+${r.guest_count}` : "-"}</TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-
-                  {/* Not Attending Section */}
-                  {notAttendingRsvps.length > 0 && (
-                    <div className="mt-6">
-                      <h3 className="text-sm font-semibold text-destructive mb-3 flex items-center gap-2">
-                        <UserX className="h-4 w-4" />
-                        Katılmıyor ({notAttendingRsvps.length})
-                      </h3>
-                      <Table>
-                        <TableHeader>
-                          <TableRow className="bg-red-50 dark:bg-red-950/30">
-                            <TableHead className="text-destructive">Ad Soyad</TableHead>
-                            <TableHead className="text-center text-destructive">Durumu</TableHead>
-                            <TableHead className="text-right text-destructive">Misafir</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {notAttendingRsvps.map((r) => (
-                            <TableRow key={r.id} className="border-b border-red-100 dark:border-red-900/20 hover:bg-red-50/50 dark:hover:bg-red-950/20 opacity-75">
-                              <TableCell className="font-medium">{r.profiles?.first_name} {r.profiles?.last_name}</TableCell>
-                              <TableCell className="text-center">
-                                <Badge variant="secondary" className="bg-red-100 text-destructive hover:bg-red-200">
-                                  Katılmıyor
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-right">-</TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Media Archive Section (Collapsible) */}
           <div className="mt-12 pt-8 border-t border-border/10 mb-10">
