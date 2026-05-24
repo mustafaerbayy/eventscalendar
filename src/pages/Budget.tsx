@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Wallet, Plus, Trash2, Edit2, Info, User as UserIcon, CalendarDays, Users, TrendingUp, ShieldCheck, Clock, XCircle, Landmark, Copy } from "lucide-react";
+import { Wallet, Plus, Trash2, Edit2, Info, User as UserIcon, CalendarDays, Users, TrendingUp, ShieldCheck, Clock, XCircle, Landmark, Copy, Mail, Send, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,6 +63,15 @@ export default function Budget() {
   const [isEditPaymentInfoOpen, setIsEditPaymentInfoOpen] = useState(false);
   const [paymentName, setPaymentName] = useState("");
   const [paymentIban, setPaymentIban] = useState("");
+
+  // Mail sending state
+  const [isSendMailDialogOpen, setIsSendMailDialogOpen] = useState(false);
+  const [mailSubject, setMailSubject] = useState("");
+  const [mailBody, setMailBody] = useState("");
+  const [selectedMailRecipients, setSelectedMailRecipients] = useState<string[]>([]);
+  const [isSendingMail, setIsSendingMail] = useState(false);
+  const [mailSearchQuery, setMailSearchQuery] = useState("");
+  const [memberSearchQuery, setMemberSearchQuery] = useState("");
 
   const handleScroll = () => {
     if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
@@ -733,6 +742,61 @@ export default function Budget() {
     updateDuesAmountMutation.mutate(Number(newDuesAmount));
   };
 
+  const getUnpaidDuesMembers = () => {
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+    return users
+      ? users
+          .filter(u => duesMembers?.includes(u.id))
+          .filter(u => !allDuesPaymentsHistory?.some(p => p.user_id === u.id && p.year === currentYear && p.month === currentMonth))
+          .map(u => u.id)
+      : [];
+  };
+
+  const openSendMail = () => {
+    // Select only unpaid dues members by default
+    setSelectedMailRecipients(getUnpaidDuesMembers());
+    setMailSubject("");
+    setMailBody("");
+    setMailSearchQuery("");
+    setIsSendMailDialogOpen(true);
+  };
+
+  const handleSendMail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mailSubject.trim() || !mailBody.trim()) {
+      toast.error("Lütfen konu ve mesaj alanlarını doldurun.");
+      return;
+    }
+    if (selectedMailRecipients.length === 0) {
+      toast.error("Lütfen en az bir alıcı seçin.");
+      return;
+    }
+
+    setIsSendingMail(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-announcement", {
+        body: {
+          subject: mailSubject,
+          body: mailBody,
+          recipientIds: selectedMailRecipients,
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success(`${data.sent || selectedMailRecipients.length} kullanıcıya e-posta başarıyla gönderildi.`);
+      setIsSendMailDialogOpen(false);
+      setMailSubject("");
+      setMailBody("");
+    } catch (err: any) {
+      console.error("Mail gönderme hatası:", err);
+      toast.error("E-posta gönderilirken hata oluştu: " + (err.message || "Bilinmeyen hata"));
+    } finally {
+      setIsSendingMail(false);
+    }
+  };
+
   // Check auth AFTER all hooks have been called
   if (loading) return <LoadingScreen />;
   if (!user) {
@@ -1115,6 +1179,16 @@ export default function Budget() {
                 </div>
                 {canManageBudget && (
                   <div className="flex flex-wrap items-center gap-2">
+                    {isAdmin && (
+                      <Button
+                        onClick={openSendMail}
+                        variant="outline"
+                        size="sm"
+                        className="bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 rounded-xl gap-1.5 text-xs font-bold"
+                      >
+                        <Mail className="w-3.5 h-3.5" /> E-posta Gönder
+                      </Button>
+                    )}
                     <Dialog open={isEditDuesOpen} onOpenChange={setIsEditDuesOpen}>
                       <DialogTrigger asChild>
                         <Button variant="outline" size="sm" className="bg-foreground/5 border-border/10 hover:bg-foreground/5 rounded-xl gap-1.5 text-xs">
@@ -1145,12 +1219,23 @@ export default function Budget() {
                           <DialogTitle className="text-2xl font-black text-center mb-2">Aidat Ödeyenler</DialogTitle>
                           <p className="text-center text-foreground/40 text-sm mb-4">Aidat listesinde görünecek üyeleri seçin</p>
                         </DialogHeader>
+                        <div className="relative group mb-3 mt-2">
+                          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/30 group-focus-within:text-emerald-400 transition-colors" />
+                          <Input
+                            value={memberSearchQuery}
+                            onChange={(e) => setMemberSearchQuery(e.target.value)}
+                            placeholder="Üye ara..."
+                            className="bg-foreground/5 border-border/10 rounded-xl pl-11 h-11 text-sm font-semibold"
+                          />
+                        </div>
                         <ScrollArea 
-                          className="h-[400px] w-full pr-4 mt-2" 
+                          className="h-[350px] w-full pr-4" 
                           onScroll={handleScroll}
                         >
                           <div className={cn("space-y-1", isScrolling && "pointer-events-none")}>
-                            {users?.map(u => (
+                            {users
+                              ?.filter(u => `${u.first_name} ${u.last_name}`.toLocaleLowerCase('tr-TR').includes(memberSearchQuery.toLocaleLowerCase('tr-TR')))
+                              .map(u => (
                               <div 
                                 key={u.id} 
                                 className="flex items-center justify-between p-3 rounded-2xl hover:bg-emerald-500/5 transition-all group border-b border-border/5 last:border-0 cursor-pointer"
@@ -1589,6 +1674,191 @@ export default function Budget() {
               Not: Bu bilgilerin kaydedilebilmesi için Supabase panelinizden <code className="bg-foreground/10 px-1 rounded">budget_settings</code> tablosuna <code className="bg-foreground/10 px-1 rounded">payment_name</code> ve <code className="bg-foreground/10 px-1 rounded">payment_iban</code> sütunlarının eklenmiş olması gerekmektedir.
             </p>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isSendMailDialogOpen} onOpenChange={setIsSendMailDialogOpen}>
+        <DialogContent className="bg-background border border-border/40 text-foreground w-[95vw] sm:max-w-lg rounded-[2.5rem] p-8 top-[10%] translate-y-0 sm:top-[50%] sm:translate-y-[-50%] max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col">
+          <DialogHeader className="pb-4 border-b border-border/10">
+            <DialogTitle className="text-2xl font-black flex items-center gap-3">
+              <div className="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl shrink-0">
+                <Mail className="w-6 h-6" />
+              </div>
+              <div className="flex flex-col text-left">
+                <span>E-posta Gönder</span>
+                <span className="text-xs text-foreground/40 font-bold uppercase tracking-wider mt-0.5">Aidat Takibindeki Üyelere</span>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+          
+          <form onSubmit={handleSendMail} className="space-y-5 pt-5 flex-1">
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-foreground/70 uppercase tracking-wider">Konu</Label>
+              <Input
+                value={mailSubject}
+                onChange={(e) => setMailSubject(e.target.value)}
+                placeholder="E-posta konusu..."
+                className="bg-foreground/5 border-border/10 rounded-xl h-12 focus:border-emerald-500/40"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-foreground/70 uppercase tracking-wider">Mesaj</Label>
+              <Textarea
+                value={mailBody}
+                onChange={(e) => setMailBody(e.target.value)}
+                placeholder="Mesajınızı buraya yazın..."
+                className="bg-foreground/5 border-border/10 rounded-xl min-h-[140px] focus:border-emerald-500/40 resize-none"
+                required
+              />
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-bold text-foreground/70 uppercase tracking-wider">
+                    Alıcılar ({selectedMailRecipients.length}/{users?.filter(u => duesMembers?.includes(u.id))?.length || 0})
+                  </Label>
+                  <span
+                    role="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const activeDuesMembers = users ? users.filter(u => duesMembers?.includes(u.id)).map(u => u.id) : [];
+                      if (selectedMailRecipients.length === activeDuesMembers.length) {
+                        setSelectedMailRecipients([]);
+                      } else {
+                        setSelectedMailRecipients(activeDuesMembers);
+                      }
+                    }}
+                    className="text-xs font-black text-emerald-400 hover:text-emerald-300 transition-colors uppercase tracking-wider cursor-pointer select-none"
+                  >
+                    {selectedMailRecipients.length === (users?.filter(u => duesMembers?.includes(u.id))?.length || 0)
+                      ? "Tüm Seçimleri Kaldır"
+                      : "Tüm Kullanıcıları Seç"}
+                  </span>
+                </div>
+                <div
+                  role="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const unpaid = getUnpaidDuesMembers();
+                    setSelectedMailRecipients(unpaid);
+
+                    const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+                    const currentMonth = new Date().getMonth();
+                    const currentYear = new Date().getFullYear();
+                    const duesAmt = Number(budgetSettings?.dues_amount || 100);
+                    const paymentNameText = (budgetSettings as any)?.payment_name || "Topluluk Hesabı";
+                    const paymentIbanText = (budgetSettings as any)?.payment_iban || "";
+
+                    const siteUrl = "https://www.refik.online";
+
+                    setMailSubject(`${monthNames[currentMonth]} ${currentYear} Aidat Hatırlatması`);
+                    setMailBody(
+`Merhaba,
+
+${monthNames[currentMonth]} ${currentYear} ayına ait topluluk aidat ödemenizin henüz tarafımıza ulaşmadığını fark ettik. Ödemenizi en uygun zamanda gerçekleştirmenizi rica ederiz.
+
+Aidat Tutarı: ${duesAmt.toLocaleString("tr-TR")} TL
+Alıcı: ${paymentNameText}${paymentIbanText ? `\nIBAN: ${paymentIbanText}` : ""}
+Açıklama: ${monthNames[currentMonth]} ${currentYear} Aidat
+
+Ödemenizi gerçekleştirdikten sonra, bir sonraki hatırlatma e-postasını almamak için lütfen aşağıdaki butona tıklayarak sisteme giriş yapın ve aidatınızı ödendi olarak işaretleyin.
+
+<a href="${siteUrl}/butce" style="display:inline-block;padding:14px 32px;background:#10b981;color:#000;font-weight:bold;text-decoration:none;border-radius:12px;font-size:15px;margin:8px 0;">Aidatımı İşaretle</a>
+
+Herhangi bir sorunuz varsa bizimle iletişime geçmekten çekinmeyin.
+
+Saygılarımızla,
+Topluluk Yönetimi`
+                    );
+
+                    if (unpaid.length === 0) {
+                      toast.info("Bu ay tüm üyeler aidatını ödemiş!");
+                    } else {
+                      toast.success(`${unpaid.length} ödeme yapmamış kullanıcı seçildi, taslak mail hazırlandı.`);
+                    }
+                  }}
+                  className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/15 transition-all cursor-pointer select-none"
+                >
+                  <XCircle className="w-3.5 h-3.5" />
+                  <span className="text-xs font-black uppercase tracking-wider">Sadece Ödeme Yapmayanları Seç</span>
+                </div>
+              </div>
+
+              <div className="relative group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/30 group-focus-within:text-emerald-400 transition-colors" />
+                <Input
+                  value={mailSearchQuery}
+                  onChange={(e) => setMailSearchQuery(e.target.value)}
+                  placeholder="Kullanıcı ara..."
+                  className="bg-foreground/5 border-border/10 rounded-xl pl-11 h-11 text-sm font-semibold"
+                />
+              </div>
+
+              <ScrollArea className="h-[180px] border border-border/10 rounded-2xl p-4 bg-foreground/[0.01]">
+                <div className="space-y-2">
+                  {users
+                    ?.filter(u => duesMembers?.includes(u.id))
+                    ?.filter(u => `${u.first_name} ${u.last_name}`.toLocaleLowerCase('tr-TR').includes(mailSearchQuery.toLocaleLowerCase('tr-TR')))
+                    ?.map(u => {
+                      const isChecked = selectedMailRecipients.includes(u.id);
+                      return (
+                        <div
+                          key={u.id}
+                          onClick={() => {
+                            setSelectedMailRecipients(prev =>
+                              prev.includes(u.id) ? prev.filter(id => id !== u.id) : [...prev, u.id]
+                            );
+                          }}
+                          className={cn(
+                            "flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer",
+                            isChecked
+                              ? "bg-emerald-500/5 border-emerald-500/20"
+                              : "bg-transparent border-border/5 hover:bg-foreground/5"
+                          )}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xs font-black border border-emerald-500/20">
+                              {u.first_name?.[0]?.toLocaleUpperCase('tr-TR')}{u.last_name?.[0]?.toLocaleUpperCase('tr-TR')}
+                            </div>
+                            <span className="font-bold text-sm text-foreground/90">{u.first_name} {u.last_name}</span>
+                          </div>
+                          <div
+                            className={cn(
+                              "h-5 w-5 rounded border-2 flex items-center justify-center shrink-0 transition-all",
+                              isChecked
+                                ? "bg-emerald-500 border-emerald-500 text-black"
+                                : "border-foreground/20 bg-transparent"
+                            )}
+                          >
+                            {isChecked && <Check className="w-3.5 h-3.5" />}
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </ScrollArea>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isSendingMail}
+              className="w-full h-14 bg-emerald-500 hover:bg-emerald-600 text-black font-black uppercase tracking-wider rounded-xl mt-2 flex items-center justify-center gap-2 shadow-[0_10px_20px_rgba(16,185,129,0.15)]"
+            >
+              {isSendingMail ? (
+                "Gönderiliyor..."
+              ) : (
+                <>
+                  <Send className="w-4 h-4" />
+                  Gönder ({selectedMailRecipients.length} Alıcı)
+                </>
+              )}
+            </Button>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
