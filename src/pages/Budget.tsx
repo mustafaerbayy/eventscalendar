@@ -104,6 +104,24 @@ export default function Budget() {
     },
   });
 
+  // Returns the correct dues amount for a specific month/year, accounting for mid-year rate changes
+  const getDuesAmountForMonth = (month: number, year: number): number => {
+    const currentAmount = Number(budgetSettings?.dues_amount || 100);
+    const previousAmount = Number((budgetSettings as any)?.previous_dues_amount);
+    const effectiveMonth = Number((budgetSettings as any)?.dues_effective_month);
+    const effectiveYear = Number((budgetSettings as any)?.dues_effective_year);
+
+    // If no previous amount or effective date stored, use current amount for all months
+    if (!previousAmount || !effectiveMonth || !effectiveYear) return currentAmount;
+
+    // If the requested month/year is before the effective date, use the previous amount
+    if (year < effectiveYear || (year === effectiveYear && month < effectiveMonth)) {
+      return previousAmount;
+    }
+
+    return currentAmount;
+  };
+
   // Fetch Dues Payments
   const { data: duesPayments, isLoading: loadingDues } = useQuery({
     queryKey: ["duesPayments", selectedYear],
@@ -414,7 +432,7 @@ export default function Budget() {
           const { error } = await supabase.from("dues_payments").delete().eq("id", existing.id);
           if (error) throw error;
         } else {
-          const baseDues = budgetSettings?.dues_amount || 100;
+          const baseDues = getDuesAmountForMonth(month, selectedYear);
           const totalAmount = amount !== undefined ? amount : baseDues;
           const inserts: { user_id: string; year: number; month: number; amount: number; created_by: string }[] = [];
 
@@ -423,7 +441,9 @@ export default function Budget() {
             let currentMonth = month;
             let currentYear = selectedYear;
 
-            while (remainingAmount >= baseDues) {
+            while (remainingAmount > 0) {
+              const monthDues = getDuesAmountForMonth(currentMonth, currentYear);
+              if (remainingAmount < monthDues) break;
               const isAlreadyPaid = allDuesPaymentsHistory?.some(p => p.user_id === userId && p.year === currentYear && p.month === currentMonth);
 
               if (!isAlreadyPaid) {
@@ -431,10 +451,10 @@ export default function Budget() {
                   user_id: userId,
                   year: currentYear,
                   month: currentMonth,
-                  amount: baseDues,
+                  amount: monthDues,
                   created_by: isEditMode ? user?.id : userId
                 });
-                remainingAmount -= baseDues;
+                remainingAmount -= monthDues;
               }
 
               currentMonth++;
@@ -476,7 +496,7 @@ export default function Budget() {
       } else {
         // Normal user: create pending transaction
         const actionType = existing ? "mark_unpaid" : "mark_paid";
-        const baseDues = budgetSettings?.dues_amount || 100;
+        const baseDues = getDuesAmountForMonth(month, selectedYear);
         const totalAmount = amount !== undefined ? amount : baseDues;
 
         // Check if there's already a pending transaction for this user/month/year
@@ -527,7 +547,7 @@ export default function Budget() {
       if (!transaction) throw new Error("İşlem bulunamadı");
 
       if (transaction.action_type === "mark_paid") {
-        const baseDues = budgetSettings?.dues_amount || 100;
+        const baseDues = getDuesAmountForMonth(transaction.month, transaction.year);
         const totalAmount = transaction.payment_amount || transaction.amount || baseDues;
         const inserts: { user_id: string; year: number; month: number; amount: number; created_by: string }[] = [];
 
@@ -536,7 +556,9 @@ export default function Budget() {
           let currentMonth = transaction.month;
           let currentYear = transaction.year;
 
-          while (remainingAmount >= baseDues) {
+          while (remainingAmount > 0) {
+            const monthDues = getDuesAmountForMonth(currentMonth, currentYear);
+            if (remainingAmount < monthDues) break;
             const isAlreadyPaid = allDuesPaymentsHistory?.some(
               p => p.user_id === transaction.user_id && p.year === currentYear && p.month === currentMonth
             );
@@ -546,10 +568,10 @@ export default function Budget() {
                 user_id: transaction.user_id,
                 year: currentYear,
                 month: currentMonth,
-                amount: baseDues,
+                amount: monthDues,
                 created_by: transaction.user_id
               });
-              remainingAmount -= baseDues;
+              remainingAmount -= monthDues;
             }
 
             currentMonth++;
@@ -635,10 +657,24 @@ export default function Budget() {
 
   const updateDuesAmountMutation = useMutation({
     mutationFn: async (amount: number) => {
+      // Effective from next month
+      const now = new Date();
+      let effMonth = now.getMonth() + 2; // +1 for 0-indexed, +1 for next month
+      let effYear = now.getFullYear();
+      if (effMonth > 12) { effMonth = 1; effYear++; }
+
+      const oldAmount = budgetSettings?.dues_amount || 100;
+
       if (budgetSettings?.id) {
         const { error } = await supabase
           .from("budget_settings")
-          .update({ dues_amount: amount })
+          // @ts-ignore - previous_dues_amount, dues_effective_month, dues_effective_year columns
+          .update({
+            dues_amount: amount,
+            previous_dues_amount: oldAmount,
+            dues_effective_month: effMonth,
+            dues_effective_year: effYear,
+          })
           .eq("id", budgetSettings.id);
         if (error) throw error;
       } else {
@@ -651,7 +687,12 @@ export default function Budget() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["budgetSettings"] });
       setIsEditDuesOpen(false);
-      toast.success("Aidat ücreti güncellendi");
+      const now = new Date();
+      let effMonth = now.getMonth() + 2;
+      let effYear = now.getFullYear();
+      if (effMonth > 12) { effMonth = 1; effYear++; }
+      const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+      toast.success(`Aidat ücreti güncellendi. Yeni tutar ${monthNames[effMonth - 1]} ${effYear}'dan itibaren geçerli olacaktır.`);
     },
     onError: (error: Error) => {
       toast.error("Aidat güncellenirken hata: " + error.message);
@@ -1041,7 +1082,7 @@ export default function Budget() {
                     <div>
                       <p className="text-foreground/50 text-xs font-medium uppercase tracking-wider">{monthNames[currentMonth - 1]} Ayında Toplanan Aidat</p>
                       <p className="text-2xl font-black text-emerald-400">₺{currentMonthDuesCollected.toLocaleString("tr-TR")}</p>
-                      <p className="text-foreground/30 text-[10px] mt-0.5">Aylık aidat: ₺{Number(budgetSettings?.dues_amount || 100).toLocaleString("tr-TR")}</p>
+                      <p className="text-foreground/30 text-[10px] mt-0.5">Bu ay aidat: ₺{getDuesAmountForMonth(currentMonth, currentYear).toLocaleString("tr-TR")}</p>
                     </div>
                   </div>
                   <div className="bg-white/[0.03] border border-border/10 rounded-2xl p-5 flex items-center gap-4">
@@ -1324,7 +1365,7 @@ export default function Budget() {
                           } else {
                             // Both admin and normal user: open amount dialog
                             setPendingDuesPayment({ userId: user!.id, month });
-                            setDuesPaymentAmount(budgetSettings?.dues_amount?.toString() || "100");
+                            setDuesPaymentAmount(getDuesAmountForMonth(month, selectedYear).toString());
                             setIsDuesPaymentDialogOpen(true);
                           }
                         }}
@@ -1402,7 +1443,7 @@ export default function Budget() {
                                   <button
                                     onClick={() => {
                                       if (isPaid) { setPaymentToCancel({ userId: u.id, month }); setIsCancelPaymentDialogOpen(true); }
-                                      else { setPendingDuesPayment({ userId: u.id, month }); setDuesPaymentAmount(budgetSettings?.dues_amount?.toString() || "100"); setIsDuesPaymentDialogOpen(true); }
+                                      else { setPendingDuesPayment({ userId: u.id, month }); setDuesPaymentAmount(getDuesAmountForMonth(month, selectedYear).toString()); setIsDuesPaymentDialogOpen(true); }
                                     }}
                                     disabled={(toggleDuesMutation.isPending && isMutating) || !canManageBudget}
                                     className={cn(
@@ -1542,7 +1583,7 @@ export default function Budget() {
               />
             </div>
 
-            {Number(duesPaymentAmount) > (budgetSettings?.dues_amount || 100) && (
+            {pendingDuesPayment && Number(duesPaymentAmount) > getDuesAmountForMonth(pendingDuesPayment.month, selectedYear) && (
               <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl space-y-4 mt-2">
                 <Label className="text-emerald-400 block leading-snug">Fazla Ödediğiniz Tutarı Bir Sonraki Aylara Yansıtmak İstiyor Musunuz?</Label>
                 <div className="flex items-center gap-3">
@@ -1750,7 +1791,9 @@ export default function Budget() {
                     const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
                     const currentMonth = new Date().getMonth();
                     const currentYear = new Date().getFullYear();
-                    const duesAmt = Number(budgetSettings?.dues_amount || 100);
+                    const currentMailMonth = new Date().getMonth() + 1;
+                    const currentMailYear = new Date().getFullYear();
+                    const duesAmt = getDuesAmountForMonth(currentMailMonth, currentMailYear);
                     const paymentNameText = (budgetSettings as any)?.payment_name || "Topluluk Hesabı";
                     const paymentIbanText = (budgetSettings as any)?.payment_iban || "";
 
