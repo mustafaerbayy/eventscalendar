@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Wallet, Plus, Trash2, Edit2, Info, User as UserIcon, CalendarDays, Users, TrendingUp, ShieldCheck, Clock, XCircle, Landmark, Copy, Mail, Send, Search } from "lucide-react";
+import { Wallet, Plus, Trash2, Edit2, Info, User as UserIcon, CalendarDays, Users, TrendingUp, ShieldCheck, Clock, XCircle, Landmark, Copy, Mail, Send, Search, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -73,6 +73,12 @@ export default function Budget() {
   const [mailSearchQuery, setMailSearchQuery] = useState("");
   const [memberSearchQuery, setMemberSearchQuery] = useState("");
 
+  // Dues warning states
+  const [isUnpaidWarningOpen, setIsUnpaidWarningOpen] = useState(false);
+  const [hasShownWarning, setHasShownWarning] = useState(false);
+  const [unpaidMonths, setUnpaidMonths] = useState<string[]>([]);
+  const [showWarningPaymentInfo, setShowWarningPaymentInfo] = useState(true);
+
   const handleScroll = () => {
     if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
     setIsScrolling(true);
@@ -86,6 +92,8 @@ export default function Budget() {
       setSpentBy(profile.id);
     }
   }, [profile, spentBy]);
+
+
 
   const canManageBudget = isAdmin || hasBudgetRole;
 
@@ -199,6 +207,36 @@ export default function Budget() {
     },
   });
 
+  useEffect(() => {
+    if (!loading && user && duesMembers && allDuesPaymentsHistory && !hasShownWarning) {
+      const isMember = duesMembers.includes(user.id);
+      if (isMember) {
+        const curMonth = new Date().getMonth() + 1;
+        const curYear = new Date().getFullYear();
+        const monthNames = [
+          "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+          "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"
+        ];
+        const missing: string[] = [];
+
+        for (let m = 1; m <= curMonth; m++) {
+          const isPaid = allDuesPaymentsHistory.some(
+            (p) => p.user_id === user.id && p.year === curYear && p.month === m
+          );
+          if (!isPaid) {
+            missing.push(monthNames[m - 1]);
+          }
+        }
+
+        if (missing.length > 0) {
+          setUnpaidMonths(missing);
+          setIsUnpaidWarningOpen(true);
+        }
+      }
+      setHasShownWarning(true);
+    }
+  }, [loading, user, duesMembers, allDuesPaymentsHistory, hasShownWarning]);
+
   type GroupedDuesPayment = {
     id: string;
     user_id: string;
@@ -214,26 +252,26 @@ export default function Budget() {
   if (allDuesPaymentsHistory) {
     const duesItems = allDuesPaymentsHistory.filter(d => d.created_by === d.user_id);
     const processedIds = new Set();
-    
+
     duesItems.forEach(item => {
       if (processedIds.has(item.id)) return;
-      
+
       // Find other items from the same user created within 5 seconds
       const itemTime = new Date(item.created_at).getTime();
-      const relatedItems = duesItems.filter(d => 
+      const relatedItems = duesItems.filter(d =>
         !processedIds.has(d.id) &&
         d.user_id === item.user_id &&
         Math.abs(new Date(d.created_at).getTime() - itemTime) < 5000
       );
-      
+
       relatedItems.forEach(r => processedIds.add(r.id));
-      
+
       // Sort related items by year and month
       relatedItems.sort((a, b) => {
         if (a.year !== b.year) return a.year - b.year;
         return a.month - b.month;
       });
-      
+
       groupedDuesPayments.push({
         id: relatedItems.map(r => r.id).join(','),
         user_id: item.user_id,
@@ -788,9 +826,9 @@ export default function Budget() {
     const currentYear = new Date().getFullYear();
     return users
       ? users
-          .filter(u => duesMembers?.includes(u.id))
-          .filter(u => !allDuesPaymentsHistory?.some(p => p.user_id === u.id && p.year === currentYear && p.month === currentMonth))
-          .map(u => u.id)
+        .filter(u => duesMembers?.includes(u.id))
+        .filter(u => !allDuesPaymentsHistory?.some(p => p.user_id === u.id && p.year === currentYear && p.month === currentMonth))
+        .map(u => u.id)
       : [];
   };
 
@@ -1029,10 +1067,10 @@ export default function Budget() {
                           const formattedMonths = dueItem.months_paid.map(m => `${m.year} ${months[m.month - 1]}`);
                           monthsText = `${formattedMonths.join(', ')} aidatları`;
                         } else if (dueItem.months_paid && dueItem.months_paid.length === 1) {
-                           const m = dueItem.months_paid[0];
-                           monthsText = `${m.year} ${months[m.month - 1]} aidatı`;
+                          const m = dueItem.months_paid[0];
+                          monthsText = `${m.year} ${months[m.month - 1]} aidatı`;
                         } else {
-                           monthsText = `${(dueItem as any).year} ${months[(dueItem as any).month - 1]} aidatı`;
+                          monthsText = `${(dueItem as any).year} ${months[(dueItem as any).month - 1]} aidatı`;
                         }
 
                         return (
@@ -1108,7 +1146,7 @@ export default function Budget() {
                 <div className="min-w-0">
                   <p className="text-foreground/50 text-xs font-medium uppercase tracking-wider">Aidat Ödeme Bilgileri</p>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-1">
-                    <div 
+                    <div
                       className="flex items-start sm:items-center gap-2 cursor-pointer group hover:bg-white/[0.05] p-1.5 -ml-1.5 rounded-md transition-colors active:scale-95"
                       onClick={(e) => {
                         e.preventDefault();
@@ -1140,10 +1178,10 @@ export default function Budget() {
                       <p className="font-bold text-foreground text-sm sm:text-base break-words">{(budgetSettings as any)?.payment_name || "Belirtilmemiş"}</p>
                       <Copy className="w-3.5 h-3.5 text-foreground/30 group-hover:text-indigo-400 transition-colors shrink-0 mt-1 sm:mt-0" />
                     </div>
-                    
+
                     <div className="hidden sm:block text-foreground/20">•</div>
 
-                    <div 
+                    <div
                       className="flex items-start sm:items-center gap-2 cursor-pointer group hover:bg-white/[0.05] p-1.5 -ml-1.5 rounded-md transition-colors active:scale-95"
                       onClick={(e) => {
                         e.preventDefault();
@@ -1179,9 +1217,9 @@ export default function Budget() {
                 </div>
               </div>
               {canManageBudget && (
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="text-foreground/30 hover:text-indigo-400 hover:bg-indigo-500/10 shrink-0"
                   onClick={() => {
                     setPaymentName((budgetSettings as any)?.payment_name || "");
@@ -1269,41 +1307,41 @@ export default function Budget() {
                             className="bg-foreground/5 border-border/10 rounded-xl pl-11 h-11 text-sm font-semibold"
                           />
                         </div>
-                        <ScrollArea 
-                          className="h-[350px] w-full pr-4" 
+                        <ScrollArea
+                          className="h-[350px] w-full pr-4"
                           onScroll={handleScroll}
                         >
                           <div className={cn("space-y-1", isScrolling && "pointer-events-none")}>
                             {users
                               ?.filter(u => `${u.first_name} ${u.last_name}`.toLocaleLowerCase('tr-TR').includes(memberSearchQuery.toLocaleLowerCase('tr-TR')))
                               .map(u => (
-                              <div 
-                                key={u.id} 
-                                className="flex items-center justify-between p-3 rounded-2xl hover:bg-emerald-500/5 transition-all group border-b border-border/5 last:border-0 cursor-pointer"
-                                onClick={() => {
-                                  if (!isScrolling) {
-                                    toggleDuesMemberMutation.mutate(u.id);
-                                  }
-                                }}
-                              >
-                                <div className="flex items-center space-x-4">
-                                  <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-emerald-500/20 to-emerald-500/5 flex items-center justify-center text-xs font-black text-emerald-400 border border-emerald-500/20 group-hover:scale-110 transition-transform">
-                                    {u.first_name?.[0]?.toLocaleUpperCase('tr-TR')}{u.last_name?.[0]?.toLocaleUpperCase('tr-TR')}
+                                <div
+                                  key={u.id}
+                                  className="flex items-center justify-between p-3 rounded-2xl hover:bg-emerald-500/5 transition-all group border-b border-border/5 last:border-0 cursor-pointer"
+                                  onClick={() => {
+                                    if (!isScrolling) {
+                                      toggleDuesMemberMutation.mutate(u.id);
+                                    }
+                                  }}
+                                >
+                                  <div className="flex items-center space-x-4">
+                                    <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-emerald-500/20 to-emerald-500/5 flex items-center justify-center text-xs font-black text-emerald-400 border border-emerald-500/20 group-hover:scale-110 transition-transform">
+                                      {u.first_name?.[0]?.toLocaleUpperCase('tr-TR')}{u.last_name?.[0]?.toLocaleUpperCase('tr-TR')}
+                                    </div>
+                                    <div className="flex flex-col">
+                                      <span className="font-black text-sm text-foreground/90 group-hover:text-emerald-400 transition-colors">{u.first_name} {u.last_name}</span>
+                                      <span className="text-[10px] text-foreground/30 font-medium">Topluluk Üyesi</span>
+                                    </div>
                                   </div>
-                                  <div className="flex flex-col">
-                                    <span className="font-black text-sm text-foreground/90 group-hover:text-emerald-400 transition-colors">{u.first_name} {u.last_name}</span>
-                                    <span className="text-[10px] text-foreground/30 font-medium">Topluluk Üyesi</span>
-                                  </div>
+                                  <Checkbox
+                                    id={`user-${u.id}`}
+                                    checked={duesMembers?.includes(u.id)}
+                                    onCheckedChange={() => { }} // Handled by div onClick to prevent double trigger and scroll issues
+                                    disabled={toggleDuesMemberMutation.isPending && toggleDuesMemberMutation.variables === u.id}
+                                    className="h-5 w-5 border-border/20 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500 rounded-lg transition-all pointer-events-none"
+                                  />
                                 </div>
-                                <Checkbox 
-                                  id={`user-${u.id}`} 
-                                  checked={duesMembers?.includes(u.id)} 
-                                  onCheckedChange={() => {}} // Handled by div onClick to prevent double trigger and scroll issues
-                                  disabled={toggleDuesMemberMutation.isPending && toggleDuesMemberMutation.variables === u.id} 
-                                  className="h-5 w-5 border-border/20 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500 rounded-lg transition-all pointer-events-none" 
-                                />
-                              </div>
-                            ))}
+                              ))}
                           </div>
                         </ScrollArea>
                       </DialogContent>
@@ -1373,14 +1411,14 @@ export default function Budget() {
                         className={cn(
                           "relative flex flex-col items-center justify-center gap-1 py-3 sm:py-4 rounded-xl border transition-all duration-300 group",
                           hasPendingTx ? "bg-amber-500/15 border-amber-500/30 hover:bg-amber-500/25" :
-                          isPaid ? "bg-emerald-500/15 border-emerald-500/30 hover:bg-emerald-500/25" : "bg-white/[0.02] border-border/10 hover:bg-white/[0.06] hover:border-border/20",
+                            isPaid ? "bg-emerald-500/15 border-emerald-500/30 hover:bg-emerald-500/25" : "bg-white/[0.02] border-border/10 hover:bg-white/[0.06] hover:border-border/20",
                           isCurrentMonth && !isPaid && !hasPendingTx && "border-emerald-500/40 ring-1 ring-emerald-500/20",
                           isMutating && "opacity-50 cursor-wait"
                         )}
                       >
                         <span className={cn("text-[10px] font-bold uppercase tracking-wider", hasPendingTx ? "text-amber-400/70" : isPaid ? "text-emerald-400/70" : "text-foreground/40")}>{m}</span>
                         {hasPendingTx ? <Clock className="w-5 h-5 text-amber-400 animate-pulse group-hover:scale-110 transition-transform" /> :
-                         isPaid ? <CheckCircle2 className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" /> : <Circle className="w-5 h-5 text-foreground/20 group-hover:text-foreground/40 transition-colors" />}
+                          isPaid ? <CheckCircle2 className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" /> : <Circle className="w-5 h-5 text-foreground/20 group-hover:text-foreground/40 transition-colors" />}
                         {hasPendingTx && <span className="text-[8px] text-amber-400/80 font-medium leading-tight">Onay Bekliyor</span>}
                         {isCurrentMonth && <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />}
                       </button>
@@ -1449,7 +1487,7 @@ export default function Budget() {
                                     className={cn(
                                       "flex items-center justify-center w-full py-1.5 sm:py-2 rounded-lg transition-all duration-200",
                                       hasPendingTx ? "bg-amber-500/20 text-amber-400" :
-                                      isPaid ? "bg-emerald-500/20 text-emerald-400" : "bg-white/[0.03] text-foreground/15",
+                                        isPaid ? "bg-emerald-500/20 text-emerald-400" : "bg-white/[0.03] text-foreground/15",
                                       canManageBudget && isPaid && "hover:bg-emerald-500/30",
                                       canManageBudget && !isPaid && !hasPendingTx && "hover:bg-white/[0.08] hover:text-foreground/40",
                                       isMutating && "opacity-50 cursor-wait",
@@ -1458,7 +1496,7 @@ export default function Budget() {
                                     title={hasPendingTx ? "Onay bekliyor" : ""}
                                   >
                                     {hasPendingTx ? <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-pulse" /> :
-                                     isPaid ? <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Circle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                                      isPaid ? <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Circle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                                   </button>
                                 </td>
                               )
@@ -1638,6 +1676,90 @@ export default function Budget() {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={isUnpaidWarningOpen} onOpenChange={setIsUnpaidWarningOpen}>
+        <DialogContent className="bg-background border border-border/40 text-foreground sm:max-w-md rounded-[2rem] p-8 top-[10%] translate-y-0 sm:top-[50%] sm:translate-y-[-50%] shadow-2xl">
+          <DialogHeader className="flex flex-col items-center text-center pb-2">
+            <div className="p-3.5 bg-amber-500/20 text-amber-400 rounded-full animate-bounce mb-3">
+              <AlertTriangle className="h-8 w-8" />
+            </div>
+            <DialogTitle className="text-2xl font-black text-amber-400">Aidat Ödeme Uyarısı</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 pt-4">
+            <p className="text-foreground/80 text-center leading-relaxed font-semibold">
+              Lütfen <span className="text-amber-400 font-extrabold">{unpaidMonths.join(", ")}</span> ayı aidatlarını ödeyiniz.
+            </p>
+
+            <div className="border border-border/10 bg-white/[0.02] rounded-2xl overflow-hidden">
+              <button
+                onClick={() => setShowWarningPaymentInfo(!showWarningPaymentInfo)}
+                className="w-full flex items-center justify-between p-4 bg-white/[0.01] hover:bg-white/[0.04] active:bg-white/[0.06] transition-colors"
+              >
+                <span className="text-sm font-bold text-foreground/90 flex items-center gap-2">
+                  <Landmark className="w-4 h-4 text-indigo-400" />
+                  Ödeme Bilgilerini Görüntüle
+                </span>
+                <span className={`text-foreground/40 transition-transform duration-300 ${showWarningPaymentInfo ? 'rotate-180' : ''}`}>
+                  ▼
+                </span>
+              </button>
+
+              {showWarningPaymentInfo && (
+                <div className="p-5 border-t border-border/10 space-y-4 animate-in fade-in-50 slide-in-from-top-2 duration-300">
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] text-foreground/40 font-bold uppercase tracking-wider">Alıcı (İsim Soyisim)</p>
+                    <div className="flex items-center justify-between bg-foreground/5 p-3 rounded-xl border border-border/5">
+                      <span className="font-bold text-sm text-foreground/90">{(budgetSettings as any)?.payment_name || "Belirtilmemiş"}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-foreground/40 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg shrink-0"
+                        onClick={() => {
+                          const text = (budgetSettings as any)?.payment_name;
+                          if (text) {
+                            navigator.clipboard.writeText(text);
+                            toast.success("Alıcı ismi kopyalandı!");
+                          }
+                        }}
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] text-foreground/40 font-bold uppercase tracking-wider">IBAN Bilgisi</p>
+                    <div className="flex items-center justify-between bg-foreground/5 p-3 rounded-xl border border-border/5">
+                      <span className="font-mono text-xs text-indigo-400 tracking-wider break-all">{(budgetSettings as any)?.payment_iban || "TR..."}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-foreground/40 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg shrink-0"
+                        onClick={() => {
+                          const text = (budgetSettings as any)?.payment_iban;
+                          if (text) {
+                            navigator.clipboard.writeText(text);
+                            toast.success("IBAN kopyalandı!");
+                          }
+                        }}
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Button
+              className="w-full bg-amber-500 hover:bg-amber-600 text-black font-black uppercase tracking-wider py-4 rounded-xl shadow-lg shadow-amber-500/10 active:scale-[0.98] transition-all"
+              onClick={() => setIsUnpaidWarningOpen(false)}
+            >
+              Tamam
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={isCancelPaymentDialogOpen} onOpenChange={setIsCancelPaymentDialogOpen}>
         <DialogContent className="bg-background border border-border/40 text-foreground sm:max-w-md rounded-[2rem] p-8 top-[10%] translate-y-0 sm:top-[50%] sm:translate-y-[-50%]">
           <DialogHeader>
@@ -1731,7 +1853,7 @@ export default function Budget() {
               </div>
             </DialogTitle>
           </DialogHeader>
-          
+
           <form onSubmit={handleSendMail} className="space-y-5 pt-5 flex-1">
             <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground/70 uppercase tracking-wider">Konu</Label>
@@ -1801,7 +1923,7 @@ export default function Budget() {
 
                     setMailSubject(`${monthNames[currentMonth]} ${currentYear} Aidat Hatırlatması`);
                     setMailBody(
-`Merhaba,
+                      `Merhaba,
 
 ${monthNames[currentMonth]} ${currentYear} ayına ait topluluk aidat ödemenizin henüz tarafımıza ulaşmadığını fark ettik. Ödemenizi en uygun zamanda gerçekleştirmenizi rica ederiz.
 

@@ -134,6 +134,7 @@ const Navbar = () => {
               <motion.div className="absolute inset-0 bg-emerald-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
             </Link>
 
+            {/* 
             <button
               onClick={() => setAboutOpen(true)}
               className="px-4 py-2 text-sm font-bold text-foreground/70 hover:text-foreground transition-all flex items-center gap-2 rounded-xl hover:bg-foreground/5 relative group"
@@ -142,6 +143,7 @@ const Navbar = () => {
               <span>Biz Kimiz</span>
               <motion.div className="absolute inset-0 bg-amber-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
+            */}
           </div>
 
           {/* Action Bar / User Section */}
@@ -259,7 +261,7 @@ const Navbar = () => {
 
               <MobileLink icon={<Wallet />} label="Bütçe" onClick={() => { navigate("/butce"); setMobileOpen(false); }} />
 
-              <MobileLink icon={<Info />} label="Biz Kimiz" onClick={() => { setAboutOpen(true); setMobileOpen(false); }} />
+              {/* <MobileLink icon={<Info />} label="Biz Kimiz" onClick={() => { setAboutOpen(true); setMobileOpen(false); }} /> */}
 
               {/* Theme Toggle - Mobile */}
               <div className="mt-6 mb-2">
