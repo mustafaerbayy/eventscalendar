@@ -472,7 +472,7 @@ export default function Budget() {
         } else {
           const baseDues = getDuesAmountForMonth(month, selectedYear);
           const totalAmount = amount !== undefined ? amount : baseDues;
-          const inserts: { user_id: string; year: number; month: number; amount: number; created_by: string }[] = [];
+          const inserts: { user_id: string; year: number; month: number; amount: number; created_by: string | null }[] = [];
 
           if (distribute && totalAmount > baseDues) {
             let remainingAmount = totalAmount;
@@ -490,7 +490,7 @@ export default function Budget() {
                   year: currentYear,
                   month: currentMonth,
                   amount: monthDues,
-                  created_by: isEditMode ? user?.id : userId
+                  created_by: isEditMode ? (userId === user?.id ? null : user?.id) : userId
                 });
                 remainingAmount -= monthDues;
               }
@@ -512,7 +512,7 @@ export default function Budget() {
                   year: selectedYear,
                   month,
                   amount: remainingAmount,
-                  created_by: isEditMode ? user?.id : userId
+                  created_by: isEditMode ? (userId === user?.id ? null : user?.id) : userId
                 });
               }
             }
@@ -522,7 +522,7 @@ export default function Budget() {
               year: selectedYear,
               month,
               amount: totalAmount,
-              created_by: isEditMode ? user?.id : userId
+              created_by: isEditMode ? (userId === user?.id ? null : user?.id) : userId
             });
           }
 
