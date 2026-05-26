@@ -76,6 +76,10 @@ const Admin = () => {
   const [editUserDialog, setEditUserDialog] = useState(false);
   const [editUserData, setEditUserData] = useState<{ id: string; email: string; first_name: string; last_name: string; new_password: string; confirm_password: string }>({ id: "", email: "", first_name: "", last_name: "", new_password: "", confirm_password: "" });
   const [userSearchQuery, setUserSearchQuery] = useState("");
+  const [systemLoading, setSystemLoading] = useState(false);
+  const [selectedBudgetAdminIds, setSelectedBudgetAdminIds] = useState<string[]>([]);
+  const [systemSearchQuery, setSystemSearchQuery] = useState("");
+  const [isBudgetAdminsInitialized, setIsBudgetAdminsInitialized] = useState(false);
 
   const tabsRef = useRef<HTMLDivElement>(null);
 
@@ -394,6 +398,36 @@ const Admin = () => {
     }
   }, [isAdmin, user?.id, loading]);
 
+  const getBudgetAdmins = () => {
+    return allUsers.filter(u => {
+      const isAdminUser = admins.some(a => a.id === u.id) || u.email === "admin@admin.com";
+      return isAdminUser || u.has_budget_role;
+    });
+  };
+
+  useEffect(() => {
+    if (allUsers.length > 0 && !isBudgetAdminsInitialized) {
+      const budgetAdmins = getBudgetAdmins();
+      setSelectedBudgetAdminIds(budgetAdmins.map(u => u.id));
+      setIsBudgetAdminsInitialized(true);
+    }
+  }, [allUsers, admins, isBudgetAdminsInitialized]);
+
+  const toggleAllBudgetAdmins = () => {
+    const budgetAdmins = getBudgetAdmins();
+    if (selectedBudgetAdminIds.length === budgetAdmins.length) {
+      setSelectedBudgetAdminIds([]);
+    } else {
+      setSelectedBudgetAdminIds(budgetAdmins.map(u => u.id));
+    }
+  };
+
+  const toggleBudgetAdmin = (id: string) => {
+    setSelectedBudgetAdminIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
   const openDialog = (type: typeof dialogType, item?: any) => {
     setDialogType(type);
     setEditingItem(item || null);
@@ -487,6 +521,38 @@ const Admin = () => {
       fetchAll();
     } catch (err: any) { toast.error(getErrorMessage(err)); }
     finally { setAnnouncementLoading(false); }
+  };
+
+  const handleTriggerPendingDues = async () => {
+    if (selectedBudgetAdminIds.length === 0) {
+      toast.warning("Lütfen en az bir alıcı bütçe admini seçin.");
+      return;
+    }
+    setSystemLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("notify-pending-dues", {
+        body: { recipientIds: selectedBudgetAdminIds },
+      });
+      if (error) throw error;
+
+      if (data?.success) {
+        if (data.pendingCount === 0) {
+          toast.info("Onay bekleyen aidat işlemi bulunmadığı için bildirim e-postası gönderilmedi.");
+        } else {
+          toast.success(`${data.sent} bütçe adminine günlük bekleyen işlem bildirimi başarıyla gönderildi! (Bekleyen işlem sayısı: ${data.pendingCount})`);
+        }
+      } else if (data?.error) {
+        toast.error("Hata: " + data.error);
+      } else {
+        toast.success("E-posta tetikleme işlemi başarıyla tamamlandı.");
+      }
+    } catch (err: any) {
+      console.error("Trigger pending dues error:", err);
+      const errMsg = await getFunctionErrorMessage(err);
+      toast.error("Tetikleme başarısız: " + errMsg);
+    } finally {
+      setSystemLoading(false);
+    }
   };
 
   const statCards = [
@@ -715,6 +781,14 @@ const Admin = () => {
                   className="px-6 py-4 bg-transparent data-[state=active]:bg-transparent data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary rounded-none transition-all gap-2 text-[10px] font-black uppercase tracking-widest"
                 >
                   <Users className="w-3.5 h-3.5" /> KULLANICILAR
+                </TabsTrigger>
+              )}
+              {user?.email === "admin@admin.com" && (
+                <TabsTrigger
+                  value="system"
+                  className="px-6 py-4 bg-transparent data-[state=active]:bg-transparent data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary rounded-none transition-all gap-2 text-[10px] font-black uppercase tracking-widest"
+                >
+                  <Database className="w-3.5 h-3.5" /> SİSTEM
                 </TabsTrigger>
               )}
             </TabsList>
@@ -1236,6 +1310,140 @@ const Admin = () => {
                           })}
                       </TableBody>
                     </Table>
+                  </div>
+                </div>
+              </TabsContent>
+            )}
+
+            {/* System Tab */}
+            {user?.email === "admin@admin.com" && (
+              <TabsContent value="system" className="mt-8">
+                <div className="space-y-8">
+                  <div className="flex items-center gap-4 px-2">
+                    <div className="w-12 h-12 rounded-[1.25rem] bg-primary/10 flex items-center justify-center border border-primary/20">
+                      <Zap className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-display font-black">Sistem Yönetimi</h3>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-primary/50">Süper Admin Araçları</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Manual Trigger Info Card */}
+                    <div className="p-8 rounded-[2.5rem] bg-white/[0.03] border border-border/20 space-y-6 flex flex-col justify-between">
+                      <div className="space-y-6">
+                        <div className="flex items-start gap-4">
+                          <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20 text-primary mt-1">
+                            <Send className="w-6 h-6" />
+                          </div>
+                          <div>
+                            <h4 className="text-lg font-bold text-foreground mb-1">Bekleyen Aidat Bildirim E-postaları</h4>
+                            <p className="text-sm text-foreground/60 leading-relaxed font-semibold">
+                              Sistemde onay bekleyen aidat işlemi olması durumunda bütçe adminlerine gönderilen günlük özet e-postasını şimdi manuel olarak tetikleyin.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="p-4 rounded-2xl bg-white/[0.02] border border-border/10 space-y-2">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-foreground/60 font-semibold">Otomatik Zamanlama:</span>
+                            <span className="font-bold text-primary">Her Gün 21:00 (TR Saati)</span>
+                          </div>
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-foreground/60 font-semibold">Seçili Alıcı Sayısı:</span>
+                            <span className="font-bold text-foreground">{selectedBudgetAdminIds.length} / {getBudgetAdmins().length}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <motion.button
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handleTriggerPendingDues}
+                        disabled={systemLoading}
+                        className="w-full h-16 rounded-2xl bg-primary text-black font-black text-xs uppercase tracking-widest hover:bg-primary/80 shadow-[0_15px_30px_rgba(16,185,129,0.2)] disabled:opacity-50 transition-all flex items-center justify-center gap-3 mt-6"
+                      >
+                        <Zap className="w-4 h-4 stroke-[3px]" />
+                        {systemLoading ? "TETİKLENİYOR..." : "E-POSTALARI ŞİMDİ GÖNDER"}
+                      </motion.button>
+                    </div>
+
+                    {/* Budget Admin Selector */}
+                    <div className="p-8 rounded-[2.5rem] bg-white/[0.03] border border-border/20 space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="text-lg font-bold text-foreground">Alıcı Seçimi</h4>
+                          <p className="text-xs text-foreground/60">Bildirim e-postasının gönderileceği bütçe adminlerini seçin.</p>
+                        </div>
+                        <button
+                          onClick={toggleAllBudgetAdmins}
+                          className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline decoration-2 underline-offset-4"
+                        >
+                          {selectedBudgetAdminIds.length === getBudgetAdmins().length ? "Tümünü Kaldır" : "Tümünü Seç"}
+                        </button>
+                      </div>
+
+                      <div className="relative group">
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/60 group-focus-within:text-primary transition-colors" />
+                        <Input
+                          placeholder="Admin ara..."
+                          value={systemSearchQuery}
+                          onChange={(e) => setSystemSearchQuery(e.target.value)}
+                          className="rounded-2xl h-12 pl-14 bg-white/[0.03] border-border/20 font-bold focus:border-primary/40"
+                        />
+                      </div>
+
+                      <div className="max-h-[300px] overflow-y-auto pr-2 space-y-2 custom-scrollbar">
+                        {getBudgetAdmins()
+                          .filter(u => `${u.first_name} ${u.last_name} ${u.email}`.toLocaleLowerCase('tr-TR').includes(systemSearchQuery.toLocaleLowerCase('tr-TR')))
+                          .map((u) => {
+                            const isSuperAdmin = u.email === "admin@admin.com";
+                            const isAdminUser = admins.some(a => a.id === u.id);
+                            const hasBudget = u.has_budget_role;
+                            
+                            return (
+                              <label
+                                key={u.id}
+                                className={cn(
+                                  "flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer",
+                                  selectedBudgetAdminIds.includes(u.id)
+                                    ? "bg-primary/10 border-primary/20"
+                                    : "bg-foreground/5 border-transparent hover:border-border/20 hover:bg-white/[0.06]"
+                                )}
+                              >
+                                <Checkbox
+                                  checked={selectedBudgetAdminIds.includes(u.id)}
+                                  onCheckedChange={() => toggleBudgetAdmin(u.id)}
+                                  className="w-5 h-5 border-border/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:text-black"
+                                />
+                                <div className="flex items-center justify-between w-full">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/30 to-primary/5 flex items-center justify-center text-xs font-black border border-primary/30 text-primary">
+                                      {u.first_name?.[0] || "?"}
+                                    </div>
+                                    <div className="flex flex-col">
+                                      <span className="text-sm font-bold">{u.first_name} {u.last_name}</span>
+                                      <span className="text-[10px] text-foreground/60 font-semibold">{u.email}</span>
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-1.5">
+                                    {isSuperAdmin && (
+                                      <span className="text-[8px] font-black bg-primary/20 text-primary px-2 py-0.5 rounded-full border border-primary/20 tracking-wider uppercase">SÜPER</span>
+                                    )}
+                                    {isAdminUser && !isSuperAdmin && (
+                                      <span className="text-[8px] font-black bg-white/10 text-foreground px-2 py-0.5 rounded-full border border-border/20 tracking-wider uppercase">ADMIN</span>
+                                    )}
+                                    {hasBudget && (
+                                      <span className="text-[8px] font-black bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 tracking-wider uppercase">BÜTÇE</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </label>
+                            );
+                          })}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </TabsContent>

@@ -1902,28 +1902,41 @@ export default function Budget() {
                       : "Tüm Kullanıcıları Seç"}
                   </span>
                 </div>
-                <div
-                  role="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const unpaid = getUnpaidDuesMembers();
-                    setSelectedMailRecipients(unpaid);
+                {(() => {
+                  const unpaidIds = getUnpaidDuesMembers();
+                  const isUnpaidFilterActive = unpaidIds.length > 0
+                    && selectedMailRecipients.length === unpaidIds.length
+                    && unpaidIds.every(id => selectedMailRecipients.includes(id));
+                  return (
+                    <div
+                      role="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (isUnpaidFilterActive) {
+                          setSelectedMailRecipients([]);
+                          setMailSubject("");
+                          setMailBody("");
+                          toast.info("Ödeme yapmayanlar filtresi kaldırıldı.");
+                          return;
+                        }
+                        const unpaid = getUnpaidDuesMembers();
+                        setSelectedMailRecipients(unpaid);
 
-                    const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-                    const currentMonth = new Date().getMonth();
-                    const currentYear = new Date().getFullYear();
-                    const currentMailMonth = new Date().getMonth() + 1;
-                    const currentMailYear = new Date().getFullYear();
-                    const duesAmt = getDuesAmountForMonth(currentMailMonth, currentMailYear);
-                    const paymentNameText = (budgetSettings as any)?.payment_name || "Topluluk Hesabı";
-                    const paymentIbanText = (budgetSettings as any)?.payment_iban || "";
+                        const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+                        const currentMonth = new Date().getMonth();
+                        const currentYear = new Date().getFullYear();
+                        const currentMailMonth = new Date().getMonth() + 1;
+                        const currentMailYear = new Date().getFullYear();
+                        const duesAmt = getDuesAmountForMonth(currentMailMonth, currentMailYear);
+                        const paymentNameText = (budgetSettings as any)?.payment_name || "Topluluk Hesabı";
+                        const paymentIbanText = (budgetSettings as any)?.payment_iban || "";
 
-                    const siteUrl = "https://www.refik.online";
+                        const siteUrl = "https://www.refik.online";
 
-                    setMailSubject(`${monthNames[currentMonth]} ${currentYear} Aidat Hatırlatması`);
-                    setMailBody(
-                      `Merhaba,
+                        setMailSubject(`${monthNames[currentMonth]} ${currentYear} Aidat Hatırlatması`);
+                        setMailBody(
+                          `Merhaba,
 
 ${monthNames[currentMonth]} ${currentYear} ayına ait topluluk aidat ödemenizin henüz tarafımıza ulaşmadığını fark ettik. Ödemenizi en uygun zamanda gerçekleştirmenizi rica ederiz.
 
@@ -1939,19 +1952,46 @@ Herhangi bir sorunuz varsa bizimle iletişime geçmekten çekinmeyin.
 
 Saygılarımızla,
 Topluluk Yönetimi`
-                    );
+                        );
 
-                    if (unpaid.length === 0) {
-                      toast.info("Bu ay tüm üyeler aidatını ödemiş!");
-                    } else {
-                      toast.success(`${unpaid.length} ödeme yapmamış kullanıcı seçildi, taslak mail hazırlandı.`);
-                    }
-                  }}
-                  className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/15 transition-all cursor-pointer select-none"
-                >
-                  <XCircle className="w-3.5 h-3.5" />
-                  <span className="text-xs font-black uppercase tracking-wider">Sadece Ödeme Yapmayanları Seç</span>
-                </div>
+                        if (unpaid.length === 0) {
+                          toast.info("Bu ay tüm üyeler aidatını ödemiş!");
+                        } else {
+                          toast.success(`${unpaid.length} ödeme yapmamış kullanıcı seçildi, taslak mail hazırlandı.`);
+                        }
+                      }}
+                      className={cn(
+                        "flex items-center gap-2.5 px-4 py-2.5 rounded-xl border cursor-pointer select-none transition-colors duration-200",
+                        isUnpaidFilterActive
+                          ? "bg-amber-500/20 border-amber-400/50 text-amber-300"
+                          : "bg-white/[0.03] border-border/20 text-foreground/50 hover:bg-amber-500/10 hover:border-amber-500/30 hover:text-amber-400"
+                      )}
+                    >
+                      <div className={cn(
+                        "p-1.5 rounded-lg transition-colors duration-200",
+                        isUnpaidFilterActive ? "bg-amber-500/30" : "bg-foreground/5"
+                      )}>
+                        {isUnpaidFilterActive
+                          ? <CheckCircle2 className="w-3.5 h-3.5 text-amber-300" />
+                          : <AlertTriangle className="w-3.5 h-3.5" />
+                        }
+                      </div>
+                      <div className="flex flex-col items-start leading-none">
+                        <span className="text-[11px] font-black uppercase tracking-wider">
+                          {isUnpaidFilterActive ? "Ödeme Yapmayanlar Seçili" : "Sadece Ödeme Yapmayanları Seç"}
+                        </span>
+                        <span className={cn(
+                          "text-[9px] font-semibold mt-0.5 transition-colors duration-200",
+                          isUnpaidFilterActive ? "text-amber-400/70" : "text-foreground/30"
+                        )}>
+                          {isUnpaidFilterActive
+                            ? `${unpaidIds.length} kullanıcı seçili — tekrar tıklayarak kaldır`
+                            : "Otomatik e-posta taslağı oluşturur"}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               <div className="relative group">

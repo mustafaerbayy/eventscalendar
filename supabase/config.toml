@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.manage-admin]
 verify_jwt = false
+
+[functions.notify-pending-dues]
+verify_jwt = false
