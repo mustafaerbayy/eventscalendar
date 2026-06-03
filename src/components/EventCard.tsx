@@ -89,69 +89,73 @@ const EventCard = ({ id, title, date, time, cityName, venueName, categoryName, a
   if (viewMode === "list") {
     return (
       <motion.div
-        initial={{ opacity: 0, x: -20 }}
+        initial={{ opacity: 0, x: -12 }}
         whileInView={{ opacity: 1, x: 0 }}
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ duration: 0.5, delay: index * 0.05, ease: "easeOut" }}
-        className={`${isPast ? "opacity-60" : ""} cursor-pointer group`}
+        viewport={{ once: true, margin: "-30px" }}
+        transition={{ duration: 0.4, delay: index * 0.04, ease: "easeOut" }}
+        className={`${isPast ? "opacity-50" : ""} cursor-pointer group`}
         onClick={handleCardClick}
       >
         <Card
-          className={`relative overflow-hidden border bg-foreground/5 backdrop-blur-xl md:backdrop-blur-2xl transition-all duration-500 hover:bg-foreground/5 hover:border-border/20 hover:shadow-2xl rounded-2xl transform-gpu ${colors.bg.replace('bg-', 'border-').replace('/15', '/30')}`}
+          className={`relative overflow-hidden border-l-[3px] bg-card/40 backdrop-blur-md transition-all duration-300 hover:bg-card/70 hover:shadow-lg hover:-translate-y-[1px] rounded-xl border-border/10 transform-gpu ${
+            isPast
+              ? "border-l-muted-foreground/20"
+              : colors.bg.replace('bg-', 'border-l-').replace('/15', '/60')
+          }`}
         >
-          {/* Subtle Glow */}
-          <div className={`absolute inset-0 bg-gradient-to-r ${colors.gradient} opacity-[0.03] group-hover:opacity-10 transition-opacity duration-500`} />
+          {/* Subtle gradient overlay on hover */}
+          <div className={`absolute inset-0 bg-gradient-to-r ${colors.gradient} opacity-0 group-hover:opacity-[0.04] transition-opacity duration-300`} />
 
-          <CardContent className="py-4 px-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <CardContent className="py-3.5 px-5 flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="flex-1 min-w-0">
               {isAuthenticated && (
-                <div className="flex items-center gap-3 mb-2">
-                  <Badge className="bg-primary/20 text-primary border-primary/20 text-[10px] font-bold uppercase tracking-wider">
+                <div className="flex items-center gap-2.5 mb-1.5">
+                  <Badge className="bg-primary/10 text-primary border-primary/15 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md">
                     {categoryName}
                   </Badge>
-                  <div className={`text-[10px] font-black uppercase tracking-widest ${getDaysUntilEvent(date) <= 1 ? "text-amber-500" : "text-muted-foreground/60"
+                  <span className={`text-[10px] font-bold uppercase tracking-widest ${getDaysUntilEvent(date) <= 1 ? "text-amber-500" : "text-muted-foreground/50"
                     }`}>
                     {formatDaysUntil(date)}
-                  </div>
+                  </span>
                 </div>
               )}
-              <h3 className="font-display text-lg md:text-xl font-bold text-foreground truncate group-hover:text-primary transition-colors">
+              <h3 className="font-display text-base md:text-lg font-bold text-foreground truncate group-hover:text-primary transition-colors duration-200">
                 {title}
               </h3>
             </div>
 
             {isAuthenticated ? (
-              <div className="flex flex-wrap items-center gap-4 lg:gap-8 shrink-0">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Calendar className="h-4 w-4 text-primary/60" />
+              <div className="flex flex-wrap items-center gap-4 lg:gap-6 shrink-0">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Calendar className="h-3.5 w-3.5 text-primary/40" />
                   <span className="font-medium">{formatTurkishDate(date)}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4 text-primary/60" />
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Clock className="h-3.5 w-3.5 text-primary/40" />
                   <span className="font-medium">{formatTurkishTime(time)}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground max-w-[150px] lg:max-w-[200px]">
-                  <MapPin className="h-4 w-4 text-primary/60 shrink-0" />
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground max-w-[140px] lg:max-w-[180px]">
+                  <MapPin className="h-3.5 w-3.5 text-primary/40 shrink-0" />
                   <span className="font-medium truncate">{venueName || cityName}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Users className="h-4 w-4 text-primary/60" />
+                <div className="flex items-center gap-1.5 text-xs">
+                  <Users className="h-3.5 w-3.5 text-primary/40" />
                   <span className="font-bold text-foreground">{attendeeCount}</span>
                 </div>
 
                 {isAdmin && (
-                  <div className="flex items-center gap-2 pl-4 border-l border-border/20 relative z-50" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
-                    <Button size="icon" variant="ghost" className="h-9 w-9 rounded-full hover:bg-amber-500/20 text-amber-500" onClick={(e) => { e.stopPropagation(); onEdit?.({ id, title, date, time, categoryName, cityName, venueName }); }}>
-                      <Edit2 className="h-4 w-4" />
+                  <div className="flex items-center gap-1.5 pl-3 border-l border-border/15 relative z-50" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg hover:bg-amber-500/15 text-amber-500/70 hover:text-amber-500" onClick={(e) => { e.stopPropagation(); onEdit?.({ id, title, date, time, categoryName, cityName, venueName }); }}>
+                      <Edit2 className="h-3.5 w-3.5" />
                     </Button>
-                    <Button size="icon" variant="ghost" className="h-9 w-9 rounded-full hover:bg-red-500/20 text-red-500" onClick={(e) => { e.stopPropagation(); onDelete?.(id); }}>
-                      <Trash2 className="h-4 w-4" />
+                    <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg hover:bg-red-500/15 text-red-500/70 hover:text-red-500" onClick={(e) => { e.stopPropagation(); onDelete?.(id); }}>
+                      <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-xs font-bold text-primary/60 italic">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-primary/50 italic">
                 Detaylar için giriş yapın
               </div>
             )}

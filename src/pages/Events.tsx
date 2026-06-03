@@ -127,6 +127,7 @@ const Events = () => {
   const [eventContents, setEventContents] = useState<EventContentInput[]>([]);
   const contentFileInputRef = useRef<HTMLInputElement>(null);
   const [isPastEventsOpen, setIsPastEventsOpen] = useState(false);
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const fetchData = async () => {
     const [eventsRes, citiesRes, categoriesRes] = await Promise.all([
       supabase
@@ -506,151 +507,241 @@ const Events = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Events Section with background decoration */}
-      <section id="events-section" className="relative pt-32 pb-20 min-h-[calc(100vh-100px)]">
-        {/* Static Background Glow for Performance */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20 hidden md:block">
-          <div className="absolute top-0 -left-40 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] transform-gpu" />
-          <div className="absolute bottom-0 -right-40 w-[600px] h-[600px] bg-accent/10 rounded-full blur-[120px] transform-gpu" />
+      {/* Events Section */}
+      <section id="events-section" className="relative pt-24 pb-20 min-h-[calc(100vh-100px)]">
+        {/* Subtle ambient glow */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-15 hidden md:block">
+          <div className="absolute top-20 left-1/4 w-[500px] h-[500px] bg-primary/8 rounded-full blur-[150px] transform-gpu" />
+          <div className="absolute bottom-20 right-1/4 w-[400px] h-[400px] bg-accent/6 rounded-full blur-[150px] transform-gpu" />
         </div>
 
         <div className="container mx-auto px-4 relative z-10">
+          {/* Compact Toolbar: Collapsible on mobile, always visible on desktop */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-center mb-16"
+            className="rounded-2xl bg-card/50 backdrop-blur-xl border border-border/15 shadow-xl relative overflow-hidden"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
           >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6 backdrop-blur-md">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-xs font-bold tracking-widest uppercase text-primary/80">Keşfet & Katıl</span>
-            </div>
+            {/* Mobile toggle button - only visible on mobile */}
+            <button
+              onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
+              className="lg:hidden w-full flex items-center justify-between p-3 group"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className={`p-2 rounded-lg transition-colors ${isMobileFiltersOpen ? 'bg-primary/15' : 'bg-foreground/[0.04]'}`}>
+                  <Search className={`h-4 w-4 transition-colors ${isMobileFiltersOpen ? 'text-primary' : 'text-muted-foreground/60'}`} />
+                </div>
+                <div>
+                  <span className="text-sm font-semibold text-foreground">Ara & Filtrele</span>
+                  {(search || cityFilter !== "all" || categoryFilter !== "all") && (
+                    <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-md bg-primary/15 text-[10px] font-bold text-primary">
+                      Aktif
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className={`p-1.5 rounded-lg bg-foreground/[0.03] transition-transform duration-300 ${isMobileFiltersOpen ? 'rotate-180' : ''}`}>
+                <ChevronDown className="h-4 w-4 text-muted-foreground/50" />
+              </div>
+            </button>
 
-            <h2 className="font-display text-5xl md:text-7xl font-black mb-8 tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-emerald-500 to-amber-500">
-              Yaklaşan Etkinlikler
-            </h2>
-          </motion.div>
+            {/* Collapsible content on mobile, always visible on desktop */}
+            <div className="hidden lg:flex lg:flex-row lg:items-center gap-3 p-3">
+              {/* Search */}
+              <div className="relative flex-1 min-w-0">
+                <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
+                <Input
+                  placeholder="Etkinlik ara..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-11 h-11 bg-foreground/[0.03] border-border/15 focus:bg-foreground/[0.06] focus:border-primary/25 rounded-xl transition-all placeholder:text-muted-foreground/40 text-sm"
+                />
+              </div>
 
-          {/* Enhanced Filters */}
-          <motion.div
-            className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center p-4 rounded-[2rem] bg-card/40 backdrop-blur-lg border border-border/20 shadow-2xl relative overflow-hidden group"
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            {/* Inner Glow */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
-
-            <div className="relative flex-1">
-              <Search className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-primary/60 group-hover:text-primary transition-colors" />
-              <Input
-                placeholder="Etkinlik ara"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-14 h-14 bg-foreground/5 border-border/20 focus:bg-foreground/10 focus:border-primary/30 rounded-2xl transition-all placeholder:text-muted-foreground/50 text-base shadow-inner"
-              />
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3">
+              {/* Filters */}
               <Select value={cityFilter} onValueChange={setCityFilter}>
-                <SelectTrigger className="w-full sm:w-[180px] h-14 bg-foreground/5 border-border/20 focus:bg-foreground/10 focus:border-primary/30 rounded-2xl transition-all shadow-inner">
+                <SelectTrigger className="w-[160px] h-11 bg-foreground/[0.03] border-border/15 focus:border-primary/25 rounded-xl transition-all text-sm">
                   <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-primary/60" />
+                    <MapPin className="h-3.5 w-3.5 text-primary/50" />
                     <SelectValue placeholder="Şehir" />
                   </div>
                 </SelectTrigger>
-                <SelectContent className="!rounded-2xl border-border/20 !bg-[#0c0c0c]/95 !backdrop-blur-xl !z-[9999] p-2 !opacity-100 !visible">
-                  <SelectItem value="all" className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/10 cursor-pointer">Tüm Şehirler</SelectItem>
+                <SelectContent className="!rounded-xl border-border/20 !bg-popover/95 !backdrop-blur-xl !z-[9999] p-1.5 !opacity-100 !visible">
+                  <SelectItem value="all" className="rounded-lg py-2.5 font-bold !text-foreground hover:bg-foreground/10 cursor-pointer text-sm">Tüm Şehirler</SelectItem>
                   {cities.map((c) => (
-                    <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/10 cursor-pointer">{c.name}</SelectItem>
+                    <SelectItem key={c.id} value={c.id} className="rounded-lg py-2.5 font-bold !text-foreground hover:bg-foreground/10 cursor-pointer text-sm">{c.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-full sm:w-[180px] h-14 bg-foreground/5 border-border/20 focus:bg-foreground/10 focus:border-primary/30 rounded-2xl transition-all shadow-inner">
+                <SelectTrigger className="w-[160px] h-11 bg-foreground/[0.03] border-border/15 focus:border-primary/25 rounded-xl transition-all text-sm">
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-primary/60" />
+                    <Calendar className="h-3.5 w-3.5 text-primary/50" />
                     <SelectValue placeholder="Kategori" />
                   </div>
                 </SelectTrigger>
-                <SelectContent className="!rounded-2xl border-border/20 !bg-[#0c0c0c]/95 !backdrop-blur-xl !z-[9999] p-2 !opacity-100 !visible">
-                  <SelectItem value="all" className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/5 cursor-pointer">Tüm Kategoriler</SelectItem>
+                <SelectContent className="!rounded-xl border-border/20 !bg-popover/95 !backdrop-blur-xl !z-[9999] p-1.5 !opacity-100 !visible">
+                  <SelectItem value="all" className="rounded-lg py-2.5 font-bold !text-foreground hover:bg-foreground/5 cursor-pointer text-sm">Tüm Kategoriler</SelectItem>
                   {categories.map((c) => (
-                    <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/10 cursor-pointer">{c.name}</SelectItem>
+                    <SelectItem key={c.id} value={c.id} className="rounded-lg py-2.5 font-bold !text-foreground hover:bg-foreground/10 cursor-pointer text-sm">{c.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+
+              {/* Divider */}
+              <div className="w-px h-8 bg-border/20 mx-1" />
+
+              {/* View Toggle */}
+              <div className="inline-flex items-center rounded-xl border border-border/20 bg-foreground/[0.02] p-1 shrink-0">
+                <Button
+                  variant={viewMode === "list" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                  className={`gap-1.5 rounded-lg px-3 h-9 transition-all text-xs font-semibold ${viewMode === "list"
+                    ? "bg-primary/90 text-primary-foreground shadow-sm shadow-primary/20"
+                    : "hover:bg-foreground/5 text-muted-foreground"
+                    }`}
+                >
+                  <List className="h-3.5 w-3.5" />
+                  Liste
+                </Button>
+                <Button
+                  variant={viewMode === "calendar" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("calendar")}
+                  className={`gap-1.5 rounded-lg px-3 h-9 transition-all text-xs font-semibold ${viewMode === "calendar"
+                    ? "bg-primary/90 text-primary-foreground shadow-sm shadow-primary/20"
+                    : "hover:bg-foreground/5 text-muted-foreground"
+                    }`}
+                >
+                  <LayoutGrid className="h-3.5 w-3.5" />
+                  Takvim
+                </Button>
+              </div>
             </div>
+
+            {/* Mobile collapsible content */}
+            <AnimatePresence>
+              {isMobileFiltersOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  className="lg:hidden overflow-hidden"
+                >
+                  <div className="flex flex-col gap-3 px-3 pb-3 border-t border-border/10 pt-3">
+                    {/* Search */}
+                    <div className="relative">
+                      <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
+                      <Input
+                        placeholder="Etkinlik ara..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-11 h-11 bg-foreground/[0.03] border-border/15 focus:bg-foreground/[0.06] focus:border-primary/25 rounded-xl transition-all placeholder:text-muted-foreground/40 text-sm"
+                      />
+                    </div>
+
+                    {/* Filters row */}
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Select value={cityFilter} onValueChange={setCityFilter}>
+                        <SelectTrigger className="w-full sm:w-[160px] h-11 bg-foreground/[0.03] border-border/15 focus:border-primary/25 rounded-xl transition-all text-sm">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-3.5 w-3.5 text-primary/50" />
+                            <SelectValue placeholder="Şehir" />
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent className="!rounded-xl border-border/20 !bg-popover/95 !backdrop-blur-xl !z-[9999] p-1.5 !opacity-100 !visible">
+                          <SelectItem value="all" className="rounded-lg py-2.5 font-bold !text-foreground hover:bg-foreground/10 cursor-pointer text-sm">Tüm Şehirler</SelectItem>
+                          {cities.map((c) => (
+                            <SelectItem key={c.id} value={c.id} className="rounded-lg py-2.5 font-bold !text-foreground hover:bg-foreground/10 cursor-pointer text-sm">{c.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                        <SelectTrigger className="w-full sm:w-[160px] h-11 bg-foreground/[0.03] border-border/15 focus:border-primary/25 rounded-xl transition-all text-sm">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-3.5 w-3.5 text-primary/50" />
+                            <SelectValue placeholder="Kategori" />
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent className="!rounded-xl border-border/20 !bg-popover/95 !backdrop-blur-xl !z-[9999] p-1.5 !opacity-100 !visible">
+                          <SelectItem value="all" className="rounded-lg py-2.5 font-bold !text-foreground hover:bg-foreground/5 cursor-pointer text-sm">Tüm Kategoriler</SelectItem>
+                          {categories.map((c) => (
+                            <SelectItem key={c.id} value={c.id} className="rounded-lg py-2.5 font-bold !text-foreground hover:bg-foreground/10 cursor-pointer text-sm">{c.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* View Toggle */}
+                    <div className="inline-flex items-center rounded-xl border border-border/20 bg-foreground/[0.02] p-1 self-start">
+                      <Button
+                        variant={viewMode === "list" ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setViewMode("list")}
+                        className={`gap-1.5 rounded-lg px-3 h-9 transition-all text-xs font-semibold ${viewMode === "list"
+                          ? "bg-primary/90 text-primary-foreground shadow-sm shadow-primary/20"
+                          : "hover:bg-foreground/5 text-muted-foreground"
+                          }`}
+                      >
+                        <List className="h-3.5 w-3.5" />
+                        Liste
+                      </Button>
+                      <Button
+                        variant={viewMode === "calendar" ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setViewMode("calendar")}
+                        className={`gap-1.5 rounded-lg px-3 h-9 transition-all text-xs font-semibold ${viewMode === "calendar"
+                          ? "bg-primary/90 text-primary-foreground shadow-sm shadow-primary/20"
+                          : "hover:bg-foreground/5 text-muted-foreground"
+                          }`}
+                      >
+                        <LayoutGrid className="h-3.5 w-3.5" />
+                        Takvim
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
 
-          {/* View Mode Toggle */}
+          {/* Secondary row: Event count + Admin button + Info note */}
           <motion.div
-            className="mt-6 flex items-center gap-2"
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.15 }}
           >
-            <div className="inline-flex items-center rounded-xl border border-border/40 bg-card/60 backdrop-blur-md p-1 shadow-sm">
-              <Button
-                variant={viewMode === "list" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode("list")}
-                className={`gap-2 rounded-lg px-4 h-9 transition-all ${viewMode === "list"
-                  ? "bg-gradient-to-r from-emerald-600/90 to-emerald-500/80 text-foreground shadow-md shadow-emerald-600/25"
-                  : "hover:bg-emerald-500/10 text-muted-foreground"
-                  }`}
-              >
-                <List className="h-4 w-4" />
-                <span className="hidden sm:inline">Liste</span>
-              </Button>
-              <Button
-                variant={viewMode === "calendar" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode("calendar")}
-                className={`gap-2 rounded-lg px-4 h-9 transition-all ${viewMode === "calendar"
-                  ? "bg-gradient-to-r from-emerald-600/90 to-emerald-500/80 text-foreground shadow-md shadow-emerald-600/25"
-                  : "hover:bg-emerald-500/10 text-muted-foreground"
-                  }`}
-              >
-                <LayoutGrid className="h-4 w-4" />
-                <span className="hidden sm:inline">Takvim</span>
-              </Button>
-            </div>
-            <span className="text-xs text-muted-foreground ml-2">Buradan görünüm seçebilirsiniz</span>
-          </motion.div>
+            <div className="flex items-center gap-3">
+              {/* Event counter pill */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/8 border border-primary/15">
+                <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                <span className="text-xs font-bold text-primary/80">
+                  {upcomingEvents.length} yaklaşan etkinlik
+                </span>
+              </div>
 
-          {isAdmin && (
-            <motion.div
-              className="mt-6 flex justify-start"
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4 }}
-            >
+              {/* Info text - compact */}
+              <p className="hidden sm:block text-xs text-muted-foreground/60 italic">
+                Katılım için etkinliklere tıklayın
+              </p>
+            </div>
+
+            {isAdmin && (
               <Button
                 onClick={openCreateDialog}
-                className="gap-2 bg-gradient-to-r from-primary/90 to-primary/70 hover:from-primary hover:to-primary/80 text-primary-foreground font-semibold shadow-lg h-11 px-6 rounded-lg"
+                size="sm"
+                className="gap-1.5 bg-primary/90 hover:bg-primary text-primary-foreground font-semibold shadow-md shadow-primary/15 h-9 px-4 rounded-xl text-xs"
               >
-                <Plus className="h-5 w-5" />
-                Yeni Etkinlik Ekle
+                <Plus className="h-3.5 w-3.5" />
+                Yeni Etkinlik
               </Button>
-            </motion.div>
-          )}
-
-          <motion.div
-            className="mt-6 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3"
-            initial={{ opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.35 }}
-          >
-            <p className="text-sm md:text-base text-foreground/85 font-medium">
-              Lütfen katılım durumunuzu aşağıdaki etkinliklere tıklayarak belirtiniz.
-            </p>
+            )}
           </motion.div>
 
           {/* Event Management Dialog */}
@@ -720,7 +811,7 @@ const Events = () => {
                       <SelectTrigger className="bg-foreground/5 border-border/20 rounded-2xl h-14 px-6 transition-all font-bold text-foreground">
                         <SelectValue placeholder="Şehir seçiniz" />
                       </SelectTrigger>
-                      <SelectContent className="!bg-[#0c0c0c] border-border/20 rounded-2xl p-2 !z-[9999] !opacity-100 !visible">
+                      <SelectContent className="!bg-popover border-border/20 rounded-2xl p-2 !z-[9999] !opacity-100 !visible">
                         {cities.map(c => <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/5 cursor-pointer">{c.name}</SelectItem>)}
                       </SelectContent>
                     </Select>
@@ -732,7 +823,7 @@ const Events = () => {
                       <SelectTrigger className="bg-foreground/5 border-border/20 rounded-2xl h-14 px-6 transition-all font-bold text-foreground">
                         <SelectValue placeholder="Kategori seçiniz" />
                       </SelectTrigger>
-                      <SelectContent className="!bg-[#0c0c0c] border-border/20 rounded-2xl p-2 !z-[9999] !opacity-100 !visible">
+                      <SelectContent className="!bg-popover border-border/20 rounded-2xl p-2 !z-[9999] !opacity-100 !visible">
                         {categories.map(c => <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/5 cursor-pointer">{c.name}</SelectItem>)}
                       </SelectContent>
                     </Select>
@@ -888,7 +979,7 @@ const Events = () => {
           {/* Event Grid / Calendar */}
           {loading ? (
             <motion.div
-              className="mt-20 flex flex-col items-center justify-center gap-4 py-20"
+              className="mt-12 flex flex-col items-center justify-center gap-4 py-16"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
@@ -901,13 +992,13 @@ const Events = () => {
                 <motion.div
                   animate={{ scale: [1, 1.1, 1] }}
                   transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  className="relative h-16 w-16"
+                  className="relative h-14 w-14"
                 >
                   <img src="/images/logo.png" alt="Logo" className="h-full w-full object-contain drop-shadow-[0_0_10px_rgba(16,185,129,0.3)]" />
                 </motion.div>
               </div>
               <motion.p
-                className="text-lg text-muted-foreground font-medium"
+                className="text-sm text-muted-foreground font-medium"
                 animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
@@ -915,7 +1006,7 @@ const Events = () => {
               </motion.p>
             </motion.div>
           ) : viewMode === "calendar" ? (
-            <div id="calendar-section">
+            <div id="calendar-section" className="mt-6">
               <CalendarView
                 events={[
                   ...upcomingEvents.map((event) => ({
@@ -949,28 +1040,24 @@ const Events = () => {
             </div>
           ) : upcomingEvents.length === 0 ? (
             <motion.div
-              className="mt-20 text-center py-20"
+              className="mt-16 text-center py-16"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4 }}
             >
-              <motion.div
-                className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-muted/50 to-muted/30 shadow-lg mb-6"
-                whileHover={{ scale: 1.1 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <CalendarDays className="h-12 w-12 text-muted-foreground/40" />
-              </motion.div>
-              <p className="text-2xl font-display font-bold text-foreground">Etkinlik bulunamadı</p>
-              <p className="mt-2 text-muted-foreground text-lg">Yaklaşan etkinlikler burada görünecek.</p>
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/30 mb-5">
+                <CalendarDays className="h-10 w-10 text-muted-foreground/30" />
+              </div>
+              <p className="text-xl font-display font-bold text-foreground">Etkinlik bulunamadı</p>
+              <p className="mt-1.5 text-muted-foreground text-sm">Yaklaşan etkinlikler burada görünecek.</p>
             </motion.div>
           ) : (
             <motion.div
-              className="mt-12 grid gap-4 grid-cols-1"
+              className="mt-6 grid gap-3 grid-cols-1"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ staggerChildren: 0.05 }}
+              transition={{ staggerChildren: 0.04 }}
             >
               {upcomingEvents.map((event, i) => (
                 <div key={event.id} data-event-id={event.id}>
