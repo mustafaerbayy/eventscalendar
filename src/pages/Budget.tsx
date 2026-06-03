@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Wallet, Plus, Trash2, Edit2, Info, User as UserIcon, CalendarDays, Users, TrendingUp, ShieldCheck, Clock, XCircle, Landmark, Copy, Mail, Send, Search, AlertTriangle } from "lucide-react";
+import { Wallet, Plus, Trash2, Edit2, Info, User as UserIcon, CalendarDays, Users, TrendingUp, ShieldCheck, Clock, XCircle, Landmark, Copy, Mail, Send, Search, AlertTriangle, Filter, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,6 +46,14 @@ export default function Budget() {
   // Budget form state
   const [newTotalBudget, setNewTotalBudget] = useState("");
   const [historyFilter, setHistoryFilter] = useState<"all" | "income" | "expense">("all");
+
+  // Transaction history filter state
+  const [dateRangeFilter, setDateRangeFilter] = useState<"2weeks" | "1month" | "3months" | "thisYear" | "all">("2weeks");
+  const [eventFilter, setEventFilter] = useState<string>("all");
+  const [isDateFilterOpen, setIsDateFilterOpen] = useState(false);
+  const [isEventFilterOpen, setIsEventFilterOpen] = useState(false);
+  const dateFilterRef = useRef<HTMLDivElement>(null);
+  const eventFilterRef = useRef<HTMLDivElement>(null);
 
   // Dues payment dialog state
   const [isDuesPaymentDialogOpen, setIsDuesPaymentDialogOpen] = useState(false);
@@ -882,9 +890,87 @@ export default function Budget() {
     return <Navigate to="/" replace />;
   }
 
+  // Close filter dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dateFilterRef.current && !dateFilterRef.current.contains(e.target as Node)) setIsDateFilterOpen(false);
+      if (eventFilterRef.current && !eventFilterRef.current.contains(e.target as Node)) setIsEventFilterOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Date range filter labels
+  const dateRangeLabels: Record<string, string> = {
+    "2weeks": "Son 2 Hafta",
+    "1month": "Son 1 Ay",
+    "3months": "Son 3 Ay",
+    "thisYear": "Bu Yıl",
+    "all": "Tümü"
+  };
+
+  // Calculate date boundaries for filtering
+  const getDateBoundary = (filter: string): Date | null => {
+    const now = new Date();
+    switch (filter) {
+      case "2weeks": {
+        const d = new Date(now);
+        d.setDate(d.getDate() - 14);
+        d.setHours(0, 0, 0, 0);
+        return d;
+      }
+      case "1month": {
+        const d = new Date(now);
+        d.setMonth(d.getMonth() - 1);
+        d.setHours(0, 0, 0, 0);
+        return d;
+      }
+      case "3months": {
+        const d = new Date(now);
+        d.setMonth(d.getMonth() - 3);
+        d.setHours(0, 0, 0, 0);
+        return d;
+      }
+      case "thisYear": {
+        return new Date(now.getFullYear(), 0, 1);
+      }
+      default:
+        return null;
+    }
+  };
+
+  // Separate events into upcoming and past for the event filter
+  const upcomingEvents = eventList?.filter(ev => new Date(ev.date) >= new Date()) || [];
+  const pastEvents = eventList?.filter(ev => new Date(ev.date) < new Date()) || [];
+
   const filteredHistory = combinedHistory.filter(item => {
+    // Type filter
     if (historyFilter === "income" && item.isExpense) return false;
     if (historyFilter === "expense" && !item.isExpense) return false;
+
+    // Date range filter
+    const dateBoundary = getDateBoundary(dateRangeFilter);
+    if (dateBoundary) {
+      const itemDate = new Date(item.created_at);
+      if (itemDate < dateBoundary) return false;
+    }
+
+    // Event filter
+    if (eventFilter !== "all") {
+      if (item.isExpense) {
+        const expense = item as Extract<typeof combinedHistory[number], { isExpense: true }>;
+        const expenseEventId = Array.isArray(expense.events) ? expense.events[0]?.id : expense.events?.id;
+        if (eventFilter === "no_event") {
+          if (expenseEventId) return false;
+        } else {
+          if (expenseEventId !== eventFilter) return false;
+        }
+      } else {
+        // Dues payments are not event-specific, so hide them when filtering by specific event
+        if (eventFilter !== "no_event") return false;
+      }
+    }
+
     return true;
   });
 
@@ -958,18 +1044,19 @@ export default function Budget() {
 
             {/* Transaction History */}
             <div className="bg-white/[0.02] border border-border/10 rounded-2xl overflow-hidden backdrop-blur-xl">
-              <div className="p-4 sm:p-5 border-b border-border/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-foreground/5 rounded-lg"><CalendarDays className="w-4 h-4 text-foreground/60" /></div>
-                    <h3 className="text-base font-bold">İşlem Geçmişi</h3>
+              <div className="p-4 sm:p-5 border-b border-border/10 flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 bg-foreground/5 rounded-lg"><CalendarDays className="w-4 h-4 text-foreground/60" /></div>
+                      <h3 className="text-base font-bold">İşlem Geçmişi</h3>
+                    </div>
+                    <div className="flex bg-foreground/5 p-0.5 rounded-lg border border-border/10">
+                      {[{ key: "all" as const, label: "Tümü" }, { key: "income" as const, label: "Gelirler" }, { key: "expense" as const, label: "Giderler" }].map(f => (
+                        <button key={f.key} onClick={() => setHistoryFilter(f.key)} className={cn("px-3 py-1.5 text-xs font-bold rounded-md transition-all", historyFilter === f.key ? "bg-emerald-500 text-black" : "text-foreground/40 hover:text-foreground/70")}>{f.label}</button>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex bg-foreground/5 p-0.5 rounded-lg border border-border/10">
-                    {[{ key: "all" as const, label: "Tümü" }, { key: "income" as const, label: "Gelirler" }, { key: "expense" as const, label: "Giderler" }].map(f => (
-                      <button key={f.key} onClick={() => setHistoryFilter(f.key)} className={cn("px-3 py-1.5 text-xs font-bold rounded-md transition-all", historyFilter === f.key ? "bg-emerald-500 text-black" : "text-foreground/40 hover:text-foreground/70")}>{f.label}</button>
-                    ))}
-                  </div>
-                </div>
                 <Dialog open={isExpenseDialogOpen} onOpenChange={(open) => { setIsExpenseDialogOpen(open); if (!open) resetExpenseForm(); }}>
                   <DialogTrigger asChild>
                     <Button onClick={openAddExpense} size="sm" className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold rounded-xl gap-1.5 text-xs"><Plus className="w-3.5 h-3.5" /> Yeni Harcama</Button>
@@ -1020,6 +1107,174 @@ export default function Budget() {
                     </form>
                   </DialogContent>
                 </Dialog>
+                </div>
+
+                {/* Date Range & Event Filters Row */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Date Range Filter */}
+                  <div ref={dateFilterRef} className="relative">
+                    <button
+                      onClick={() => { setIsDateFilterOpen(!isDateFilterOpen); setIsEventFilterOpen(false); }}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-bold transition-all",
+                        dateRangeFilter !== "all"
+                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                          : "bg-foreground/5 border-border/10 text-foreground/60 hover:text-foreground/80"
+                      )}
+                    >
+                      <CalendarDays className="w-3.5 h-3.5" />
+                      {dateRangeLabels[dateRangeFilter]}
+                      <ChevronDown className={cn("w-3 h-3 transition-transform", isDateFilterOpen && "rotate-180")} />
+                    </button>
+                    {isDateFilterOpen && (
+                      <div className="absolute top-full left-0 mt-1.5 bg-background border border-border/20 rounded-xl shadow-xl shadow-black/20 z-50 min-w-[160px] py-1 animate-in fade-in-50 slide-in-from-top-2 duration-200">
+                        {(["2weeks", "1month", "3months", "thisYear", "all"] as const).map(key => (
+                          <button
+                            key={key}
+                            onClick={() => { setDateRangeFilter(key); setIsDateFilterOpen(false); }}
+                            className={cn(
+                              "w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center justify-between gap-3",
+                              dateRangeFilter === key
+                                ? "text-emerald-400 bg-emerald-500/10"
+                                : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
+                            )}
+                          >
+                            {dateRangeLabels[key]}
+                            {dateRangeFilter === key && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Event Filter */}
+                  <div ref={eventFilterRef} className="relative">
+                    <button
+                      onClick={() => { setIsEventFilterOpen(!isEventFilterOpen); setIsDateFilterOpen(false); }}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-bold transition-all",
+                        eventFilter !== "all"
+                          ? "bg-blue-500/10 border-blue-500/30 text-blue-400"
+                          : "bg-foreground/5 border-border/10 text-foreground/60 hover:text-foreground/80"
+                      )}
+                    >
+                      <Filter className="w-3.5 h-3.5" />
+                      {eventFilter === "all" ? "Tüm Etkinlikler" : eventFilter === "no_event" ? "Etkinlik Bağımsız" : (eventList?.find(ev => ev.id === eventFilter)?.title || "Etkinlik")}
+                      <ChevronDown className={cn("w-3 h-3 transition-transform", isEventFilterOpen && "rotate-180")} />
+                    </button>
+                    {isEventFilterOpen && (
+                      (() => {
+                        // Build a set of event IDs that have at least one expense
+                        const eventsWithExpenses = new Set<string>();
+                        expenses?.forEach(exp => {
+                          const eid = Array.isArray(exp.events) ? exp.events[0]?.id : exp.events?.id;
+                          if (eid) eventsWithExpenses.add(eid);
+                        });
+                        return (
+                      <div className="absolute top-full left-0 mt-1.5 bg-background border border-border/20 rounded-xl shadow-xl shadow-black/20 z-50 min-w-[220px] max-w-[300px] max-h-[320px] overflow-y-auto custom-scrollbar py-1 animate-in fade-in-50 slide-in-from-top-2 duration-200">
+                        <button
+                          onClick={() => { setEventFilter("all"); setIsEventFilterOpen(false); }}
+                          className={cn(
+                            "w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center justify-between gap-3",
+                            eventFilter === "all"
+                              ? "text-blue-400 bg-blue-500/10"
+                              : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
+                          )}
+                        >
+                          Tüm Etkinlikler
+                          {eventFilter === "all" && <Check className="w-3.5 h-3.5 text-blue-400" />}
+                        </button>
+                        <button
+                          onClick={() => { setEventFilter("no_event"); setIsEventFilterOpen(false); }}
+                          className={cn(
+                            "w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center justify-between gap-3",
+                            eventFilter === "no_event"
+                              ? "text-blue-400 bg-blue-500/10"
+                              : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
+                          )}
+                        >
+                          Etkinlik Bağımsız
+                          {eventFilter === "no_event" && <Check className="w-3.5 h-3.5 text-blue-400" />}
+                        </button>
+
+                        {upcomingEvents.length > 0 && (
+                          <>
+                            <div className="px-4 py-2 text-[10px] font-black uppercase tracking-wider text-emerald-400/70 border-t border-border/10 mt-1">
+                              Yaklaşan Etkinlikler
+                            </div>
+                            {upcomingEvents.map(ev => {
+                              const hasExpense = eventsWithExpenses.has(ev.id);
+                              return (
+                              <button
+                                key={ev.id}
+                                onClick={() => { setEventFilter(ev.id); setIsEventFilterOpen(false); }}
+                                className={cn(
+                                  "w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center justify-between gap-3",
+                                  eventFilter === ev.id
+                                    ? "text-blue-400 bg-blue-500/10"
+                                    : hasExpense
+                                      ? "bg-red-500/8 text-red-400/80 hover:bg-red-500/15 hover:text-red-400"
+                                      : "bg-emerald-500/8 text-emerald-400/80 hover:bg-emerald-500/15 hover:text-emerald-400"
+                                )}
+                              >
+                                <span className="truncate flex items-center gap-2">
+                                  <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", hasExpense ? "bg-red-400" : "bg-emerald-400")} />
+                                  {ev.title} <span className="text-foreground/30 font-normal">({new Date(ev.date).toLocaleDateString("tr-TR")})</span>
+                                </span>
+                                {eventFilter === ev.id && <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
+                              </button>
+                              );
+                            })}
+                          </>
+                        )}
+
+                        {pastEvents.length > 0 && (
+                          <>
+                            <div className="px-4 py-2 text-[10px] font-black uppercase tracking-wider text-foreground/30 border-t border-border/10 mt-1">
+                              Geçmiş Etkinlikler
+                            </div>
+                            {pastEvents.map(ev => {
+                              const hasExpense = eventsWithExpenses.has(ev.id);
+                              return (
+                              <button
+                                key={ev.id}
+                                onClick={() => { setEventFilter(ev.id); setIsEventFilterOpen(false); }}
+                                className={cn(
+                                  "w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center justify-between gap-3",
+                                  eventFilter === ev.id
+                                    ? "text-blue-400 bg-blue-500/10"
+                                    : hasExpense
+                                      ? "bg-red-500/8 text-red-400/80 hover:bg-red-500/15 hover:text-red-400"
+                                      : "bg-emerald-500/8 text-emerald-400/80 hover:bg-emerald-500/15 hover:text-emerald-400"
+                                )}
+                              >
+                                <span className="truncate flex items-center gap-2">
+                                  <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", hasExpense ? "bg-red-400" : "bg-emerald-400")} />
+                                  {ev.title} <span className="text-foreground/30 font-normal">({new Date(ev.date).toLocaleDateString("tr-TR")})</span>
+                                </span>
+                                {eventFilter === ev.id && <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
+                              </button>
+                              );
+                            })}
+                          </>
+                        )}
+                      </div>
+                        );
+                      })()
+                    )}
+                  </div>
+
+                  {/* Active filters indicator */}
+                  {(dateRangeFilter !== "2weeks" || eventFilter !== "all") && (
+                    <button
+                      onClick={() => { setDateRangeFilter("2weeks"); setEventFilter("all"); }}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold text-foreground/40 hover:text-red-400 hover:bg-red-500/10 transition-colors border border-transparent hover:border-red-500/20"
+                    >
+                      <XCircle className="w-3 h-3" />
+                      Filtreleri Sıfırla
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="p-0">
