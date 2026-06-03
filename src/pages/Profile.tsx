@@ -279,7 +279,7 @@ const Profile = () => {
                     {/* Personal Info Module */}
                     <div className="relative group">
                       <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent blur-xl rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                      <div className="relative bg-[#0c0c0c] border border-border/20 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                      <div className="relative bg-card border border-border/20 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
                         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
 
                         <div className="p-6 md:p-12 relative z-10 w-full">
@@ -302,7 +302,7 @@ const Profile = () => {
                                 value={firstName}
                                 onChange={(e) => setFirstName(e.target.value)}
                                 placeholder="Adınız"
-                                className="w-full h-14 bg-foreground/5 border border-border/20 rounded-2xl px-5 md:px-6 text-sm font-bold text-foreground placeholder:text-foreground/60 focus:outline-none focus:border-primary/50 transition-all focus:bg-white/[0.07] block min-w-0"
+                                className="w-full h-14 bg-foreground/5 border border-border/20 rounded-2xl px-5 md:px-6 text-sm font-bold text-foreground placeholder:text-foreground/60 focus:outline-none focus:border-primary/50 transition-all focus:bg-foreground/[0.07] block min-w-0"
                               />
                             </div>
                             <div className="space-y-3 w-full border-box">
@@ -311,7 +311,7 @@ const Profile = () => {
                                 value={lastName}
                                 onChange={(e) => setLastName(e.target.value)}
                                 placeholder="Soyadınız"
-                                className="w-full h-14 bg-foreground/5 border border-border/20 rounded-2xl px-5 md:px-6 text-sm font-bold text-foreground placeholder:text-foreground/60 focus:outline-none focus:border-primary/50 transition-all focus:bg-white/[0.07] block min-w-0"
+                                className="w-full h-14 bg-foreground/5 border border-border/20 rounded-2xl px-5 md:px-6 text-sm font-bold text-foreground placeholder:text-foreground/60 focus:outline-none focus:border-primary/50 transition-all focus:bg-foreground/[0.07] block min-w-0"
                               />
                             </div>
                           </div>
@@ -333,7 +333,7 @@ const Profile = () => {
                     {/* Email Module */}
                     <div className="relative group">
                       <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 to-transparent blur-xl rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                      <div className="relative bg-[#0c0c0c] border border-border/20 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                      <div className="relative bg-card border border-border/20 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
                         <div className="p-6 md:p-12 relative z-10 w-full">
                           <div className="flex items-center gap-4 md:gap-5 mb-8 md:mb-10">
                             <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-2xl bg-foreground/5 border border-border/20 flex items-center justify-center shadow-inner">
@@ -355,7 +355,7 @@ const Profile = () => {
                               onChange={(e) => setEmail(e.target.value)}
                               disabled={isOAuthUser}
                               className={cn(
-                                "w-full h-14 bg-foreground/5 border border-border/20 rounded-2xl px-5 md:px-6 text-sm font-bold text-foreground placeholder:text-foreground/60 focus:outline-none focus:border-amber-500/50 transition-all focus:bg-white/[0.07] block min-w-0",
+                                "w-full h-14 bg-foreground/5 border border-border/20 rounded-2xl px-5 md:px-6 text-sm font-bold text-foreground placeholder:text-foreground/60 focus:outline-none focus:border-amber-500/50 transition-all focus:bg-foreground/[0.07] block min-w-0",
                                 isOAuthUser && "opacity-50 cursor-not-allowed"
                               )}
                             />
@@ -387,7 +387,7 @@ const Profile = () => {
                     {/* Password Module */}
                     <div className="relative group">
                       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-transparent blur-xl rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                      <div className="relative bg-[#0c0c0c] border border-border/20 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                      <div className="relative bg-card border border-border/20 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
                         <div className="p-6 md:p-12 relative z-10 w-full">
                           <div className="flex items-center gap-4 md:gap-5 mb-8 md:mb-10">
                             <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-2xl bg-foreground/5 border border-border/20 flex items-center justify-center shadow-inner">
@@ -421,7 +421,7 @@ const Profile = () => {
                                     value={currentPassword}
                                     onChange={(e) => setCurrentPassword(e.target.value)}
                                     placeholder="••••••••"
-                                    className="w-full h-14 bg-foreground/5 border border-border/20 rounded-2xl px-5 md:px-6 text-sm font-bold text-foreground placeholder:text-foreground/60 focus:outline-none focus:border-blue-500/50 transition-all focus:bg-white/[0.07] block min-w-0"
+                                    className="w-full h-14 bg-foreground/5 border border-border/20 rounded-2xl px-5 md:px-6 text-sm font-bold text-foreground placeholder:text-foreground/60 focus:outline-none focus:border-blue-500/50 transition-all focus:bg-foreground/[0.07] block min-w-0"
                                   />
                                 </div>
                                 <div className="space-y-3 w-full border-box">
@@ -431,7 +431,7 @@ const Profile = () => {
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
                                     placeholder="••••••••"
-                                    className="w-full h-14 bg-foreground/5 border border-border/20 rounded-2xl px-5 md:px-6 text-sm font-bold text-foreground placeholder:text-foreground/60 focus:outline-none focus:border-blue-500/50 transition-all focus:bg-white/[0.07] block min-w-0"
+                                    className="w-full h-14 bg-foreground/5 border border-border/20 rounded-2xl px-5 md:px-6 text-sm font-bold text-foreground placeholder:text-foreground/60 focus:outline-none focus:border-blue-500/50 transition-all focus:bg-foreground/[0.07] block min-w-0"
                                   />
                                 </div>
                                 <div className="space-y-3 w-full border-box">
@@ -441,7 +441,7 @@ const Profile = () => {
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     placeholder="••••••••"
-                                    className="w-full h-14 bg-foreground/5 border border-border/20 rounded-2xl px-5 md:px-6 text-sm font-bold text-foreground placeholder:text-foreground/60 focus:outline-none focus:border-blue-500/50 transition-all focus:bg-white/[0.07] block min-w-0"
+                                    className="w-full h-14 bg-foreground/5 border border-border/20 rounded-2xl px-5 md:px-6 text-sm font-bold text-foreground placeholder:text-foreground/60 focus:outline-none focus:border-blue-500/50 transition-all focus:bg-foreground/[0.07] block min-w-0"
                                   />
                                 </div>
                               </div>
@@ -465,7 +465,7 @@ const Profile = () => {
                     {/* Danger Zone */}
                     <div className="relative group">
                       <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-transparent blur-xl rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                      <div className="relative bg-[#0c0c0c] border border-red-500/20 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                      <div className="relative bg-card border border-red-500/20 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
                         <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
                           <AlertTriangle className="w-64 h-64 text-red-500 -rotate-12 translate-x-1/4 -translate-y-1/4" />
                         </div>
@@ -503,7 +503,7 @@ const Profile = () => {
                 {activeSection === "social" && (
                   <div className="relative group">
                     <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent blur-xl rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                    <div className="relative bg-[#0c0c0c] border border-border/20 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                    <div className="relative bg-card border border-border/20 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
                       <div className="p-6 md:p-12 relative z-10 w-full">
                         <div className="flex items-center gap-4 md:gap-5 mb-8 md:mb-10">
                           <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-2xl bg-foreground/5 border border-border/20 flex items-center justify-center shadow-inner">
@@ -526,7 +526,7 @@ const Profile = () => {
                 {activeSection === "reminders" && (
                   <div className="relative group">
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent blur-2xl rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                    <div className="relative bg-[#0c0c0c] border border-border/20 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                    <div className="relative bg-card border border-border/20 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
                       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
                       <div className="p-6 md:p-12 relative z-10 w-full">
@@ -547,7 +547,7 @@ const Profile = () => {
                           {reminderOptions.map((opt) => (
                             <label
                               key={opt.key}
-                              className="group/item flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 md:p-6 rounded-[1.5rem] bg-white/[0.02] border border-border/20 hover:border-primary/30 hover:bg-white/[0.04] transition-all cursor-pointer gap-4"
+                              className="group/item flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 md:p-6 rounded-[1.5rem] bg-foreground/[0.02] border border-border/20 hover:border-primary/30 hover:bg-white/[0.04] transition-all cursor-pointer gap-4"
                             >
                               <div className="flex items-center gap-4 md:gap-5">
                                 <div className="w-12 h-12 shrink-0 rounded-2xl bg-foreground/5 flex items-center justify-center group-hover/item:bg-primary/10 group-hover/item:scale-110 transition-all text-foreground/60 group-hover/item:text-primary">

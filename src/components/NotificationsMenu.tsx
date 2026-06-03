@@ -187,7 +187,7 @@ export const NotificationsMenu = () => {
       >
         <Bell className="w-5 h-5 text-foreground/60" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 h-4 min-w-[1rem] px-1 rounded-full bg-red-500 text-foreground text-[9px] font-black flex items-center justify-center transform translate-x-1/4 -translate-y-1/4 shadow-[0_0_10px_rgba(239,68,68,0.5)]">
+          <span className="absolute top-0 right-0 h-4 min-w-[1rem] px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center transform translate-x-1/4 -translate-y-1/4 shadow-[0_0_10px_rgba(239,68,68,0.5)]">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -202,10 +202,10 @@ export const NotificationsMenu = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-[85px] sm:top-full mt-0 sm:mt-3 sm:w-[380px] bg-black/85 backdrop-blur-2xl border border-border/20 shadow-2xl rounded-[1.5rem] z-[200] overflow-hidden"
+            className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-[85px] sm:top-full mt-0 sm:mt-3 sm:w-[380px] bg-background/95 backdrop-blur-2xl border border-border/40 shadow-2xl rounded-[1.5rem] z-[200] overflow-hidden"
           >
             {/* Header */}
-            <div className="p-4 border-b border-border/20 flex items-center justify-between bg-white/[0.02]">
+            <div className="p-4 border-b border-border/20 flex items-center justify-between bg-foreground/[0.02]">
               <div className="flex items-center gap-2">
                 <Bell className="w-4 h-4 text-primary" />
                 <h3 className="font-bold text-foreground text-sm">Bildirimler</h3>
@@ -249,14 +249,14 @@ export const NotificationsMenu = () => {
                   <p className="text-xs text-foreground/60 animate-pulse">Bildirimler yükleniyor...</p>
                 </div>
               ) : notifications && notifications.length > 0 ? (
-                <div className="flex flex-col divide-y divide-white/5">
+                <div className="flex flex-col divide-y divide-border/20">
                   {notifications.map((item: any) => {
                     const isUnread = !item.is_read;
                     return (
                       <div
                         key={item.id}
                         onClick={() => handleNotificationClick(item)}
-                        className={`p-4 gap-3 cursor-pointer transition-all hover:bg-white/[0.04] group ${isUnread ? "bg-primary/5" : ""}`}
+                        className={`p-4 gap-3 cursor-pointer transition-all hover:bg-foreground/[0.04] group ${isUnread ? "bg-primary/5" : ""}`}
                       >
                         <div className="flex items-start gap-3">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border ${isUnread ? "border-primary/20 bg-primary/10" : "border-border/20 bg-foreground/5"}`}>

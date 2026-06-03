@@ -367,7 +367,7 @@ export default function SocialProfileForm({ hideCard = false }: SocialProfileFor
                                     type="date"
                                     {...field}
                                     value={field.value || ""}
-                                    className={hideCard ? "bg-foreground/5 border-border/20 text-foreground placeholder:text-foreground/60 focus:border-primary/50 h-14 rounded-2xl [color-scheme:dark]" : ""}
+                                    className={hideCard ? "bg-foreground/5 border-border/20 text-foreground placeholder:text-foreground/60 focus:border-primary/50 h-14 rounded-2xl" : ""}
                                 />
                             </FormControl>
                             <FormDescription className={hideCard ? "text-foreground/60" : ""}>

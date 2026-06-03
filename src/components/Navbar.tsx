@@ -44,6 +44,17 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
   return (
     <>
       <div className="fixed top-0 left-0 right-0 z-[100] px-4 py-4 pointer-events-none">
@@ -249,7 +260,7 @@ const Navbar = () => {
             className="fixed inset-0 z-[150] md:hidden"
           >
             <div className="absolute inset-0 bg-background/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-            <div className="absolute right-0 top-0 bottom-0 w-[80%] max-w-sm bg-background border-l border-border/40 p-6 shadow-2xl flex flex-col pt-24">
+            <div className="absolute right-0 top-0 bottom-0 w-[80%] max-w-sm bg-background border-l border-border/40 p-6 shadow-2xl flex flex-col overflow-y-auto pt-24">
               <MobileLink
                 icon={<Calendar />}
                 label="Etkinlikler"
