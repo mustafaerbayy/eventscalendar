@@ -842,10 +842,46 @@ export default function Budget() {
 
   const openSendMail = () => {
     // Select only unpaid dues members by default
-    setSelectedMailRecipients(getUnpaidDuesMembers());
-    setMailSubject("");
-    setMailBody("");
+    const unpaid = getUnpaidDuesMembers();
+    setSelectedMailRecipients(unpaid);
     setMailSearchQuery("");
+
+    if (unpaid.length > 0) {
+      const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      const currentMailMonth = new Date().getMonth() + 1;
+      const currentMailYear = new Date().getFullYear();
+      const duesAmt = getDuesAmountForMonth(currentMailMonth, currentMailYear);
+      const paymentNameText = (budgetSettings as any)?.payment_name || "Topluluk Hesabı";
+      const paymentIbanText = (budgetSettings as any)?.payment_iban || "";
+
+      const siteUrl = "https://www.refik.online";
+
+      setMailSubject(`${monthNames[currentMonth]} ${currentYear} Aidat Hatırlatması`);
+      setMailBody(
+        `Merhaba,
+
+${monthNames[currentMonth]} ${currentYear} ayına ait topluluk aidat ödemenizin henüz tarafımıza ulaşmadığını fark ettik. Ödemenizi en uygun zamanda gerçekleştirmenizi rica ederiz.
+
+Aidat Tutarı: ${duesAmt.toLocaleString("tr-TR")} TL
+Alıcı: ${paymentNameText}${paymentIbanText ? `\nIBAN: ${paymentIbanText}` : ""}
+Açıklama: ${monthNames[currentMonth]} ${currentYear} Aidat
+
+Ödemenizi gerçekleştirdikten sonra, bir sonraki hatırlatma e-postasını almamak için lütfen aşağıdaki butona tıklayarak sisteme giriş yapın ve aidatınızı ödendi olarak işaretleyin.
+
+<a href="${siteUrl}/butce" style="display:inline-block;padding:14px 32px;background:#10b981;color:#000;font-weight:bold;text-decoration:none;border-radius:12px;font-size:15px;margin:8px 0;">Aidatımı İşaretle</a>
+
+Herhangi bir sorunuz varsa bizimle iletişime geçmekten çekinmeyin.
+
+Saygılarımızla,
+Topluluk Yönetimi`
+      );
+    } else {
+      setMailSubject("");
+      setMailBody("");
+    }
+
     setIsSendMailDialogOpen(true);
   };
 
@@ -1057,56 +1093,56 @@ export default function Budget() {
                       ))}
                     </div>
                   </div>
-                <Dialog open={isExpenseDialogOpen} onOpenChange={(open) => { setIsExpenseDialogOpen(open); if (!open) resetExpenseForm(); }}>
-                  <DialogTrigger asChild>
-                    <Button onClick={openAddExpense} size="sm" className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold rounded-xl gap-1.5 text-xs"><Plus className="w-3.5 h-3.5" /> Yeni Harcama</Button>
-                  </DialogTrigger>
-                  <DialogContent className="bg-background border border-border/40 text-foreground sm:max-w-md rounded-[2.5rem] p-8 top-[10%] translate-y-0 sm:top-[50%] sm:translate-y-[-50%]">
-                    <DialogHeader><DialogTitle className="text-xl font-black">{editingExpenseId ? "Harcamayı Düzenle" : "Yeni Harcama Gir"}</DialogTitle></DialogHeader>
-                    <form onSubmit={handleAddExpense} className="space-y-4 pt-4">
-                      <div className="space-y-2"><Label>Harcama Tutarı (₺)</Label><Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Örn: 500" className="bg-foreground/5 border-border/10" required /></div>
-                      <div className="space-y-2"><Label>Açıklama</Label><Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Harcama detayları..." className="bg-foreground/5 border-border/10 min-h-[80px]" /></div>
-                      <div className="space-y-2 flex flex-col">
-                        <Label>Kim Tarafından Harcandı?</Label>
-                        <Popover open={isSpentByOpen} onOpenChange={setIsSpentByOpen}>
-                          <PopoverTrigger asChild>
-                            <Button variant="outline" role="combobox" aria-expanded={isSpentByOpen} className="w-full justify-between bg-foreground/5 border-border/10 text-foreground font-normal hover:bg-foreground/5 hover:text-foreground">
-                              {spentBy && users ? `${users.find((u) => u.id === spentBy)?.first_name} ${users.find((u) => u.id === spentBy)?.last_name}` : "Kişi arayın veya seçin..."}
-                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-background border-border/40 !z-[9999]">
-                            <Command className="bg-transparent border-none">
-                              <CommandInput placeholder="Kişi ara..." className="text-foreground border-none focus:ring-0" />
-                              <CommandList className="custom-scrollbar">
-                                <CommandEmpty className="py-6 text-center text-sm text-foreground/50">Kişi bulunamadı.</CommandEmpty>
-                                <CommandGroup>
-                                  {users?.map((u) => (
-                                    <CommandItem key={u.id} value={`${u.first_name} ${u.last_name}`} onSelect={() => { setSpentBy(u.id); setIsSpentByOpen(false); }} className="text-foreground hover:bg-foreground/10 cursor-pointer rounded-xl font-bold py-3 px-4 my-1 data-[selected=true]:bg-foreground/10 data-[selected=true]:text-foreground">
-                                      <Check className={cn("mr-2 h-4 w-4 text-emerald-400", spentBy === u.id ? "opacity-100" : "opacity-0")} />
-                                      {u.first_name} {u.last_name}
-                                    </CommandItem>
-                                  ))}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>İlgili Etkinlik (Opsiyonel)</Label>
-                        <Select value={eventId} onValueChange={setEventId}>
-                          <SelectTrigger className="bg-foreground/5 border-border/10"><SelectValue placeholder="Etkinlik seçin" /></SelectTrigger>
-                          <SelectContent className="bg-background border-border/40 max-h-60 !z-[9999] !opacity-100 !visible p-2 rounded-2xl">
-                            <SelectItem value="none" className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/10 cursor-pointer">Etkinlik Bağımsız</SelectItem>
-                            {eventList?.map((ev) => (<SelectItem key={ev.id} value={ev.id} className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/10 cursor-pointer">{ev.title} ({new Date(ev.date).toLocaleDateString("tr-TR")})</SelectItem>))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <Button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold mt-2" disabled={addExpenseMutation.isPending || updateExpenseMutation.isPending}>{addExpenseMutation.isPending || updateExpenseMutation.isPending ? "Kaydediliyor..." : (editingExpenseId ? "Güncelle" : "Harcama Ekle")}</Button>
-                    </form>
-                  </DialogContent>
-                </Dialog>
+                  <Dialog open={isExpenseDialogOpen} onOpenChange={(open) => { setIsExpenseDialogOpen(open); if (!open) resetExpenseForm(); }}>
+                    <DialogTrigger asChild>
+                      <Button onClick={openAddExpense} size="sm" className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold rounded-xl gap-1.5 text-xs"><Plus className="w-3.5 h-3.5" /> Yeni Harcama</Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-background border border-border/40 text-foreground sm:max-w-md rounded-[2.5rem] p-8 top-[10%] translate-y-0 sm:top-[50%] sm:translate-y-[-50%]">
+                      <DialogHeader><DialogTitle className="text-xl font-black">{editingExpenseId ? "Harcamayı Düzenle" : "Yeni Harcama Gir"}</DialogTitle></DialogHeader>
+                      <form onSubmit={handleAddExpense} className="space-y-4 pt-4">
+                        <div className="space-y-2"><Label>Harcama Tutarı (₺)</Label><Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Örn: 500" className="bg-foreground/5 border-border/10" required /></div>
+                        <div className="space-y-2"><Label>Açıklama</Label><Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Harcama detayları..." className="bg-foreground/5 border-border/10 min-h-[80px]" /></div>
+                        <div className="space-y-2 flex flex-col">
+                          <Label>Kim Tarafından Harcandı?</Label>
+                          <Popover open={isSpentByOpen} onOpenChange={setIsSpentByOpen}>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" role="combobox" aria-expanded={isSpentByOpen} className="w-full justify-between bg-foreground/5 border-border/10 text-foreground font-normal hover:bg-foreground/5 hover:text-foreground">
+                                {spentBy && users ? `${users.find((u) => u.id === spentBy)?.first_name} ${users.find((u) => u.id === spentBy)?.last_name}` : "Kişi arayın veya seçin..."}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-background border-border/40 !z-[9999]">
+                              <Command className="bg-transparent border-none">
+                                <CommandInput placeholder="Kişi ara..." className="text-foreground border-none focus:ring-0" />
+                                <CommandList className="custom-scrollbar">
+                                  <CommandEmpty className="py-6 text-center text-sm text-foreground/50">Kişi bulunamadı.</CommandEmpty>
+                                  <CommandGroup>
+                                    {users?.map((u) => (
+                                      <CommandItem key={u.id} value={`${u.first_name} ${u.last_name}`} onSelect={() => { setSpentBy(u.id); setIsSpentByOpen(false); }} className="text-foreground hover:bg-foreground/10 cursor-pointer rounded-xl font-bold py-3 px-4 my-1 data-[selected=true]:bg-foreground/10 data-[selected=true]:text-foreground">
+                                        <Check className={cn("mr-2 h-4 w-4 text-emerald-400", spentBy === u.id ? "opacity-100" : "opacity-0")} />
+                                        {u.first_name} {u.last_name}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>İlgili Etkinlik (Opsiyonel)</Label>
+                          <Select value={eventId} onValueChange={setEventId}>
+                            <SelectTrigger className="bg-foreground/5 border-border/10"><SelectValue placeholder="Etkinlik seçin" /></SelectTrigger>
+                            <SelectContent className="bg-background border-border/40 max-h-60 !z-[9999] !opacity-100 !visible p-2 rounded-2xl">
+                              <SelectItem value="none" className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/10 cursor-pointer">Etkinlik Bağımsız</SelectItem>
+                              {eventList?.map((ev) => (<SelectItem key={ev.id} value={ev.id} className="rounded-xl py-3 font-bold !text-foreground hover:bg-foreground/10 cursor-pointer">{ev.title} ({new Date(ev.date).toLocaleDateString("tr-TR")})</SelectItem>))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <Button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold mt-2" disabled={addExpenseMutation.isPending || updateExpenseMutation.isPending}>{addExpenseMutation.isPending || updateExpenseMutation.isPending ? "Kaydediliyor..." : (editingExpenseId ? "Güncelle" : "Harcama Ekle")}</Button>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
                 </div>
 
                 {/* Date Range & Event Filters Row */}
@@ -1171,94 +1207,94 @@ export default function Budget() {
                           if (eid) eventsWithExpenses.add(eid);
                         });
                         return (
-                      <div className="absolute top-full left-0 mt-1.5 bg-background border border-border/20 rounded-xl shadow-xl shadow-black/20 z-50 min-w-[220px] max-w-[300px] max-h-[320px] overflow-y-auto custom-scrollbar py-1 animate-in fade-in-50 slide-in-from-top-2 duration-200">
-                        <button
-                          onClick={() => { setEventFilter("all"); setIsEventFilterOpen(false); }}
-                          className={cn(
-                            "w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center justify-between gap-3",
-                            eventFilter === "all"
-                              ? "text-blue-400 bg-blue-500/10"
-                              : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
-                          )}
-                        >
-                          Tüm Etkinlikler
-                          {eventFilter === "all" && <Check className="w-3.5 h-3.5 text-blue-400" />}
-                        </button>
-                        <button
-                          onClick={() => { setEventFilter("no_event"); setIsEventFilterOpen(false); }}
-                          className={cn(
-                            "w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center justify-between gap-3",
-                            eventFilter === "no_event"
-                              ? "text-blue-400 bg-blue-500/10"
-                              : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
-                          )}
-                        >
-                          Etkinlik Bağımsız
-                          {eventFilter === "no_event" && <Check className="w-3.5 h-3.5 text-blue-400" />}
-                        </button>
+                          <div className="absolute top-full left-0 mt-1.5 bg-background border border-border/20 rounded-xl shadow-xl shadow-black/20 z-50 min-w-[220px] max-w-[300px] max-h-[320px] overflow-y-auto custom-scrollbar py-1 animate-in fade-in-50 slide-in-from-top-2 duration-200">
+                            <button
+                              onClick={() => { setEventFilter("all"); setIsEventFilterOpen(false); }}
+                              className={cn(
+                                "w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center justify-between gap-3",
+                                eventFilter === "all"
+                                  ? "text-blue-400 bg-blue-500/10"
+                                  : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
+                              )}
+                            >
+                              Tüm Etkinlikler
+                              {eventFilter === "all" && <Check className="w-3.5 h-3.5 text-blue-400" />}
+                            </button>
+                            <button
+                              onClick={() => { setEventFilter("no_event"); setIsEventFilterOpen(false); }}
+                              className={cn(
+                                "w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center justify-between gap-3",
+                                eventFilter === "no_event"
+                                  ? "text-blue-400 bg-blue-500/10"
+                                  : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
+                              )}
+                            >
+                              Etkinlik Bağımsız
+                              {eventFilter === "no_event" && <Check className="w-3.5 h-3.5 text-blue-400" />}
+                            </button>
 
-                        {upcomingEvents.length > 0 && (
-                          <>
-                            <div className="px-4 py-2 text-[10px] font-black uppercase tracking-wider text-emerald-400/70 border-t border-border/10 mt-1">
-                              Yaklaşan Etkinlikler
-                            </div>
-                            {upcomingEvents.map(ev => {
-                              const hasExpense = eventsWithExpenses.has(ev.id);
-                              return (
-                              <button
-                                key={ev.id}
-                                onClick={() => { setEventFilter(ev.id); setIsEventFilterOpen(false); }}
-                                className={cn(
-                                  "w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center justify-between gap-3",
-                                  eventFilter === ev.id
-                                    ? "text-blue-400 bg-blue-500/10"
-                                    : hasExpense
-                                      ? "bg-red-500/8 text-red-400/80 hover:bg-red-500/15 hover:text-red-400"
-                                      : "bg-emerald-500/8 text-emerald-400/80 hover:bg-emerald-500/15 hover:text-emerald-400"
-                                )}
-                              >
-                                <span className="truncate flex items-center gap-2">
-                                  <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", hasExpense ? "bg-red-400" : "bg-emerald-400")} />
-                                  {ev.title} <span className="text-foreground/30 font-normal">({new Date(ev.date).toLocaleDateString("tr-TR")})</span>
-                                </span>
-                                {eventFilter === ev.id && <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
-                              </button>
-                              );
-                            })}
-                          </>
-                        )}
+                            {upcomingEvents.length > 0 && (
+                              <>
+                                <div className="px-4 py-2 text-[10px] font-black uppercase tracking-wider text-emerald-400/70 border-t border-border/10 mt-1">
+                                  Yaklaşan Etkinlikler
+                                </div>
+                                {upcomingEvents.map(ev => {
+                                  const hasExpense = eventsWithExpenses.has(ev.id);
+                                  return (
+                                    <button
+                                      key={ev.id}
+                                      onClick={() => { setEventFilter(ev.id); setIsEventFilterOpen(false); }}
+                                      className={cn(
+                                        "w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center justify-between gap-3",
+                                        eventFilter === ev.id
+                                          ? "text-blue-400 bg-blue-500/10"
+                                          : hasExpense
+                                            ? "bg-red-500/8 text-red-400/80 hover:bg-red-500/15 hover:text-red-400"
+                                            : "bg-emerald-500/8 text-emerald-400/80 hover:bg-emerald-500/15 hover:text-emerald-400"
+                                      )}
+                                    >
+                                      <span className="truncate flex items-center gap-2">
+                                        <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", hasExpense ? "bg-red-400" : "bg-emerald-400")} />
+                                        {ev.title} <span className="text-foreground/30 font-normal">({new Date(ev.date).toLocaleDateString("tr-TR")})</span>
+                                      </span>
+                                      {eventFilter === ev.id && <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
+                                    </button>
+                                  );
+                                })}
+                              </>
+                            )}
 
-                        {pastEvents.length > 0 && (
-                          <>
-                            <div className="px-4 py-2 text-[10px] font-black uppercase tracking-wider text-foreground/30 border-t border-border/10 mt-1">
-                              Geçmiş Etkinlikler
-                            </div>
-                            {pastEvents.map(ev => {
-                              const hasExpense = eventsWithExpenses.has(ev.id);
-                              return (
-                              <button
-                                key={ev.id}
-                                onClick={() => { setEventFilter(ev.id); setIsEventFilterOpen(false); }}
-                                className={cn(
-                                  "w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center justify-between gap-3",
-                                  eventFilter === ev.id
-                                    ? "text-blue-400 bg-blue-500/10"
-                                    : hasExpense
-                                      ? "bg-red-500/8 text-red-400/80 hover:bg-red-500/15 hover:text-red-400"
-                                      : "bg-emerald-500/8 text-emerald-400/80 hover:bg-emerald-500/15 hover:text-emerald-400"
-                                )}
-                              >
-                                <span className="truncate flex items-center gap-2">
-                                  <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", hasExpense ? "bg-red-400" : "bg-emerald-400")} />
-                                  {ev.title} <span className="text-foreground/30 font-normal">({new Date(ev.date).toLocaleDateString("tr-TR")})</span>
-                                </span>
-                                {eventFilter === ev.id && <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
-                              </button>
-                              );
-                            })}
-                          </>
-                        )}
-                      </div>
+                            {pastEvents.length > 0 && (
+                              <>
+                                <div className="px-4 py-2 text-[10px] font-black uppercase tracking-wider text-foreground/30 border-t border-border/10 mt-1">
+                                  Geçmiş Etkinlikler
+                                </div>
+                                {pastEvents.map(ev => {
+                                  const hasExpense = eventsWithExpenses.has(ev.id);
+                                  return (
+                                    <button
+                                      key={ev.id}
+                                      onClick={() => { setEventFilter(ev.id); setIsEventFilterOpen(false); }}
+                                      className={cn(
+                                        "w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center justify-between gap-3",
+                                        eventFilter === ev.id
+                                          ? "text-blue-400 bg-blue-500/10"
+                                          : hasExpense
+                                            ? "bg-red-500/8 text-red-400/80 hover:bg-red-500/15 hover:text-red-400"
+                                            : "bg-emerald-500/8 text-emerald-400/80 hover:bg-emerald-500/15 hover:text-emerald-400"
+                                      )}
+                                    >
+                                      <span className="truncate flex items-center gap-2">
+                                        <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", hasExpense ? "bg-red-400" : "bg-emerald-400")} />
+                                        {ev.title} <span className="text-foreground/30 font-normal">({new Date(ev.date).toLocaleDateString("tr-TR")})</span>
+                                      </span>
+                                      {eventFilter === ev.id && <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
+                                    </button>
+                                  );
+                                })}
+                              </>
+                            )}
+                          </div>
                         );
                       })()
                     )}
